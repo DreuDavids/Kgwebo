@@ -69,6 +69,7 @@ final inventoryAttentionProvider =
           missingCostCount: 0,
           estimatedValueMinor: 0,
           restockProductIds: [],
+          missingCostProductIds: [],
         );
       }
       final snapshot = await ref

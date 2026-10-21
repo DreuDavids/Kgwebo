@@ -20,6 +20,7 @@ abstract final class AppRoutes {
   static const productNew = '/products/new';
   static const cashFlow = '/cash-flow';
   static const recordObligation = '/cash-flow/new';
+  static const recommendations = '/cash-flow/recommendations';
   static const reports = '/reports';
   static const settings = '/settings';
   static const businessProfile = '/settings/business';
@@ -50,6 +51,7 @@ abstract final class AppRoutes {
   static const productStockName = 'product-stock';
   static const cashFlowName = 'cash-flow';
   static const recordObligationName = 'record-obligation';
+  static const recommendationsName = 'recommendations';
   static const obligationDetailsName = 'obligation-details';
   static const obligationEditName = 'obligation-edit';
   static const reportsName = 'reports';

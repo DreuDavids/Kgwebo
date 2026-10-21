@@ -11,6 +11,8 @@ import 'package:kgwebo/features/onboarding/domain/business_profile.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_obligations.dart';
+import '../../helpers/fake_products.dart';
+import '../../helpers/fake_recommendations.dart';
 import '../../helpers/fake_transactions.dart';
 import '../../helpers/test_config.dart';
 
@@ -59,6 +61,12 @@ void main() {
           ),
           obligationRepositoryProvider.overrideWith(
             (ref) => FakeObligationRepository(),
+          ),
+          productRepositoryProvider.overrideWith(
+            (ref) => FakeProductRepository(),
+          ),
+          recommendationRepositoryProvider.overrideWith(
+            (ref) => FakeRecommendationRepository(),
           ),
         ],
         child: MaterialApp(

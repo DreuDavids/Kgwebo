@@ -42,6 +42,11 @@ void main() {
       expect(find.text('Records'), findsOneWidget);
       expect(find.text('Outlook'), findsOneWidget);
 
+      await selectDashboardTab(tester, 'Outlook');
+      expect(tester.takeException(), isNull);
+      expect(overflows, isEmpty, reason: overflows.join('\n'));
+      expect(find.textContaining('Know whether cash covers'), findsOneWidget);
+
       final width = profile.$2.width;
       if (width < 600) {
         expect(find.byType(CompactNavigation), findsOneWidget);

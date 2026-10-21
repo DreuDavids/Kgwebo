@@ -15,11 +15,13 @@ import 'package:kgwebo/features/authentication/domain/app_session.dart';
 import 'package:kgwebo/features/onboarding/application/onboarding_repository.dart';
 import 'package:kgwebo/features/obligations/application/obligation_repository.dart';
 import 'package:kgwebo/features/products/application/product_repository.dart';
+import 'package:kgwebo/features/recommendations/application/recommendation_repository.dart';
 import 'package:kgwebo/features/transactions/application/transaction_repository.dart';
 
 import 'fake_auth.dart';
 import 'fake_obligations.dart';
 import 'fake_products.dart';
+import 'fake_recommendations.dart';
 import 'fake_transactions.dart';
 import 'test_config.dart';
 
@@ -36,6 +38,7 @@ Future<GoRouter> pumpKgweboApp(
   TransactionRepository? transactions,
   ObligationRepository? obligations,
   ProductRepository? products,
+  RecommendationRepository? recommendations,
   List<Override> overrides = const [],
 }) async {
   await setSurface(tester, size, textScale: textScale);
@@ -68,6 +71,9 @@ Future<GoRouter> pumpKgweboApp(
         ),
         productRepositoryProvider.overrideWith(
           (ref) => products ?? FakeProductRepository(),
+        ),
+        recommendationRepositoryProvider.overrideWith(
+          (ref) => recommendations ?? FakeRecommendationRepository(),
         ),
         ...overrides,
       ],

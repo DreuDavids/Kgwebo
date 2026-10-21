@@ -19,8 +19,8 @@ void main() {
     await database.close();
   });
 
-  test('schema version is 4', () {
-    expect(database.schemaVersion, 4);
+  test('schema version is 5', () {
+    expect(database.schemaVersion, 5);
   });
 
   test('insert and read a confirmed transaction for the owner', () async {

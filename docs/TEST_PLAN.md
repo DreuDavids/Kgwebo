@@ -114,21 +114,29 @@ Phase 5 RLS (21 Oct 2026): FORCE RLS on `transactions` and `obligations`; anon h
 
 Phase 6 minimum: product validators; milli-unit parse/format; zero stock is out of stock even when the threshold is 0; weighted-average cost; missing cost excluded from estimated value; snapshot COGS after a later cost change; oversell rejected; resellable vs damaged returns; reversal restores stock; failed multi-line sale leaves no partial rows; unpaid product sales increase recorded sales not cash; product sale counted once in the engine; Drift owner/business isolation and stale cache; product form validation and duplicate-tap guard; stock write-off confirmation; product list usable at 320×568; sale form product line uses the inventory RPC; dashboard restock notice is not treated as cash.
 
-Phase 6 RLS catalog (21 Oct 2026): FORCE RLS on `products`, `sale_items`, and `stock_movements`. Anon has no select/insert/update/delete/truncate. Authenticated can select/insert/update/delete products and cannot TRUNCATE. Authenticated can select `sale_items` and `stock_movements` and cannot insert or TRUNCATE them. Writes go through `create_catalog_product`, `record_stock_movement`, and `record_product_sale`. Two-user JWT isolation for inventory was not re-run in this session because new Auth sign-ups require email OTP confirmation.
+Phase 6 RLS catalog (21 Oct 2026, re-checked 21 Oct 2026 during Phase 7): FORCE RLS on `products`, `sale_items`, and `stock_movements`. Anon has no select/insert/update/delete/truncate. Authenticated can select/insert/update/delete products and cannot TRUNCATE. Authenticated can select `sale_items` and `stock_movements` and cannot insert or TRUNCATE them. Writes go through `create_catalog_product`, `record_stock_movement`, and `record_product_sale`. Two-user JWT isolation for inventory was not re-run: the live project has one Auth user. Concurrent oversell was not replayed with two clients; `record_product_sale` locks matching products `FOR UPDATE` in id order before decreasing stock.
 
-## 8. Android manual checklist (Phase 6)
+Phase 7 minimum: `CashForecastEngine` inclusive 7/14/30 local-day windows; recorded cash unchanged by unpaid bills; unpaid sales not treated as receipts; inventory value not treated as cash; overdue vs upcoming vs beyond-horizon; paid/cancelled excluded; no double-count of paid expenses; incomplete history labelled; recommendation rules fire only on evidence; lifecycle insert/dedupe/dismiss/resolve/reactivate; Drift owner isolation and stale cache; dashboard horizon switch (14-day bill excluded from 7 days); failed recommendation refresh is not an empty list; recommendations screen usable at 320×568 with keyboard inset; Outlook tab layouts at 320×568, 360×800, 800×360, 768×1024, 1024×768.
+
+Phase 7 RLS catalog (21 Oct 2026): FORCE RLS on `recommendations`. Anon has no select/insert/update/delete/truncate. Authenticated has select/insert/update/delete and not TRUNCATE. Policies `recommendations_select_own`, `recommendations_insert_own`, `recommendations_update_own`, `recommendations_delete_own`. Two-user JWT isolation was not executed: one Auth user and one business exist; new sign-ups require email OTP confirmation. Flutter fakes do not prove database isolation.
+
+## 8. Android manual checklist (Phase 7)
 
 Run on a phone or emulator after a debug APK built with `--dart-define-from-file=.env`. Do not claim a physical device pass if only an emulator was used.
 
-- [ ] Portrait dashboard: opening cash labelled as not revenue; period chips visible; compact bottom bar (Home / Activity / Products / More).
-- [ ] Products: catalogue, search, filters, stock overview labelled as an estimate.
+- [ ] Portrait dashboard Overview: recorded cash first; opening cash labelled as not revenue; compact bottom bar (Home / Activity / Products / More).
+- [ ] Outlook tab: 7 / 14 / 30 day chips; recorded cash unchanged; estimate labelled; incoming cash copy says it is not forecast; no decorative chart when there are no dated outflows.
+- [ ] Add an unpaid commitment due in 10 days: 14-day estimate subtracts it; 7-day estimate does not; beyond-horizon copy appears on 7 days.
+- [ ] Overdue commitment: recommendation with evidence; dismiss on Recommendations; pull-to-refresh does not bring the same condition back; a new overdue bill may.
+- [ ] Products: catalogue, search, filters, stock overview labelled as an estimate. Two low-stock products surface a restock recommendation.
 - [ ] Product form and stock receipt/adjustment: keyboard does not overflow; write-offs ask for a reason and confirmation.
 - [ ] Sale form: amount-only sale still works; adding a product decreases stock once; unpaid product sale does not increase cash.
 - [ ] Expense form: labelled as an operating expense; same keyboard behaviour.
-- [ ] More → Cash Flow: unpaid bills are not expenses; empty commitments do not invent bills.
+- [ ] More → Cash Flow: horizon chips; unpaid bills are not expenses; empty commitments do not invent bills.
+- [ ] More → Cash Flow → Recommendations: failed refresh is not an empty-success state; disclaimer is visible.
 - [ ] Commitment form: planned-payment copy; keyboard keeps the focused field usable.
-- [ ] Landscape: navigation rail appears at width ≥ 600; Cash Flow, dashboard and Products remain scrollable.
-- [ ] Airplane mode / failed refresh: last saved cash and products remain; stale/error copy appears; stock is not presented as unquestionably current.
+- [ ] Landscape: navigation rail appears at width ≥ 600; Cash Flow, dashboard Outlook and Recommendations remain scrollable.
+- [ ] Airplane mode / failed refresh: last saved cash, products and recommendation status remain; stale/error copy appears; stock and forecasts are not presented as unquestionably current.
 - [ ] Cancel form edits without saving if using a live account.
 
 Do not mark a phase complete if these commands were not run or if they failed.
@@ -138,4 +146,4 @@ Do not mark a phase complete if these commands were not run or if they failed.
 - Unit and widget tests must not require a live network by default.
 - Tests that hit Supabase are tagged and skipped when credentials are absent.
 - Demo seed data is allowed only in explicit demo tests and the labelled demo mode.
-- Android licenses were incomplete at the original audit. An API 37 x86_64 emulator was available on 21 Oct 2026 and was used for the Phase 5 manual checklist. No physical handset was attached.
+- Android licenses were incomplete at the original audit. An API 37 x86_64 emulator (`emulator-5554`) was available on 21 Oct 2026. The Phase 7 debug APK installed and launched to the welcome screen. No physical handset was attached. Signed-in forecast and recommendation QA on device remains a manual checklist.

@@ -4998,6 +4998,688 @@ class CachedStockMovementsCompanion
   }
 }
 
+class $CachedRecommendationsTable extends CachedRecommendations
+    with TableInfo<$CachedRecommendationsTable, CachedRecommendation> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CachedRecommendationsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _businessIdMeta = const VerificationMeta(
+    'businessId',
+  );
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+    'business_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
+    'created_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ruleKeyMeta = const VerificationMeta(
+    'ruleKey',
+  );
+  @override
+  late final GeneratedColumn<String> ruleKey = GeneratedColumn<String>(
+    'rule_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _conditionKeyMeta = const VerificationMeta(
+    'conditionKey',
+  );
+  @override
+  late final GeneratedColumn<String> conditionKey = GeneratedColumn<String>(
+    'condition_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('confirmed'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    ownerId,
+    businessId,
+    createdBy,
+    ruleKey,
+    conditionKey,
+    status,
+    createdAt,
+    updatedAt,
+    cachedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cached_recommendations';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CachedRecommendation> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteIdMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+        _businessIdMeta,
+        businessId.isAcceptableOrUnknown(data['business_id']!, _businessIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdByMeta);
+    }
+    if (data.containsKey('rule_key')) {
+      context.handle(
+        _ruleKeyMeta,
+        ruleKey.isAcceptableOrUnknown(data['rule_key']!, _ruleKeyMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ruleKeyMeta);
+    }
+    if (data.containsKey('condition_key')) {
+      context.handle(
+        _conditionKeyMeta,
+        conditionKey.isAcceptableOrUnknown(
+          data['condition_key']!,
+          _conditionKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_conditionKeyMeta);
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_statusMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {remoteId};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {ownerId, businessId, ruleKey},
+  ];
+  @override
+  CachedRecommendation map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CachedRecommendation(
+      remoteId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}remote_id'],
+          )!,
+      ownerId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}owner_id'],
+          )!,
+      businessId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}business_id'],
+          )!,
+      createdBy:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}created_by'],
+          )!,
+      ruleKey:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}rule_key'],
+          )!,
+      conditionKey:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}condition_key'],
+          )!,
+      status:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}status'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+      cachedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}cached_at'],
+          )!,
+      syncStatus:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}sync_status'],
+          )!,
+    );
+  }
+
+  @override
+  $CachedRecommendationsTable createAlias(String alias) {
+    return $CachedRecommendationsTable(attachedDatabase, alias);
+  }
+}
+
+class CachedRecommendation extends DataClass
+    implements Insertable<CachedRecommendation> {
+  final String remoteId;
+  final String ownerId;
+  final String businessId;
+  final String createdBy;
+  final String ruleKey;
+  final String conditionKey;
+  final String status;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime cachedAt;
+  final String syncStatus;
+  const CachedRecommendation({
+    required this.remoteId,
+    required this.ownerId,
+    required this.businessId,
+    required this.createdBy,
+    required this.ruleKey,
+    required this.conditionKey,
+    required this.status,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.cachedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['remote_id'] = Variable<String>(remoteId);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['business_id'] = Variable<String>(businessId);
+    map['created_by'] = Variable<String>(createdBy);
+    map['rule_key'] = Variable<String>(ruleKey);
+    map['condition_key'] = Variable<String>(conditionKey);
+    map['status'] = Variable<String>(status);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    return map;
+  }
+
+  CachedRecommendationsCompanion toCompanion(bool nullToAbsent) {
+    return CachedRecommendationsCompanion(
+      remoteId: Value(remoteId),
+      ownerId: Value(ownerId),
+      businessId: Value(businessId),
+      createdBy: Value(createdBy),
+      ruleKey: Value(ruleKey),
+      conditionKey: Value(conditionKey),
+      status: Value(status),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      cachedAt: Value(cachedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory CachedRecommendation.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CachedRecommendation(
+      remoteId: serializer.fromJson<String>(json['remoteId']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      createdBy: serializer.fromJson<String>(json['createdBy']),
+      ruleKey: serializer.fromJson<String>(json['ruleKey']),
+      conditionKey: serializer.fromJson<String>(json['conditionKey']),
+      status: serializer.fromJson<String>(json['status']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String>(remoteId),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'businessId': serializer.toJson<String>(businessId),
+      'createdBy': serializer.toJson<String>(createdBy),
+      'ruleKey': serializer.toJson<String>(ruleKey),
+      'conditionKey': serializer.toJson<String>(conditionKey),
+      'status': serializer.toJson<String>(status),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+    };
+  }
+
+  CachedRecommendation copyWith({
+    String? remoteId,
+    String? ownerId,
+    String? businessId,
+    String? createdBy,
+    String? ruleKey,
+    String? conditionKey,
+    String? status,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? cachedAt,
+    String? syncStatus,
+  }) => CachedRecommendation(
+    remoteId: remoteId ?? this.remoteId,
+    ownerId: ownerId ?? this.ownerId,
+    businessId: businessId ?? this.businessId,
+    createdBy: createdBy ?? this.createdBy,
+    ruleKey: ruleKey ?? this.ruleKey,
+    conditionKey: conditionKey ?? this.conditionKey,
+    status: status ?? this.status,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    cachedAt: cachedAt ?? this.cachedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  CachedRecommendation copyWithCompanion(CachedRecommendationsCompanion data) {
+    return CachedRecommendation(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      ruleKey: data.ruleKey.present ? data.ruleKey.value : this.ruleKey,
+      conditionKey:
+          data.conditionKey.present
+              ? data.conditionKey.value
+              : this.conditionKey,
+      status: data.status.present ? data.status.value : this.status,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedRecommendation(')
+          ..write('remoteId: $remoteId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('businessId: $businessId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('ruleKey: $ruleKey, ')
+          ..write('conditionKey: $conditionKey, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    ownerId,
+    businessId,
+    createdBy,
+    ruleKey,
+    conditionKey,
+    status,
+    createdAt,
+    updatedAt,
+    cachedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CachedRecommendation &&
+          other.remoteId == this.remoteId &&
+          other.ownerId == this.ownerId &&
+          other.businessId == this.businessId &&
+          other.createdBy == this.createdBy &&
+          other.ruleKey == this.ruleKey &&
+          other.conditionKey == this.conditionKey &&
+          other.status == this.status &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.cachedAt == this.cachedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class CachedRecommendationsCompanion
+    extends UpdateCompanion<CachedRecommendation> {
+  final Value<String> remoteId;
+  final Value<String> ownerId;
+  final Value<String> businessId;
+  final Value<String> createdBy;
+  final Value<String> ruleKey;
+  final Value<String> conditionKey;
+  final Value<String> status;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime> cachedAt;
+  final Value<String> syncStatus;
+  final Value<int> rowid;
+  const CachedRecommendationsCompanion({
+    this.remoteId = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.ruleKey = const Value.absent(),
+    this.conditionKey = const Value.absent(),
+    this.status = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CachedRecommendationsCompanion.insert({
+    required String remoteId,
+    required String ownerId,
+    required String businessId,
+    required String createdBy,
+    required String ruleKey,
+    required String conditionKey,
+    required String status,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    required DateTime cachedAt,
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : remoteId = Value(remoteId),
+       ownerId = Value(ownerId),
+       businessId = Value(businessId),
+       createdBy = Value(createdBy),
+       ruleKey = Value(ruleKey),
+       conditionKey = Value(conditionKey),
+       status = Value(status),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       cachedAt = Value(cachedAt);
+  static Insertable<CachedRecommendation> custom({
+    Expression<String>? remoteId,
+    Expression<String>? ownerId,
+    Expression<String>? businessId,
+    Expression<String>? createdBy,
+    Expression<String>? ruleKey,
+    Expression<String>? conditionKey,
+    Expression<String>? status,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? cachedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (businessId != null) 'business_id': businessId,
+      if (createdBy != null) 'created_by': createdBy,
+      if (ruleKey != null) 'rule_key': ruleKey,
+      if (conditionKey != null) 'condition_key': conditionKey,
+      if (status != null) 'status': status,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CachedRecommendationsCompanion copyWith({
+    Value<String>? remoteId,
+    Value<String>? ownerId,
+    Value<String>? businessId,
+    Value<String>? createdBy,
+    Value<String>? ruleKey,
+    Value<String>? conditionKey,
+    Value<String>? status,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime>? cachedAt,
+    Value<String>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return CachedRecommendationsCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      ownerId: ownerId ?? this.ownerId,
+      businessId: businessId ?? this.businessId,
+      createdBy: createdBy ?? this.createdBy,
+      ruleKey: ruleKey ?? this.ruleKey,
+      conditionKey: conditionKey ?? this.conditionKey,
+      status: status ?? this.status,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (createdBy.present) {
+      map['created_by'] = Variable<String>(createdBy.value);
+    }
+    if (ruleKey.present) {
+      map['rule_key'] = Variable<String>(ruleKey.value);
+    }
+    if (conditionKey.present) {
+      map['condition_key'] = Variable<String>(conditionKey.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedRecommendationsCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('businessId: $businessId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('ruleKey: $ruleKey, ')
+          ..write('conditionKey: $conditionKey, ')
+          ..write('status: $status, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$KgweboDatabase extends GeneratedDatabase {
   _$KgweboDatabase(QueryExecutor e) : super(e);
   $KgweboDatabaseManager get managers => $KgweboDatabaseManager(this);
@@ -5011,6 +5693,8 @@ abstract class _$KgweboDatabase extends GeneratedDatabase {
   late final $CachedProductsTable cachedProducts = $CachedProductsTable(this);
   late final $CachedStockMovementsTable cachedStockMovements =
       $CachedStockMovementsTable(this);
+  late final $CachedRecommendationsTable cachedRecommendations =
+      $CachedRecommendationsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -5021,6 +5705,7 @@ abstract class _$KgweboDatabase extends GeneratedDatabase {
     cachedObligations,
     cachedProducts,
     cachedStockMovements,
+    cachedRecommendations,
   ];
 }
 
@@ -7344,6 +8029,352 @@ typedef $$CachedStockMovementsTableProcessedTableManager =
       CachedStockMovement,
       PrefetchHooks Function()
     >;
+typedef $$CachedRecommendationsTableCreateCompanionBuilder =
+    CachedRecommendationsCompanion Function({
+      required String remoteId,
+      required String ownerId,
+      required String businessId,
+      required String createdBy,
+      required String ruleKey,
+      required String conditionKey,
+      required String status,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      required DateTime cachedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$CachedRecommendationsTableUpdateCompanionBuilder =
+    CachedRecommendationsCompanion Function({
+      Value<String> remoteId,
+      Value<String> ownerId,
+      Value<String> businessId,
+      Value<String> createdBy,
+      Value<String> ruleKey,
+      Value<String> conditionKey,
+      Value<String> status,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime> cachedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+
+class $$CachedRecommendationsTableFilterComposer
+    extends Composer<_$KgweboDatabase, $CachedRecommendationsTable> {
+  $$CachedRecommendationsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ruleKey => $composableBuilder(
+    column: $table.ruleKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get conditionKey => $composableBuilder(
+    column: $table.conditionKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CachedRecommendationsTableOrderingComposer
+    extends Composer<_$KgweboDatabase, $CachedRecommendationsTable> {
+  $$CachedRecommendationsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ruleKey => $composableBuilder(
+    column: $table.ruleKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get conditionKey => $composableBuilder(
+    column: $table.conditionKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CachedRecommendationsTableAnnotationComposer
+    extends Composer<_$KgweboDatabase, $CachedRecommendationsTable> {
+  $$CachedRecommendationsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<String> get ruleKey =>
+      $composableBuilder(column: $table.ruleKey, builder: (column) => column);
+
+  GeneratedColumn<String> get conditionKey => $composableBuilder(
+    column: $table.conditionKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+}
+
+class $$CachedRecommendationsTableTableManager
+    extends
+        RootTableManager<
+          _$KgweboDatabase,
+          $CachedRecommendationsTable,
+          CachedRecommendation,
+          $$CachedRecommendationsTableFilterComposer,
+          $$CachedRecommendationsTableOrderingComposer,
+          $$CachedRecommendationsTableAnnotationComposer,
+          $$CachedRecommendationsTableCreateCompanionBuilder,
+          $$CachedRecommendationsTableUpdateCompanionBuilder,
+          (
+            CachedRecommendation,
+            BaseReferences<
+              _$KgweboDatabase,
+              $CachedRecommendationsTable,
+              CachedRecommendation
+            >,
+          ),
+          CachedRecommendation,
+          PrefetchHooks Function()
+        > {
+  $$CachedRecommendationsTableTableManager(
+    _$KgweboDatabase db,
+    $CachedRecommendationsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$CachedRecommendationsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$CachedRecommendationsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$CachedRecommendationsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> remoteId = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> businessId = const Value.absent(),
+                Value<String> createdBy = const Value.absent(),
+                Value<String> ruleKey = const Value.absent(),
+                Value<String> conditionKey = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedRecommendationsCompanion(
+                remoteId: remoteId,
+                ownerId: ownerId,
+                businessId: businessId,
+                createdBy: createdBy,
+                ruleKey: ruleKey,
+                conditionKey: conditionKey,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                cachedAt: cachedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String remoteId,
+                required String ownerId,
+                required String businessId,
+                required String createdBy,
+                required String ruleKey,
+                required String conditionKey,
+                required String status,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                required DateTime cachedAt,
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedRecommendationsCompanion.insert(
+                remoteId: remoteId,
+                ownerId: ownerId,
+                businessId: businessId,
+                createdBy: createdBy,
+                ruleKey: ruleKey,
+                conditionKey: conditionKey,
+                status: status,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                cachedAt: cachedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CachedRecommendationsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$KgweboDatabase,
+      $CachedRecommendationsTable,
+      CachedRecommendation,
+      $$CachedRecommendationsTableFilterComposer,
+      $$CachedRecommendationsTableOrderingComposer,
+      $$CachedRecommendationsTableAnnotationComposer,
+      $$CachedRecommendationsTableCreateCompanionBuilder,
+      $$CachedRecommendationsTableUpdateCompanionBuilder,
+      (
+        CachedRecommendation,
+        BaseReferences<
+          _$KgweboDatabase,
+          $CachedRecommendationsTable,
+          CachedRecommendation
+        >,
+      ),
+      CachedRecommendation,
+      PrefetchHooks Function()
+    >;
 
 class $KgweboDatabaseManager {
   final _$KgweboDatabase _db;
@@ -7358,4 +8389,6 @@ class $KgweboDatabaseManager {
       $$CachedProductsTableTableManager(_db, _db.cachedProducts);
   $$CachedStockMovementsTableTableManager get cachedStockMovements =>
       $$CachedStockMovementsTableTableManager(_db, _db.cachedStockMovements);
+  $$CachedRecommendationsTableTableManager get cachedRecommendations =>
+      $$CachedRecommendationsTableTableManager(_db, _db.cachedRecommendations);
 }

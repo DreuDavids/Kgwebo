@@ -15,6 +15,7 @@ import 'widgets/dashboard_period_selector.dart';
 import 'widgets/dashboard_pinned_sliver.dart';
 import 'widgets/dashboard_quick_actions.dart';
 import 'widgets/dashboard_recent.dart';
+import 'widgets/dashboard_recommendations.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -97,6 +98,8 @@ class _DashboardTabBody extends StatelessWidget {
           DashboardMetrics(),
           SizedBox(height: KgweboSpacing.lg),
           DashboardInsightsList(),
+          SizedBox(height: KgweboSpacing.lg),
+          DashboardRecommendations(),
         ],
       ),
       DashboardHomeTab.records => const Column(

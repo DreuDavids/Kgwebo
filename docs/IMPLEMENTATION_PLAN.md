@@ -35,8 +35,8 @@ Inspected before implementation:
   - Ref: `hhwxajxjmyjntxykptvs`
   - URL: `https://hhwxajxjmyjntxykptvs.supabase.co`
   - Status: `ACTIVE_HEALTHY`
-  - Public tables: `profiles`, `businesses`, `transactions`, `obligations`
-  - Remote migrations: applied through Phase 5 (`obligations`)
+  - Public tables: `profiles`, `businesses`, `transactions`, `obligations`, `products`, `sale_items`, `stock_movements`, `recommendations`
+  - Remote migrations: applied through Phase 7 (`recommendations`)
 - Publishable client keys are available. They belong in local `.env`, not in git.
 
 MVP boundary for a demonstrable first slice:
@@ -201,14 +201,30 @@ Verification executed 21 Oct 2026:
 - `flutter test` — All tests passed (270)
 - `flutter build apk --debug --dart-define-from-file=.env` — `build\app\outputs\flutter-apk\app-debug.apk`
 
-## Phase 7 — Cash-flow intelligence
+## Phase 7 — Cash-flow intelligence — complete
 
-- Obligations, 7/14/30 day deterministic forecast.
-- Chart plus non-chart summary.
-- Rule-based recommendations with evidence.
-- No invented future sales.
+Built on Phase 5 commitments and the Phase 4 financial engine. No rebuilt transaction, inventory, or commitment workflows.
 
-**Exit:** Forecast dates and warnings are reproducible from fixtures.
+- `CashForecastEngine` projects 7, 14 and 30 inclusive local calendar days in `BusinessZone` (Africa/Gaborone for BW). Money stays integer thebe. Recorded cash is unchanged. Unpaid commitments due in the window, including overdue bills, are the only projected outflows. Incoming cash is not forecast: unpaid sales have no payment due date. Inventory value is never treated as cash. Paid, cancelled, and duplicate commitments are skipped. Mixed-currency rows are counted, not converted.
+- Dashboard Outlook and Cash Flow share horizon chips (default 14 days) and a labelled estimate card. A sparkline is drawn only when a day in the window has a known outflow. Assumptions and data limitations are shown in plain language. Compact cards still show beyond-horizon and incomplete-history copy.
+- Deterministic recommendations: overdue commitments, 14-day cash shortfall, tight remaining cash after known 14-day bills (< 20% of recorded cash), last completed month expenses exceeding sales, several low-stock products (≥ 2), incomplete product costs. Copy labels estimates and is not professional advice.
+- Persistence stores ownership, `rule_key`, `condition_key`, and status only. Unique `(business_id, rule_key)` prevents duplicate actives. Dismissal survives refresh until the condition fingerprint changes. Cleared conditions become `resolved` and can fire again later. Writes remain online-only.
+- Remote `public.recommendations` with FORCE RLS and ownership trigger. Drift schema **v5** `cached_recommendations`. Failed recommendation refresh is labelled and is never shown as “no active recommendations”.
+- Dashboard Overview still leads with recorded position. Outlook holds forecast, upcoming commitments, and up to three recommendations, with `/cash-flow/recommendations` for the full list.
+
+**Exit:** Forecast dates and warnings are reproducible from fixtures. Recommendations are evidence-backed and persist dismissals.
+
+Verification executed 21 Oct 2026:
+
+- Remote migration on `hhwxajxjmyjntxykptvs`: `recommendations` (`20261021211904`). Local SQL: `supabase/migrations/20261021233000_recommendations.sql` (idempotent; table already present).
+- FORCE RLS on `recommendations`; anon has no table privileges; authenticated has select/insert/update/delete and not TRUNCATE; policies `recommendations_select_own`, `recommendations_insert_own`, `recommendations_update_own`, `recommendations_delete_own`.
+- Two-user JWT isolation for recommendations was not re-run: the project has one Auth user and one business, and new sign-ups require email OTP confirmation. Flutter fakes and Drift owner filters are not a substitute.
+- Security advisors: intended Phase 6 `SECURITY DEFINER` inventory RPCs callable by `authenticated`; leaked-password warning unchanged. No new recommendation-function advisor.
+- Phase 6 inventory catalog re-checked: FORCE RLS on `products`, `sale_items`, `stock_movements`; authenticated cannot TRUNCATE those tables or insert sale lines/movements. Concurrent oversell was not replayed with two clients; `record_product_sale` still locks products `ORDER BY id FOR UPDATE` before decreasing stock.
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (311)
+- `flutter build apk --debug --dart-define-from-file=.env` — `build\app\outputs\flutter-apk\app-debug.apk`
 
 ## Phase 8 — Reports and offline
 
@@ -234,7 +250,7 @@ Verification executed 21 Oct 2026:
 | Auth email templates        | Styled OTP HTML is in `supabase/templates/`. Paste confirmation.html and recovery.html into Auth → Email Templates. OTP length is 6. |
 | Leaked-password protection  | Supabase advisor warning. Enable HaveIBeenPwned checks in the Auth dashboard if desired.                                             |
 | Service-role key in the app | Not required. Client uses publishable/anon key only.                                                                                 |
-| Android device attached     | None attached during Phase 3. Widget tests and a debug APK build are used. Visual device QA of the profile form remains outstanding. |
+| Android device attached     | API 37 emulator `emulator-5554` is available. No physical handset. Full signed-in forecast QA remains a manual checklist.            |
 | Android NDK mismatch        | Debug APK built with a plugin NDK warning. `android/app/build.gradle.kts` now pins `ndkVersion` to `27.0.12077973` for later builds. |
 | Optional AI entry           | Deferred by spec if it threatens core reliability.                                                                                   |
 

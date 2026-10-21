@@ -19,6 +19,8 @@ import '../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../dashboard/application/dashboard_finance_controller.dart';
+import '../../dashboard/presentation/widgets/cash_forecast_card.dart';
+import '../../dashboard/presentation/widgets/forecast_horizon_chips.dart';
 import '../../obligations/application/obligations_controller.dart';
 import '../../obligations/domain/business_obligation.dart';
 import '../../obligations/domain/obligation_categories.dart';
@@ -78,6 +80,16 @@ class CashFlowScreen extends ConsumerWidget {
                         'Showing saved commitments from this device.',
                   ),
                 const SizedBox(height: KgweboSpacing.md),
+                if (!obligations.isPreview && finance.forecast != null) ...[
+                  ForecastHorizonChips(
+                    selected: finance.forecastHorizon,
+                    onSelected:
+                        (horizon) => ref
+                            .read(dashboardFinanceControllerProvider.notifier)
+                            .selectHorizon(horizon),
+                  ),
+                  const SizedBox(height: KgweboSpacing.md),
+                ],
                 _EstimateCard(finance: finance),
                 const SizedBox(height: KgweboSpacing.lg),
                 KgweboButton(
@@ -111,7 +123,7 @@ class CashFlowScreen extends ConsumerWidget {
                   ..._grouped(context, obligations.items, now, zone),
                 const SizedBox(height: KgweboSpacing.lg),
                 Text(
-                  '7, 14 and 30 day forecasts arrive in a later phase. This screen only shows recorded cash and saved commitments.',
+                  'This outlook does not invent future sales and is not professional accounting, tax or investment advice.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: KgweboColors.inkMuted,
                     height: 1.45,
@@ -183,45 +195,20 @@ class _EstimateCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final outlook = finance.outlook;
-    final textTheme = Theme.of(context).textTheme;
-    if (outlook == null) {
-      return KgweboSoftCard(
-        padding: const EdgeInsets.all(KgweboSpacing.lg),
-        child: Text(
-          finance.isPreview
-              ? 'Sign in to compare recorded cash with upcoming bills.'
-              : 'Recorded cash will appear here after totals load.',
-          style: textTheme.bodyMedium?.copyWith(color: KgweboColors.inkMuted),
-        ),
-      );
+    final forecast = finance.forecast;
+    if (forecast != null) {
+      return CashForecastCard(forecast: forecast);
     }
+    final textTheme = Theme.of(context).textTheme;
     return KgweboSoftCard(
       padding: const EdgeInsets.all(KgweboSpacing.lg),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(
-            'Estimated cash after unpaid commitments',
-            style: textTheme.labelLarge?.copyWith(color: KgweboColors.inkMuted),
-          ),
-          const SizedBox(height: KgweboSpacing.xs),
-          Text(
-            MoneyFormatter.formatMinor(
-              outlook.estimatedCashAfterCommitmentsMinor,
-              currencyCode: outlook.currencyCode,
-            ),
-            style: textTheme.headlineSmall?.copyWith(color: KgweboColors.ink),
-          ),
-          const SizedBox(height: KgweboSpacing.sm),
-          Text(
-            'Recorded cash ${MoneyFormatter.formatMinor(outlook.currentCashMinor, currencyCode: outlook.currencyCode)} minus unpaid commitments ${MoneyFormatter.formatMinor(outlook.unpaidCommitmentsMinor, currencyCode: outlook.currencyCode)}. This estimate is not guaranteed future cash.',
-            style: textTheme.bodyMedium?.copyWith(
-              color: KgweboColors.inkMuted,
-              height: 1.45,
-            ),
-          ),
-        ],
+      child: Text(
+        finance.isPreview
+            ? 'Sign in to compare recorded cash with upcoming bills.'
+            : finance.error != null
+            ? 'Commitments could not be loaded. This is not a zero-bills result.'
+            : 'Recorded cash will appear here after totals load.',
+        style: textTheme.bodyMedium?.copyWith(color: KgweboColors.inkMuted),
       ),
     );
   }

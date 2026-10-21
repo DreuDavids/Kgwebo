@@ -114,6 +114,31 @@ class CachedProducts extends Table {
   Set<Column<Object>> get primaryKey => {remoteId};
 }
 
+/// Confirmed local copy of recommendation status. Display copy is derived
+/// from current records; this table stores ownership and lifecycle only.
+class CachedRecommendations extends Table {
+  TextColumn get remoteId => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get createdBy => text()();
+  TextColumn get ruleKey => text()();
+  TextColumn get conditionKey => text()();
+  TextColumn get status => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('confirmed'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {remoteId};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {ownerId, businessId, ruleKey},
+  ];
+}
+
 /// Confirmed local copy of a remote stock movement. Scoped by owner
 /// and business so account switching cannot leak rows.
 class CachedStockMovements extends Table {
@@ -154,6 +179,7 @@ class CachedStockMovements extends Table {
     CachedObligations,
     CachedProducts,
     CachedStockMovements,
+    CachedRecommendations,
   ],
 )
 class KgweboDatabase extends _$KgweboDatabase {
@@ -166,7 +192,7 @@ class KgweboDatabase extends _$KgweboDatabase {
   }
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration {
@@ -184,6 +210,9 @@ class KgweboDatabase extends _$KgweboDatabase {
         if (from < 4) {
           await m.createTable(cachedProducts);
           await m.createTable(cachedStockMovements);
+        }
+        if (from < 5) {
+          await m.createTable(cachedRecommendations);
         }
       },
     );

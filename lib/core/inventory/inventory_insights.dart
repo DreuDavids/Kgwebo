@@ -10,6 +10,7 @@ class InventoryInsights {
     required this.missingCostCount,
     required this.estimatedValueMinor,
     required this.restockProductIds,
+    this.missingCostProductIds = const [],
   });
 
   final int activeCount;
@@ -18,6 +19,7 @@ class InventoryInsights {
   final int missingCostCount;
   final int estimatedValueMinor;
   final List<String> restockProductIds;
+  final List<String> missingCostProductIds;
 
   factory InventoryInsights.fromProducts(Iterable<CatalogProduct> products) {
     var activeCount = 0;
@@ -26,6 +28,7 @@ class InventoryInsights {
     var missingCostCount = 0;
     var estimatedValueMinor = 0;
     final restockProductIds = <String>[];
+    final missingCostProductIds = <String>[];
 
     for (final product in products) {
       if (!product.isActive) {
@@ -34,6 +37,7 @@ class InventoryInsights {
       activeCount += 1;
       if (!product.hasRecordedCost) {
         missingCostCount += 1;
+        missingCostProductIds.add(product.id);
       } else {
         estimatedValueMinor +=
             InventoryCosting.estimatedValueMinor(
@@ -61,6 +65,7 @@ class InventoryInsights {
       missingCostCount: missingCostCount,
       estimatedValueMinor: estimatedValueMinor,
       restockProductIds: restockProductIds,
+      missingCostProductIds: missingCostProductIds,
     );
   }
 }

@@ -14,6 +14,8 @@ import '../../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../../obligations/domain/business_obligation.dart';
 import '../../../obligations/domain/obligation_categories.dart';
 import '../../application/dashboard_finance_controller.dart';
+import 'cash_forecast_card.dart';
+import 'forecast_horizon_chips.dart';
 
 class DashboardOutlook extends ConsumerWidget {
   const DashboardOutlook({super.key});
@@ -22,18 +24,18 @@ class DashboardOutlook extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(dashboardFinanceControllerProvider);
     final textTheme = Theme.of(context).textTheme;
-    final outlook = state.outlook;
+    final forecast = state.forecast;
     final summary = state.summary;
 
     if (state.isPreview) {
       return const _OutlookCard(
         headline: 'Know whether cash covers what is coming.',
         body:
-            'Upcoming bills will be estimates against recorded cash. They are not expenses until you record one.',
+            '7, 14 and 30 day outlooks use recorded cash and unpaid commitments. They do not invent future sales.',
       );
     }
 
-    if (outlook == null || summary == null) {
+    if (forecast == null || summary == null) {
       final failedRefresh = !state.isPreview && state.error != null;
       return _OutlookCard(
         headline:
@@ -47,28 +49,50 @@ class DashboardOutlook extends ConsumerWidget {
       );
     }
 
-    final currency = outlook.currencyCode;
-    final estimated = MoneyFormatter.formatMinor(
-      outlook.estimatedCashAfterCommitmentsMinor,
-      currencyCode: currency,
-    );
-    final cash = MoneyFormatter.formatMinor(
-      outlook.currentCashMinor,
-      currencyCode: currency,
-    );
-    final due = MoneyFormatter.formatMinor(
-      outlook.unpaidCommitmentsMinor,
-      currencyCode: currency,
-    );
     final open = [...state.overdue, ...state.upcoming];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const KgweboSectionHeading(
-          title: 'Cash-flow outlook',
+          title: 'Short-term cash outlook',
           subtitle:
               'Estimates use recorded cash and unpaid commitments. No invented sales.',
+        ),
+        const SizedBox(height: KgweboSpacing.sm),
+        ForecastHorizonChips(
+          selected: state.forecastHorizon,
+          onSelected:
+              (horizon) => ref
+                  .read(dashboardFinanceControllerProvider.notifier)
+                  .selectHorizon(horizon),
+        ),
+        const SizedBox(height: KgweboSpacing.md),
+        CashForecastCard(forecast: forecast, compact: true),
+        if (summary.unpaidExpensesMinor != 0) ...[
+          const SizedBox(height: KgweboSpacing.sm),
+          Text(
+            'Recorded unpaid operating expenses ${MoneyFormatter.formatMinor(summary.unpaidExpensesMinor, currencyCode: forecast.currencyCode)} are already in this period’s result. They are not listed again as upcoming bills.',
+            style: textTheme.bodySmall?.copyWith(
+              color: KgweboColors.inkMuted,
+              height: 1.45,
+            ),
+          ),
+        ],
+        if (summary.unpaidSalesMinor != 0) ...[
+          const SizedBox(height: KgweboSpacing.sm),
+          Text(
+            'Unpaid recorded sales ${MoneyFormatter.formatMinor(summary.unpaidSalesMinor, currencyCode: forecast.currencyCode)} are included in sales, not in cash, and are not projected as receipts.',
+            style: textTheme.bodySmall?.copyWith(
+              color: KgweboColors.inkMuted,
+              height: 1.45,
+            ),
+          ),
+        ],
+        const SizedBox(height: KgweboSpacing.lg),
+        const KgweboSectionHeading(
+          title: 'Important upcoming commitments',
+          subtitle: 'Unpaid bills have not reduced recorded cash.',
         ),
         const SizedBox(height: KgweboSpacing.sm),
         KgweboSoftCard(
@@ -76,50 +100,6 @@ class DashboardOutlook extends ConsumerWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Estimated cash after unpaid commitments',
-                style: textTheme.labelLarge?.copyWith(
-                  color: KgweboColors.inkMuted,
-                ),
-              ),
-              const SizedBox(height: KgweboSpacing.xs),
-              Text(
-                estimated,
-                style: textTheme.headlineSmall?.copyWith(
-                  color: KgweboColors.ink,
-                  height: 1.2,
-                ),
-              ),
-              const SizedBox(height: KgweboSpacing.sm),
-              Text(
-                'Estimate: recorded cash $cash minus unpaid commitments $due. '
-                'This is not guaranteed future cash. Unpaid commitments are not recorded expenses and have not reduced actual cash.',
-                style: textTheme.bodyMedium?.copyWith(
-                  color: KgweboColors.inkMuted,
-                  height: 1.5,
-                ),
-              ),
-              if (summary.unpaidExpensesMinor != 0) ...[
-                const SizedBox(height: KgweboSpacing.sm),
-                Text(
-                  'Recorded unpaid operating expenses ${MoneyFormatter.formatMinor(summary.unpaidExpensesMinor, currencyCode: currency)} are already in this period’s result. They are not listed again as upcoming bills.',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: KgweboColors.inkMuted,
-                    height: 1.45,
-                  ),
-                ),
-              ],
-              if (summary.unpaidSalesMinor != 0) ...[
-                const SizedBox(height: KgweboSpacing.sm),
-                Text(
-                  'Unpaid recorded sales ${MoneyFormatter.formatMinor(summary.unpaidSalesMinor, currencyCode: currency)} are included in sales, not in cash.',
-                  style: textTheme.bodySmall?.copyWith(
-                    color: KgweboColors.inkMuted,
-                    height: 1.45,
-                  ),
-                ),
-              ],
-              const SizedBox(height: KgweboSpacing.md),
               if (open.isEmpty)
                 Text(
                   'No unpaid commitments are recorded. Add rent, supplier bills or loan repayments to see what may affect cash.',
@@ -193,7 +173,7 @@ class _OutlookCard extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const KgweboSectionHeading(
-          title: 'Cash-flow outlook',
+          title: 'Short-term cash outlook',
           subtitle: 'Forecasts will use your records, never invented sales.',
         ),
         const SizedBox(height: KgweboSpacing.sm),

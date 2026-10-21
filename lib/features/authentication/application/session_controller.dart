@@ -10,6 +10,7 @@ import '../../../core/persistence/business_cache.dart';
 import '../../../core/persistence/kgwebo_database.dart';
 import '../../../core/persistence/obligation_cache.dart';
 import '../../../core/persistence/product_cache.dart';
+import '../../../core/persistence/recommendation_cache.dart';
 import '../../../core/persistence/transaction_cache.dart';
 import '../../obligations/application/obligation_repository.dart';
 import '../../obligations/data/cached_obligation_repository.dart';
@@ -19,6 +20,10 @@ import '../../products/application/product_repository.dart';
 import '../../products/data/cached_product_repository.dart';
 import '../../products/data/preview_product_repository.dart';
 import '../../products/data/supabase_product_repository.dart';
+import '../../recommendations/application/recommendation_repository.dart';
+import '../../recommendations/data/cached_recommendation_repository.dart';
+import '../../recommendations/data/preview_recommendation_repository.dart';
+import '../../recommendations/data/supabase_recommendation_repository.dart';
 import '../../transactions/application/transaction_repository.dart';
 import '../../transactions/data/cached_transaction_repository.dart';
 import '../../transactions/data/preview_transaction_repository.dart';
@@ -112,6 +117,24 @@ final productRepositoryProvider = Provider<ProductRepository>((ref) {
   return CachedProductRepository(
     remote: SupabaseProductRepository(kgweboSupabase),
     cache: ref.watch(productCacheProvider),
+    currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+  );
+});
+
+final recommendationCacheProvider = Provider<RecommendationCache>((ref) {
+  return RecommendationCache(ref.watch(kgweboDatabaseProvider));
+});
+
+final recommendationRepositoryProvider = Provider<RecommendationRepository>((
+  ref,
+) {
+  final config = ref.watch(appConfigProvider);
+  if (!config.connectsToBackend) {
+    return PreviewRecommendationRepository();
+  }
+  return CachedRecommendationRepository(
+    remote: SupabaseRecommendationRepository(kgweboSupabase),
+    cache: ref.watch(recommendationCacheProvider),
     currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
   );
 });

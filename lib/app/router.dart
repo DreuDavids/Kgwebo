@@ -13,6 +13,7 @@ import '../features/authentication/presentation/sign_in_screen.dart';
 import '../features/authentication/presentation/sign_up_screen.dart';
 import '../features/authentication/presentation/welcome_screen.dart';
 import '../features/cash_flow/presentation/cash_flow_screen.dart';
+import '../features/recommendations/presentation/recommendations_screen.dart';
 import '../features/obligations/presentation/obligation_details_screen.dart';
 import '../features/obligations/presentation/obligation_form_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
@@ -263,6 +264,11 @@ GoRouter createAppRouter({
                     path: 'new',
                     name: AppRoutes.recordObligationName,
                     builder: (context, state) => const ObligationFormScreen(),
+                  ),
+                  GoRoute(
+                    path: 'recommendations',
+                    name: AppRoutes.recommendationsName,
+                    builder: (context, state) => const RecommendationsScreen(),
                   ),
                   GoRoute(
                     path: ':obligationId',

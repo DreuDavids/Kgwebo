@@ -1,6 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/finance/business_calendar.dart';
+import '../../../core/finance/cash_forecast.dart';
 import '../../../core/finance/cash_outlook.dart';
 import '../../../core/finance/dashboard_insights.dart';
 import '../../../core/finance/dashboard_period.dart';
@@ -9,12 +10,16 @@ import '../../../core/finance/financial_engine.dart';
 import '../../../core/finance/financial_summary.dart';
 import '../../../core/finance/ledger_entry.dart';
 import '../../../core/finance/sparkline_series.dart';
+import '../../../core/inventory/inventory_insights.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
 import '../../obligations/application/obligation_repository.dart';
 import '../../obligations/application/obligation_tick.dart';
 import '../../obligations/domain/business_obligation.dart';
+import '../../products/application/product_repository.dart';
+import '../../products/application/product_tick.dart';
+import '../../products/domain/catalog_product.dart';
 import '../../transactions/application/transaction_repository.dart';
 import '../../transactions/application/transaction_tick.dart';
 import '../../transactions/domain/business_transaction.dart';
@@ -33,6 +38,8 @@ class DashboardFinanceState {
     this.isPreview = false,
     this.periodKind = DashboardPeriodKind.thisMonth,
     this.periodLabel = '',
+    this.forecastHorizon = ForecastHorizon.days14,
+    this.forecast,
     this.error,
     this.hitRecordCap = false,
   });
@@ -49,6 +56,8 @@ class DashboardFinanceState {
   final bool isPreview;
   final DashboardPeriodKind periodKind;
   final String periodLabel;
+  final ForecastHorizon forecastHorizon;
+  final CashForecast? forecast;
   final String? error;
   final bool hitRecordCap;
 
@@ -65,6 +74,8 @@ class DashboardFinanceState {
     bool? isPreview,
     DashboardPeriodKind? periodKind,
     String? periodLabel,
+    ForecastHorizon? forecastHorizon,
+    CashForecast? forecast,
     String? error,
     bool? hitRecordCap,
     bool clearError = false,
@@ -83,6 +94,8 @@ class DashboardFinanceState {
       isPreview: isPreview ?? this.isPreview,
       periodKind: periodKind ?? this.periodKind,
       periodLabel: periodLabel ?? this.periodLabel,
+      forecastHorizon: forecastHorizon ?? this.forecastHorizon,
+      forecast: clearSummary ? null : (forecast ?? this.forecast),
       error: clearError ? null : (error ?? this.error),
       hitRecordCap: hitRecordCap ?? this.hitRecordCap,
     );
@@ -97,11 +110,15 @@ final dashboardFinanceControllerProvider = StateNotifierProvider.autoDispose<
     session: ref.watch(appSessionProvider),
     transactions: ref.watch(transactionRepositoryProvider),
     obligations: ref.watch(obligationRepositoryProvider),
+    products: ref.watch(productRepositoryProvider),
   );
   ref.listen<int>(transactionTickProvider, (_, __) {
     controller.refresh();
   });
   ref.listen<int>(obligationTickProvider, (_, __) {
+    controller.refresh();
+  });
+  ref.listen<int>(productTickProvider, (_, __) {
     controller.refresh();
   });
   return controller;
@@ -112,9 +129,11 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
     required AppSession session,
     required TransactionRepository transactions,
     required ObligationRepository obligations,
+    required ProductRepository products,
   }) : _session = session,
        _transactions = transactions,
        _obligations = obligations,
+       _products = products,
        super(const DashboardFinanceState(loading: true)) {
     _load();
   }
@@ -122,14 +141,33 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
   final AppSession _session;
   final TransactionRepository _transactions;
   final ObligationRepository _obligations;
+  final ProductRepository _products;
 
   DashboardPeriodKind _kind = DashboardPeriodKind.thisMonth;
+  ForecastHorizon _horizon = ForecastHorizon.days14;
   DateTime? _customStart;
   DateTime? _customEnd;
   List<BusinessTransaction>? _records;
   List<BusinessObligation>? _commitments;
+  List<CatalogProduct> _productsCached = const [];
 
   Future<void> refresh() => _load();
+
+  void selectHorizon(ForecastHorizon horizon) {
+    _horizon = horizon;
+    final records = _records;
+    final session = _session;
+    if (records != null && session is AppSessionReady) {
+      _publish(
+        session: session,
+        records: records,
+        commitments: _commitments,
+        isStale: state.isStale,
+        error: state.error,
+        hitRecordCap: state.hitRecordCap,
+      );
+    }
+  }
 
   void selectPeriod(
     DashboardPeriodKind kind, {
@@ -198,6 +236,15 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
       } on AuthFailure catch (error) {
         obligationStale = true;
         obligationError = snapshot.refreshError ?? error.message;
+      }
+      try {
+        final productSnapshot = await _products.listAllConfirmed(
+          ownerId: session.user.id,
+          businessId: session.business.id,
+        );
+        _productsCached = productSnapshot.items;
+      } on AuthFailure {
+        // Forecast still uses recorded cash and commitments.
       }
       if (!mounted) {
         return;
@@ -321,9 +368,30 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
       asOf: now,
       types: const {MoneyMovementType.sale},
     );
+    final inventory = InventoryInsights.fromProducts(_productsCached);
+    final forecast =
+        commitments == null
+            ? null
+            : CashForecastEngine.project(
+              currentCashMinor: summary.currentCashMinor,
+              currencyCode: summary.currencyCode,
+              asOf: now,
+              zone: zone,
+              horizon: _horizon,
+              commitments: commitments.map(
+                (item) => item.toScheduledCommitment(),
+              ),
+              unpaidSalesMinor: summary.unpaidSalesMinor,
+              unpaidExpensesMinor: summary.unpaidExpensesMinor,
+              inventoryValueMinor: inventory.estimatedValueMinor,
+              hitRecordCap: hitRecordCap,
+              skippedMixedCurrencyTransactions: summary.skippedMixedCurrency,
+            );
     state = DashboardFinanceState(
       summary: summary,
       outlook: outlook,
+      forecastHorizon: _horizon,
+      forecast: forecast,
       insights: DashboardInsights.from(
         summary: summary,
         outlook: outlook,

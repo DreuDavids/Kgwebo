@@ -202,6 +202,7 @@ void main() {
       expect(insights.missingCostCount, 1);
       expect(insights.estimatedValueMinor, 500 + 100);
       expect(insights.restockProductIds, ['b', 'c']);
+      expect(insights.missingCostProductIds, ['d']);
     });
   });
 }

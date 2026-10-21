@@ -15,6 +15,7 @@ import 'package:kgwebo/features/onboarding/domain/business_profile.dart';
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_obligations.dart';
 import '../../helpers/fake_products.dart';
+import '../../helpers/fake_recommendations.dart';
 import '../../helpers/fake_transactions.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/test_config.dart';
@@ -66,6 +67,9 @@ void main() {
           ),
           productRepositoryProvider.overrideWith(
             (ref) => products ?? FakeProductRepository(),
+          ),
+          recommendationRepositoryProvider.overrideWith(
+            (ref) => FakeRecommendationRepository(),
           ),
         ],
         child: MaterialApp(
@@ -173,11 +177,14 @@ void main() {
     expect(find.text('P 0.00'), findsWidgets);
     await selectDashboardTab(tester, 'Outlook');
     await tester.ensureVisible(
-      find.textContaining('Estimated cash after unpaid'),
+      find.textContaining('Estimated cash after known commitments'),
     );
     expect(find.text('P 1,200.00'), findsWidgets);
     expect(find.text('Shop rent'), findsOneWidget);
-    expect(find.textContaining('have not reduced actual cash'), findsOneWidget);
+    expect(
+      find.textContaining('Recorded cash P 2,000.00 is unchanged'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('marking a commitment paid does not create an expense', (
@@ -201,7 +208,7 @@ void main() {
     expect(find.text('P 0.00'), findsWidgets);
     await selectDashboardTab(tester, 'Outlook');
     await tester.ensureVisible(
-      find.textContaining('Estimated cash after unpaid'),
+      find.textContaining('Estimated cash after known commitments'),
     );
     expect(find.text('P 1,200.00'), findsNothing);
     expect(find.text('Shop rent'), findsNothing);
@@ -244,9 +251,15 @@ void main() {
     );
     expect(find.text('P 2,500.00'), findsWidgets);
     expect(find.textContaining('Check your connection'), findsOneWidget);
-    expect(find.textContaining('Estimated cash after unpaid'), findsNothing);
+    expect(
+      find.textContaining('Estimated cash after known commitments'),
+      findsNothing,
+    );
     await selectDashboardTab(tester, 'Outlook');
-    expect(find.textContaining('Estimated cash after unpaid'), findsNothing);
+    expect(
+      find.textContaining('Estimated cash after known commitments'),
+      findsNothing,
+    );
     expect(find.textContaining('not a zero-bills result'), findsOneWidget);
   });
 
@@ -278,14 +291,20 @@ void main() {
 
     expect(find.text('Your cash'), findsOneWidget);
     expect(find.text('Record a sale'), findsNothing);
-    expect(find.textContaining('Estimated cash after unpaid'), findsNothing);
+    expect(
+      find.textContaining('Estimated cash after known commitments'),
+      findsNothing,
+    );
 
     await selectDashboardTab(tester, 'Records');
     expect(find.text('Record a sale'), findsOneWidget);
     expect(find.text('Your cash'), findsNothing);
 
     await selectDashboardTab(tester, 'Outlook');
-    expect(find.textContaining('Estimated cash after unpaid'), findsOneWidget);
+    expect(
+      find.textContaining('Estimated cash after known commitments'),
+      findsOneWidget,
+    );
     expect(find.text('Record a sale'), findsNothing);
   });
 }

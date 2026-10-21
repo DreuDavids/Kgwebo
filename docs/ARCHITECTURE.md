@@ -12,13 +12,13 @@ The architecture keeps financial rules out of widgets, persists every implemente
 
 ## 2. Installed environment
 
-| Item                       | Value                                                                                                               |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Flutter                    | 3.29.2 (Dart 3.7.2)                                                                                                 |
-| Application id             | `bw.kgwebo.kgwebo`                                                                                                  |
-| Android                    | `compileSdk` / `minSdk` / `targetSdk` from the installed Flutter toolchain                                          |
-| Connected devices at audit | Windows desktop, Chrome, Edge. No Android device attached. Emulators: Pixel 10 Pro, Pixel 10 Pro Fold, Pixel 10 new |
-| Doctor notes               | Some Android licenses not accepted; Flutter is on a user-managed channel at `C:\tools\flutter`                      |
+| Item                       | Value                                                                                                                    |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Flutter                    | 3.29.2 (Dart 3.7.2)                                                                                                      |
+| Application id             | `bw.kgwebo.kgwebo`                                                                                                       |
+| Android                    | `compileSdk` / `minSdk` / `targetSdk` from the installed Flutter toolchain                                               |
+| Connected devices at audit | Windows desktop, Chrome, Edge. Phase 7 verification used Android emulator `emulator-5554` (API 37). No physical handset. |
+| Doctor notes               | Some Android licenses not accepted; Flutter is on a user-managed channel at `C:\tools\flutter`                           |
 
 ## 3. Runtime modes
 
@@ -82,6 +82,8 @@ Phase 5 adds Drift schema **v3** `cached_obligations`: remote UUID, owner id, bu
 
 Phase 6 adds Drift schema **v4** `cached_products` and `cached_stock_movements`: remote UUID, owner id, business id, integer money and milli-unit quantities, and `syncStatus = confirmed`. Queries always filter by the current owner and business. Inventory writes remain online-only.
 
+Phase 7 adds Drift schema **v5** `cached_recommendations`: remote UUID, owner id, business id, `ruleKey`, `conditionKey`, status (`active` / `dismissed` / `resolved`), and `syncStatus = confirmed`. Display copy is derived from current records. The cache stores lifecycle state only. Queries always filter by the current owner and business. Recommendation writes remain online-only.
+
 ### Remote (Supabase / PostgreSQL)
 
 Project:
@@ -93,7 +95,7 @@ Project:
 - Postgres 17
 - MCP account used: `user-supabaseAndreuModise`
 
-Phase 2 tables live in `public.profiles` and `public.businesses`. Phase 4 adds `public.transactions` with FORCE RLS, an ownership trigger (`private.set_transaction_defaults`), and `private.owns_business(business_id)` on SELECT/INSERT/UPDATE/DELETE. Phase 5 adds `public.obligations` with the same ownership pattern (`private.set_obligation_defaults`). Phase 6 adds `public.products`, `public.sale_items`, and `public.stock_movements` with FORCE RLS. Clients may select/insert/update/delete own products; `stock_quantity_milli` is frozen unless `kgwebo.allow_stock_update` is set inside a SECURITY DEFINER function. Sale lines and stock movements are select-only for `authenticated`; writes go through `create_catalog_product`, `record_stock_movement`, and `record_product_sale`. Versioned SQL is under `supabase/migrations/` and has been applied to this project. Every exposed table enables RLS. Policies authorize through `auth.uid()` and business ownership, never through user-editable JWT metadata. A `private` schema holds trigger functions that are not exposed on the Data API.
+Phase 2 tables live in `public.profiles` and `public.businesses`. Phase 4 adds `public.transactions` with FORCE RLS, an ownership trigger (`private.set_transaction_defaults`), and `private.owns_business(business_id)` on SELECT/INSERT/UPDATE/DELETE. Phase 5 adds `public.obligations` with the same ownership pattern (`private.set_obligation_defaults`). Phase 6 adds `public.products`, `public.sale_items`, and `public.stock_movements` with FORCE RLS. Clients may select/insert/update/delete own products; `stock_quantity_milli` is frozen unless `kgwebo.allow_stock_update` is set inside a SECURITY DEFINER function. Sale lines and stock movements are select-only for `authenticated`; writes go through `create_catalog_product`, `record_stock_movement`, and `record_product_sale`. Phase 7 adds `public.recommendations` with FORCE RLS, unique `(business_id, rule_key)`, and `private.set_recommendation_defaults()`. Rows store `rule_key`, `condition_key`, and status only — not amounts or titles. Versioned SQL is under `supabase/migrations/` and has been applied to this project. Every exposed table enables RLS. Policies authorize through `auth.uid()` and business ownership, never through user-editable JWT metadata. A `private` schema holds trigger functions that are not exposed on the Data API.
 
 Ownership of a business is forced to `auth.uid()` on insert and frozen on update. Clients cannot assign another user's id. Profile rows are created by a trigger on `auth.users`; authenticated clients may select/update their own profile but not insert or delete it.
 
@@ -117,6 +119,8 @@ Phase 4 transaction writes are **online-only**. The client sends a stable `idemp
 Phase 5 obligation writes follow the same online-only and idempotency rules. Dashboard periods are `[startInclusive, endExclusive)` in the business zone (`BusinessZone.forCountry`, currently Africa/Gaborone for BW). Period totals come from `FinancialEngine`; cash is all-time recorded cash. Unpaid obligations never reduce that cash figure.
 
 Phase 6 product and stock writes are **online-only**. The UI states that stock changes are not queued offline. Confirmed catalogue and movement reads are cached per owner and business; a failed refresh keeps the last confirmed cache and labels it stale. Product sales use one RPC so a retry with the same idempotency key cannot double-count revenue or stock.
+
+Phase 7 recommendation writes are **online-only**. Forecasts are computed from confirmed transactions and obligations; they are not a stored table. A failed recommendation refresh keeps the last confirmed status cache, labels it stale, and never presents an empty list as “no recommendations” when the load failed. Dashboard forecast horizon is UI state (default 14 days) and does not change recorded cash.
 
 ## 7. Money and accounting scope
 
@@ -170,8 +174,8 @@ Pure Dart:
 - `FinancialEngine`
 - `CashOutlookEngine`
 - `DashboardPeriodSelection` / `BusinessZone`
-- cash-flow forecast (Phase 7)
-- recommendation rules (Phase 7)
+- `CashForecastEngine`
+- `RecommendationRules` / `RecommendationLifecycle`
 - validators and formatters
 
 Flutter:
