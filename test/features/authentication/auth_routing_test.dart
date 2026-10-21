@@ -47,7 +47,7 @@ void main() {
     );
 
     expect(find.byType(DashboardScreen), findsOneWidget);
-    expect(find.text('Kgale Stall'), findsWidgets);
+    expect(find.textContaining('Kgale Stall'), findsWidgets);
   });
 
   testWidgets('authenticated users without a business land on onboarding', (

@@ -4,41 +4,31 @@ import 'package:kgwebo/app/theme/kgwebo_theme.dart';
 import 'package:kgwebo/shared/widgets/kgwebo_greeting_header.dart';
 
 void main() {
-  testWidgets('shows a Gaborone morning greeting', (tester) async {
+  testWidgets('puts hello and the business name on one line', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: KgweboTheme.light(),
-        home: Scaffold(
-          body: KgweboGreetingHeader(
-            now: DateTime.utc(2026, 10, 21, 6),
-            businessName: 'Kgale stall',
-          ),
+        home: const Scaffold(
+          body: KgweboGreetingHeader(businessName: 'Kgale stall'),
         ),
       ),
     );
 
-    expect(find.text('Hello,'), findsOneWidget);
-    expect(find.text('Good morning'), findsOneWidget);
-    expect(find.text('Kgale stall'), findsOneWidget);
-    expect(
-      find.text('Totals come from saved records, not estimates.'),
-      findsOneWidget,
-    );
-    expect(find.text(KgweboGreetingHeader.tagline), findsOneWidget);
-  });
+    final headlines =
+        tester
+            .widgetList<RichText>(
+              find.descendant(
+                of: find.byType(KgweboGreetingHeader),
+                matching: find.byType(RichText),
+              ),
+            )
+            .map((widget) => widget.text.toPlainText())
+            .toList();
 
-  test('greetingFor follows Gaborone wall time', () {
-    expect(
-      KgweboGreetingHeader.greetingFor(DateTime.utc(2026, 10, 21, 6)),
-      'Good morning',
-    );
-    expect(
-      KgweboGreetingHeader.greetingFor(DateTime.utc(2026, 10, 21, 12)),
-      'Good afternoon',
-    );
-    expect(
-      KgweboGreetingHeader.greetingFor(DateTime.utc(2026, 10, 21, 16)),
-      'Good evening',
-    );
+    expect(headlines, contains('Hello, Kgale stall'));
+    expect(find.text(KgweboGreetingHeader.tagline), findsOneWidget);
+    expect(find.text('Good morning'), findsNothing);
+    expect(find.text('Good afternoon'), findsNothing);
+    expect(find.text('Good evening'), findsNothing);
   });
 }

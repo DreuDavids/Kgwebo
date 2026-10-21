@@ -89,8 +89,72 @@ class CachedObligations extends Table {
   ];
 }
 
+/// Confirmed local copy of a remote product. Scoped by owner and business.
+class CachedProducts extends Table {
+  TextColumn get remoteId => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get createdBy => text()();
+  TextColumn get name => text()();
+  TextColumn get sku => text().nullable()();
+  TextColumn get description => text().nullable()();
+  IntColumn get sellingPriceMinor => integer()();
+  IntColumn get unitCostMinor => integer().nullable()();
+  IntColumn get stockQuantityMilli => integer()();
+  IntColumn get lowStockThresholdMilli => integer().nullable()();
+  TextColumn get unitOfMeasure => text()();
+  BoolColumn get isActive => boolean()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('confirmed'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {remoteId};
+}
+
+/// Confirmed local copy of a remote stock movement. Scoped by owner
+/// and business so account switching cannot leak rows.
+class CachedStockMovements extends Table {
+  TextColumn get remoteId => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get productId => text()();
+  TextColumn get createdBy => text()();
+  TextColumn get idempotencyKey => text()();
+  TextColumn get movementType => text()();
+  IntColumn get quantityMilli => integer()();
+  IntColumn get quantityDeltaMilli => integer()();
+  IntColumn get resultingQuantityMilli => integer()();
+  IntColumn get unitCostMinor => integer().nullable()();
+  TextColumn get reason => text().nullable()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get reference => text().nullable()();
+  TextColumn get transactionId => text().nullable()();
+  TextColumn get reversesMovementId => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('confirmed'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {remoteId};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {ownerId, businessId, idempotencyKey},
+  ];
+}
+
 @DriftDatabase(
-  tables: [CachedBusinesses, CachedTransactions, CachedObligations],
+  tables: [
+    CachedBusinesses,
+    CachedTransactions,
+    CachedObligations,
+    CachedProducts,
+    CachedStockMovements,
+  ],
 )
 class KgweboDatabase extends _$KgweboDatabase {
   KgweboDatabase() : super(_openConnection());
@@ -102,7 +166,7 @@ class KgweboDatabase extends _$KgweboDatabase {
   }
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration {
@@ -116,6 +180,10 @@ class KgweboDatabase extends _$KgweboDatabase {
         }
         if (from < 3) {
           await m.createTable(cachedObligations);
+        }
+        if (from < 4) {
+          await m.createTable(cachedProducts);
+          await m.createTable(cachedStockMovements);
         }
       },
     );

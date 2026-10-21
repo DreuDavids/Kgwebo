@@ -142,7 +142,7 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
     final records = _records;
     final commitments = _commitments;
     final session = _session;
-    if (records != null && commitments != null && session is AppSessionReady) {
+    if (records != null && session is AppSessionReady) {
       _publish(
         session: session,
         records: records,
@@ -181,7 +181,8 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
         ownerId: session.user.id,
         businessId: session.business.id,
       );
-      var commitments = _commitments ?? const <BusinessObligation>[];
+      var commitments = _commitments;
+      var outlookKnown = commitments != null;
       var obligationError = snapshot.refreshError;
       var obligationStale = snapshot.isStale;
       try {
@@ -190,22 +191,25 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
           businessId: session.business.id,
         );
         commitments = obligationSnapshot.items;
+        outlookKnown = true;
         obligationStale = obligationSnapshot.isStale;
         obligationError =
             snapshot.refreshError ?? obligationSnapshot.refreshError;
       } on AuthFailure catch (error) {
         obligationStale = true;
-        obligationError = error.message;
+        obligationError = snapshot.refreshError ?? error.message;
       }
       if (!mounted) {
         return;
       }
       _records = snapshot.items;
-      _commitments = commitments;
+      if (outlookKnown) {
+        _commitments = commitments ?? const <BusinessObligation>[];
+      }
       _publish(
         session: session,
         records: snapshot.items,
-        commitments: commitments,
+        commitments: outlookKnown ? commitments : null,
         isStale: session.isStale || snapshot.isStale || obligationStale,
         error: obligationError,
         hitRecordCap: snapshot.hasMore || snapshot.items.length >= 5000,
@@ -215,12 +219,11 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
         return;
       }
       final records = _records;
-      final commitments = _commitments;
-      if (records != null && commitments != null) {
+      if (records != null) {
         _publish(
           session: session,
           records: records,
-          commitments: commitments,
+          commitments: _commitments,
           isStale: true,
           error: error.message,
           hitRecordCap: state.hitRecordCap,
@@ -259,7 +262,7 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
   void _publish({
     required AppSessionReady session,
     required List<BusinessTransaction> records,
-    required List<BusinessObligation> commitments,
+    required List<BusinessObligation>? commitments,
     required bool isStale,
     required String? error,
     required bool hitRecordCap,
@@ -274,13 +277,18 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
       period: selection.period,
       asOf: now,
     );
-    final outlook = CashOutlookEngine.summarize(
-      currentCashMinor: summary.currentCashMinor,
-      currencyCode: summary.currencyCode,
-      asOf: now,
-      zone: zone,
-      commitments: commitments.map((item) => item.toScheduledCommitment()),
-    );
+    final outlook =
+        commitments == null
+            ? null
+            : CashOutlookEngine.summarize(
+              currentCashMinor: summary.currentCashMinor,
+              currencyCode: summary.currencyCode,
+              asOf: now,
+              zone: zone,
+              commitments: commitments.map(
+                (item) => item.toScheduledCommitment(),
+              ),
+            );
     final recent = [...records]..sort((a, b) {
       final byDate = b.occurredAt.compareTo(a.occurredAt);
       if (byDate != 0) {
@@ -289,10 +297,12 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
       return b.id.compareTo(a.id);
     });
     final open =
-        commitments
-            .where((item) => item.status == CommitmentStatus.unpaid)
-            .toList()
-          ..sort((a, b) => a.dueOn.compareTo(b.dueOn));
+        commitments == null
+            ? const <BusinessObligation>[]
+            : (commitments
+                .where((item) => item.status == CommitmentStatus.unpaid)
+                .toList()
+              ..sort((a, b) => a.dueOn.compareTo(b.dueOn)));
     final overdue = [
       for (final item in open)
         if (item.displayStatus(asOf: now, zone: zone) ==

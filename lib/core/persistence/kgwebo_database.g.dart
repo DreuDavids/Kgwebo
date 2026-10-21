@@ -2859,6 +2859,2145 @@ class CachedObligationsCompanion extends UpdateCompanion<CachedObligation> {
   }
 }
 
+class $CachedProductsTable extends CachedProducts
+    with TableInfo<$CachedProductsTable, CachedProduct> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CachedProductsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _businessIdMeta = const VerificationMeta(
+    'businessId',
+  );
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+    'business_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
+    'created_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _nameMeta = const VerificationMeta('name');
+  @override
+  late final GeneratedColumn<String> name = GeneratedColumn<String>(
+    'name',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _skuMeta = const VerificationMeta('sku');
+  @override
+  late final GeneratedColumn<String> sku = GeneratedColumn<String>(
+    'sku',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _descriptionMeta = const VerificationMeta(
+    'description',
+  );
+  @override
+  late final GeneratedColumn<String> description = GeneratedColumn<String>(
+    'description',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sellingPriceMinorMeta = const VerificationMeta(
+    'sellingPriceMinor',
+  );
+  @override
+  late final GeneratedColumn<int> sellingPriceMinor = GeneratedColumn<int>(
+    'selling_price_minor',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitCostMinorMeta = const VerificationMeta(
+    'unitCostMinor',
+  );
+  @override
+  late final GeneratedColumn<int> unitCostMinor = GeneratedColumn<int>(
+    'unit_cost_minor',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _stockQuantityMilliMeta =
+      const VerificationMeta('stockQuantityMilli');
+  @override
+  late final GeneratedColumn<int> stockQuantityMilli = GeneratedColumn<int>(
+    'stock_quantity_milli',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _lowStockThresholdMilliMeta =
+      const VerificationMeta('lowStockThresholdMilli');
+  @override
+  late final GeneratedColumn<int> lowStockThresholdMilli = GeneratedColumn<int>(
+    'low_stock_threshold_milli',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _unitOfMeasureMeta = const VerificationMeta(
+    'unitOfMeasure',
+  );
+  @override
+  late final GeneratedColumn<String> unitOfMeasure = GeneratedColumn<String>(
+    'unit_of_measure',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _isActiveMeta = const VerificationMeta(
+    'isActive',
+  );
+  @override
+  late final GeneratedColumn<bool> isActive = GeneratedColumn<bool>(
+    'is_active',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: true,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_active" IN (0, 1))',
+    ),
+  );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('confirmed'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    ownerId,
+    businessId,
+    createdBy,
+    name,
+    sku,
+    description,
+    sellingPriceMinor,
+    unitCostMinor,
+    stockQuantityMilli,
+    lowStockThresholdMilli,
+    unitOfMeasure,
+    isActive,
+    createdAt,
+    updatedAt,
+    cachedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cached_products';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CachedProduct> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteIdMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+        _businessIdMeta,
+        businessId.isAcceptableOrUnknown(data['business_id']!, _businessIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdByMeta);
+    }
+    if (data.containsKey('name')) {
+      context.handle(
+        _nameMeta,
+        name.isAcceptableOrUnknown(data['name']!, _nameMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_nameMeta);
+    }
+    if (data.containsKey('sku')) {
+      context.handle(
+        _skuMeta,
+        sku.isAcceptableOrUnknown(data['sku']!, _skuMeta),
+      );
+    }
+    if (data.containsKey('description')) {
+      context.handle(
+        _descriptionMeta,
+        description.isAcceptableOrUnknown(
+          data['description']!,
+          _descriptionMeta,
+        ),
+      );
+    }
+    if (data.containsKey('selling_price_minor')) {
+      context.handle(
+        _sellingPriceMinorMeta,
+        sellingPriceMinor.isAcceptableOrUnknown(
+          data['selling_price_minor']!,
+          _sellingPriceMinorMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_sellingPriceMinorMeta);
+    }
+    if (data.containsKey('unit_cost_minor')) {
+      context.handle(
+        _unitCostMinorMeta,
+        unitCostMinor.isAcceptableOrUnknown(
+          data['unit_cost_minor']!,
+          _unitCostMinorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('stock_quantity_milli')) {
+      context.handle(
+        _stockQuantityMilliMeta,
+        stockQuantityMilli.isAcceptableOrUnknown(
+          data['stock_quantity_milli']!,
+          _stockQuantityMilliMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_stockQuantityMilliMeta);
+    }
+    if (data.containsKey('low_stock_threshold_milli')) {
+      context.handle(
+        _lowStockThresholdMilliMeta,
+        lowStockThresholdMilli.isAcceptableOrUnknown(
+          data['low_stock_threshold_milli']!,
+          _lowStockThresholdMilliMeta,
+        ),
+      );
+    }
+    if (data.containsKey('unit_of_measure')) {
+      context.handle(
+        _unitOfMeasureMeta,
+        unitOfMeasure.isAcceptableOrUnknown(
+          data['unit_of_measure']!,
+          _unitOfMeasureMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_unitOfMeasureMeta);
+    }
+    if (data.containsKey('is_active')) {
+      context.handle(
+        _isActiveMeta,
+        isActive.isAcceptableOrUnknown(data['is_active']!, _isActiveMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_isActiveMeta);
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_updatedAtMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {remoteId};
+  @override
+  CachedProduct map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CachedProduct(
+      remoteId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}remote_id'],
+          )!,
+      ownerId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}owner_id'],
+          )!,
+      businessId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}business_id'],
+          )!,
+      createdBy:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}created_by'],
+          )!,
+      name:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}name'],
+          )!,
+      sku: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sku'],
+      ),
+      description: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}description'],
+      ),
+      sellingPriceMinor:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}selling_price_minor'],
+          )!,
+      unitCostMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unit_cost_minor'],
+      ),
+      stockQuantityMilli:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}stock_quantity_milli'],
+          )!,
+      lowStockThresholdMilli: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}low_stock_threshold_milli'],
+      ),
+      unitOfMeasure:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}unit_of_measure'],
+          )!,
+      isActive:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.bool,
+            data['${effectivePrefix}is_active'],
+          )!,
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      updatedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}updated_at'],
+          )!,
+      cachedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}cached_at'],
+          )!,
+      syncStatus:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}sync_status'],
+          )!,
+    );
+  }
+
+  @override
+  $CachedProductsTable createAlias(String alias) {
+    return $CachedProductsTable(attachedDatabase, alias);
+  }
+}
+
+class CachedProduct extends DataClass implements Insertable<CachedProduct> {
+  final String remoteId;
+  final String ownerId;
+  final String businessId;
+  final String createdBy;
+  final String name;
+  final String? sku;
+  final String? description;
+  final int sellingPriceMinor;
+  final int? unitCostMinor;
+  final int stockQuantityMilli;
+  final int? lowStockThresholdMilli;
+  final String unitOfMeasure;
+  final bool isActive;
+  final DateTime createdAt;
+  final DateTime updatedAt;
+  final DateTime cachedAt;
+  final String syncStatus;
+  const CachedProduct({
+    required this.remoteId,
+    required this.ownerId,
+    required this.businessId,
+    required this.createdBy,
+    required this.name,
+    this.sku,
+    this.description,
+    required this.sellingPriceMinor,
+    this.unitCostMinor,
+    required this.stockQuantityMilli,
+    this.lowStockThresholdMilli,
+    required this.unitOfMeasure,
+    required this.isActive,
+    required this.createdAt,
+    required this.updatedAt,
+    required this.cachedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['remote_id'] = Variable<String>(remoteId);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['business_id'] = Variable<String>(businessId);
+    map['created_by'] = Variable<String>(createdBy);
+    map['name'] = Variable<String>(name);
+    if (!nullToAbsent || sku != null) {
+      map['sku'] = Variable<String>(sku);
+    }
+    if (!nullToAbsent || description != null) {
+      map['description'] = Variable<String>(description);
+    }
+    map['selling_price_minor'] = Variable<int>(sellingPriceMinor);
+    if (!nullToAbsent || unitCostMinor != null) {
+      map['unit_cost_minor'] = Variable<int>(unitCostMinor);
+    }
+    map['stock_quantity_milli'] = Variable<int>(stockQuantityMilli);
+    if (!nullToAbsent || lowStockThresholdMilli != null) {
+      map['low_stock_threshold_milli'] = Variable<int>(lowStockThresholdMilli);
+    }
+    map['unit_of_measure'] = Variable<String>(unitOfMeasure);
+    map['is_active'] = Variable<bool>(isActive);
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['updated_at'] = Variable<DateTime>(updatedAt);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    return map;
+  }
+
+  CachedProductsCompanion toCompanion(bool nullToAbsent) {
+    return CachedProductsCompanion(
+      remoteId: Value(remoteId),
+      ownerId: Value(ownerId),
+      businessId: Value(businessId),
+      createdBy: Value(createdBy),
+      name: Value(name),
+      sku: sku == null && nullToAbsent ? const Value.absent() : Value(sku),
+      description:
+          description == null && nullToAbsent
+              ? const Value.absent()
+              : Value(description),
+      sellingPriceMinor: Value(sellingPriceMinor),
+      unitCostMinor:
+          unitCostMinor == null && nullToAbsent
+              ? const Value.absent()
+              : Value(unitCostMinor),
+      stockQuantityMilli: Value(stockQuantityMilli),
+      lowStockThresholdMilli:
+          lowStockThresholdMilli == null && nullToAbsent
+              ? const Value.absent()
+              : Value(lowStockThresholdMilli),
+      unitOfMeasure: Value(unitOfMeasure),
+      isActive: Value(isActive),
+      createdAt: Value(createdAt),
+      updatedAt: Value(updatedAt),
+      cachedAt: Value(cachedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory CachedProduct.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CachedProduct(
+      remoteId: serializer.fromJson<String>(json['remoteId']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      createdBy: serializer.fromJson<String>(json['createdBy']),
+      name: serializer.fromJson<String>(json['name']),
+      sku: serializer.fromJson<String?>(json['sku']),
+      description: serializer.fromJson<String?>(json['description']),
+      sellingPriceMinor: serializer.fromJson<int>(json['sellingPriceMinor']),
+      unitCostMinor: serializer.fromJson<int?>(json['unitCostMinor']),
+      stockQuantityMilli: serializer.fromJson<int>(json['stockQuantityMilli']),
+      lowStockThresholdMilli: serializer.fromJson<int?>(
+        json['lowStockThresholdMilli'],
+      ),
+      unitOfMeasure: serializer.fromJson<String>(json['unitOfMeasure']),
+      isActive: serializer.fromJson<bool>(json['isActive']),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String>(remoteId),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'businessId': serializer.toJson<String>(businessId),
+      'createdBy': serializer.toJson<String>(createdBy),
+      'name': serializer.toJson<String>(name),
+      'sku': serializer.toJson<String?>(sku),
+      'description': serializer.toJson<String?>(description),
+      'sellingPriceMinor': serializer.toJson<int>(sellingPriceMinor),
+      'unitCostMinor': serializer.toJson<int?>(unitCostMinor),
+      'stockQuantityMilli': serializer.toJson<int>(stockQuantityMilli),
+      'lowStockThresholdMilli': serializer.toJson<int?>(lowStockThresholdMilli),
+      'unitOfMeasure': serializer.toJson<String>(unitOfMeasure),
+      'isActive': serializer.toJson<bool>(isActive),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'updatedAt': serializer.toJson<DateTime>(updatedAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+    };
+  }
+
+  CachedProduct copyWith({
+    String? remoteId,
+    String? ownerId,
+    String? businessId,
+    String? createdBy,
+    String? name,
+    Value<String?> sku = const Value.absent(),
+    Value<String?> description = const Value.absent(),
+    int? sellingPriceMinor,
+    Value<int?> unitCostMinor = const Value.absent(),
+    int? stockQuantityMilli,
+    Value<int?> lowStockThresholdMilli = const Value.absent(),
+    String? unitOfMeasure,
+    bool? isActive,
+    DateTime? createdAt,
+    DateTime? updatedAt,
+    DateTime? cachedAt,
+    String? syncStatus,
+  }) => CachedProduct(
+    remoteId: remoteId ?? this.remoteId,
+    ownerId: ownerId ?? this.ownerId,
+    businessId: businessId ?? this.businessId,
+    createdBy: createdBy ?? this.createdBy,
+    name: name ?? this.name,
+    sku: sku.present ? sku.value : this.sku,
+    description: description.present ? description.value : this.description,
+    sellingPriceMinor: sellingPriceMinor ?? this.sellingPriceMinor,
+    unitCostMinor:
+        unitCostMinor.present ? unitCostMinor.value : this.unitCostMinor,
+    stockQuantityMilli: stockQuantityMilli ?? this.stockQuantityMilli,
+    lowStockThresholdMilli:
+        lowStockThresholdMilli.present
+            ? lowStockThresholdMilli.value
+            : this.lowStockThresholdMilli,
+    unitOfMeasure: unitOfMeasure ?? this.unitOfMeasure,
+    isActive: isActive ?? this.isActive,
+    createdAt: createdAt ?? this.createdAt,
+    updatedAt: updatedAt ?? this.updatedAt,
+    cachedAt: cachedAt ?? this.cachedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  CachedProduct copyWithCompanion(CachedProductsCompanion data) {
+    return CachedProduct(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      name: data.name.present ? data.name.value : this.name,
+      sku: data.sku.present ? data.sku.value : this.sku,
+      description:
+          data.description.present ? data.description.value : this.description,
+      sellingPriceMinor:
+          data.sellingPriceMinor.present
+              ? data.sellingPriceMinor.value
+              : this.sellingPriceMinor,
+      unitCostMinor:
+          data.unitCostMinor.present
+              ? data.unitCostMinor.value
+              : this.unitCostMinor,
+      stockQuantityMilli:
+          data.stockQuantityMilli.present
+              ? data.stockQuantityMilli.value
+              : this.stockQuantityMilli,
+      lowStockThresholdMilli:
+          data.lowStockThresholdMilli.present
+              ? data.lowStockThresholdMilli.value
+              : this.lowStockThresholdMilli,
+      unitOfMeasure:
+          data.unitOfMeasure.present
+              ? data.unitOfMeasure.value
+              : this.unitOfMeasure,
+      isActive: data.isActive.present ? data.isActive.value : this.isActive,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedProduct(')
+          ..write('remoteId: $remoteId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('businessId: $businessId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('name: $name, ')
+          ..write('sku: $sku, ')
+          ..write('description: $description, ')
+          ..write('sellingPriceMinor: $sellingPriceMinor, ')
+          ..write('unitCostMinor: $unitCostMinor, ')
+          ..write('stockQuantityMilli: $stockQuantityMilli, ')
+          ..write('lowStockThresholdMilli: $lowStockThresholdMilli, ')
+          ..write('unitOfMeasure: $unitOfMeasure, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    ownerId,
+    businessId,
+    createdBy,
+    name,
+    sku,
+    description,
+    sellingPriceMinor,
+    unitCostMinor,
+    stockQuantityMilli,
+    lowStockThresholdMilli,
+    unitOfMeasure,
+    isActive,
+    createdAt,
+    updatedAt,
+    cachedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CachedProduct &&
+          other.remoteId == this.remoteId &&
+          other.ownerId == this.ownerId &&
+          other.businessId == this.businessId &&
+          other.createdBy == this.createdBy &&
+          other.name == this.name &&
+          other.sku == this.sku &&
+          other.description == this.description &&
+          other.sellingPriceMinor == this.sellingPriceMinor &&
+          other.unitCostMinor == this.unitCostMinor &&
+          other.stockQuantityMilli == this.stockQuantityMilli &&
+          other.lowStockThresholdMilli == this.lowStockThresholdMilli &&
+          other.unitOfMeasure == this.unitOfMeasure &&
+          other.isActive == this.isActive &&
+          other.createdAt == this.createdAt &&
+          other.updatedAt == this.updatedAt &&
+          other.cachedAt == this.cachedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class CachedProductsCompanion extends UpdateCompanion<CachedProduct> {
+  final Value<String> remoteId;
+  final Value<String> ownerId;
+  final Value<String> businessId;
+  final Value<String> createdBy;
+  final Value<String> name;
+  final Value<String?> sku;
+  final Value<String?> description;
+  final Value<int> sellingPriceMinor;
+  final Value<int?> unitCostMinor;
+  final Value<int> stockQuantityMilli;
+  final Value<int?> lowStockThresholdMilli;
+  final Value<String> unitOfMeasure;
+  final Value<bool> isActive;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> updatedAt;
+  final Value<DateTime> cachedAt;
+  final Value<String> syncStatus;
+  final Value<int> rowid;
+  const CachedProductsCompanion({
+    this.remoteId = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.name = const Value.absent(),
+    this.sku = const Value.absent(),
+    this.description = const Value.absent(),
+    this.sellingPriceMinor = const Value.absent(),
+    this.unitCostMinor = const Value.absent(),
+    this.stockQuantityMilli = const Value.absent(),
+    this.lowStockThresholdMilli = const Value.absent(),
+    this.unitOfMeasure = const Value.absent(),
+    this.isActive = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CachedProductsCompanion.insert({
+    required String remoteId,
+    required String ownerId,
+    required String businessId,
+    required String createdBy,
+    required String name,
+    this.sku = const Value.absent(),
+    this.description = const Value.absent(),
+    required int sellingPriceMinor,
+    this.unitCostMinor = const Value.absent(),
+    required int stockQuantityMilli,
+    this.lowStockThresholdMilli = const Value.absent(),
+    required String unitOfMeasure,
+    required bool isActive,
+    required DateTime createdAt,
+    required DateTime updatedAt,
+    required DateTime cachedAt,
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : remoteId = Value(remoteId),
+       ownerId = Value(ownerId),
+       businessId = Value(businessId),
+       createdBy = Value(createdBy),
+       name = Value(name),
+       sellingPriceMinor = Value(sellingPriceMinor),
+       stockQuantityMilli = Value(stockQuantityMilli),
+       unitOfMeasure = Value(unitOfMeasure),
+       isActive = Value(isActive),
+       createdAt = Value(createdAt),
+       updatedAt = Value(updatedAt),
+       cachedAt = Value(cachedAt);
+  static Insertable<CachedProduct> custom({
+    Expression<String>? remoteId,
+    Expression<String>? ownerId,
+    Expression<String>? businessId,
+    Expression<String>? createdBy,
+    Expression<String>? name,
+    Expression<String>? sku,
+    Expression<String>? description,
+    Expression<int>? sellingPriceMinor,
+    Expression<int>? unitCostMinor,
+    Expression<int>? stockQuantityMilli,
+    Expression<int>? lowStockThresholdMilli,
+    Expression<String>? unitOfMeasure,
+    Expression<bool>? isActive,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? cachedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (businessId != null) 'business_id': businessId,
+      if (createdBy != null) 'created_by': createdBy,
+      if (name != null) 'name': name,
+      if (sku != null) 'sku': sku,
+      if (description != null) 'description': description,
+      if (sellingPriceMinor != null) 'selling_price_minor': sellingPriceMinor,
+      if (unitCostMinor != null) 'unit_cost_minor': unitCostMinor,
+      if (stockQuantityMilli != null)
+        'stock_quantity_milli': stockQuantityMilli,
+      if (lowStockThresholdMilli != null)
+        'low_stock_threshold_milli': lowStockThresholdMilli,
+      if (unitOfMeasure != null) 'unit_of_measure': unitOfMeasure,
+      if (isActive != null) 'is_active': isActive,
+      if (createdAt != null) 'created_at': createdAt,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CachedProductsCompanion copyWith({
+    Value<String>? remoteId,
+    Value<String>? ownerId,
+    Value<String>? businessId,
+    Value<String>? createdBy,
+    Value<String>? name,
+    Value<String?>? sku,
+    Value<String?>? description,
+    Value<int>? sellingPriceMinor,
+    Value<int?>? unitCostMinor,
+    Value<int>? stockQuantityMilli,
+    Value<int?>? lowStockThresholdMilli,
+    Value<String>? unitOfMeasure,
+    Value<bool>? isActive,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? updatedAt,
+    Value<DateTime>? cachedAt,
+    Value<String>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return CachedProductsCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      ownerId: ownerId ?? this.ownerId,
+      businessId: businessId ?? this.businessId,
+      createdBy: createdBy ?? this.createdBy,
+      name: name ?? this.name,
+      sku: sku ?? this.sku,
+      description: description ?? this.description,
+      sellingPriceMinor: sellingPriceMinor ?? this.sellingPriceMinor,
+      unitCostMinor: unitCostMinor ?? this.unitCostMinor,
+      stockQuantityMilli: stockQuantityMilli ?? this.stockQuantityMilli,
+      lowStockThresholdMilli:
+          lowStockThresholdMilli ?? this.lowStockThresholdMilli,
+      unitOfMeasure: unitOfMeasure ?? this.unitOfMeasure,
+      isActive: isActive ?? this.isActive,
+      createdAt: createdAt ?? this.createdAt,
+      updatedAt: updatedAt ?? this.updatedAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (createdBy.present) {
+      map['created_by'] = Variable<String>(createdBy.value);
+    }
+    if (name.present) {
+      map['name'] = Variable<String>(name.value);
+    }
+    if (sku.present) {
+      map['sku'] = Variable<String>(sku.value);
+    }
+    if (description.present) {
+      map['description'] = Variable<String>(description.value);
+    }
+    if (sellingPriceMinor.present) {
+      map['selling_price_minor'] = Variable<int>(sellingPriceMinor.value);
+    }
+    if (unitCostMinor.present) {
+      map['unit_cost_minor'] = Variable<int>(unitCostMinor.value);
+    }
+    if (stockQuantityMilli.present) {
+      map['stock_quantity_milli'] = Variable<int>(stockQuantityMilli.value);
+    }
+    if (lowStockThresholdMilli.present) {
+      map['low_stock_threshold_milli'] = Variable<int>(
+        lowStockThresholdMilli.value,
+      );
+    }
+    if (unitOfMeasure.present) {
+      map['unit_of_measure'] = Variable<String>(unitOfMeasure.value);
+    }
+    if (isActive.present) {
+      map['is_active'] = Variable<bool>(isActive.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedProductsCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('businessId: $businessId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('name: $name, ')
+          ..write('sku: $sku, ')
+          ..write('description: $description, ')
+          ..write('sellingPriceMinor: $sellingPriceMinor, ')
+          ..write('unitCostMinor: $unitCostMinor, ')
+          ..write('stockQuantityMilli: $stockQuantityMilli, ')
+          ..write('lowStockThresholdMilli: $lowStockThresholdMilli, ')
+          ..write('unitOfMeasure: $unitOfMeasure, ')
+          ..write('isActive: $isActive, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $CachedStockMovementsTable extends CachedStockMovements
+    with TableInfo<$CachedStockMovementsTable, CachedStockMovement> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CachedStockMovementsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _remoteIdMeta = const VerificationMeta(
+    'remoteId',
+  );
+  @override
+  late final GeneratedColumn<String> remoteId = GeneratedColumn<String>(
+    'remote_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _ownerIdMeta = const VerificationMeta(
+    'ownerId',
+  );
+  @override
+  late final GeneratedColumn<String> ownerId = GeneratedColumn<String>(
+    'owner_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _businessIdMeta = const VerificationMeta(
+    'businessId',
+  );
+  @override
+  late final GeneratedColumn<String> businessId = GeneratedColumn<String>(
+    'business_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productIdMeta = const VerificationMeta(
+    'productId',
+  );
+  @override
+  late final GeneratedColumn<String> productId = GeneratedColumn<String>(
+    'product_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _createdByMeta = const VerificationMeta(
+    'createdBy',
+  );
+  @override
+  late final GeneratedColumn<String> createdBy = GeneratedColumn<String>(
+    'created_by',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _idempotencyKeyMeta = const VerificationMeta(
+    'idempotencyKey',
+  );
+  @override
+  late final GeneratedColumn<String> idempotencyKey = GeneratedColumn<String>(
+    'idempotency_key',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _movementTypeMeta = const VerificationMeta(
+    'movementType',
+  );
+  @override
+  late final GeneratedColumn<String> movementType = GeneratedColumn<String>(
+    'movement_type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityMilliMeta = const VerificationMeta(
+    'quantityMilli',
+  );
+  @override
+  late final GeneratedColumn<int> quantityMilli = GeneratedColumn<int>(
+    'quantity_milli',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityDeltaMilliMeta =
+      const VerificationMeta('quantityDeltaMilli');
+  @override
+  late final GeneratedColumn<int> quantityDeltaMilli = GeneratedColumn<int>(
+    'quantity_delta_milli',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _resultingQuantityMilliMeta =
+      const VerificationMeta('resultingQuantityMilli');
+  @override
+  late final GeneratedColumn<int> resultingQuantityMilli = GeneratedColumn<int>(
+    'resulting_quantity_milli',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _unitCostMinorMeta = const VerificationMeta(
+    'unitCostMinor',
+  );
+  @override
+  late final GeneratedColumn<int> unitCostMinor = GeneratedColumn<int>(
+    'unit_cost_minor',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reasonMeta = const VerificationMeta('reason');
+  @override
+  late final GeneratedColumn<String> reason = GeneratedColumn<String>(
+    'reason',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _referenceMeta = const VerificationMeta(
+    'reference',
+  );
+  @override
+  late final GeneratedColumn<String> reference = GeneratedColumn<String>(
+    'reference',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _transactionIdMeta = const VerificationMeta(
+    'transactionId',
+  );
+  @override
+  late final GeneratedColumn<String> transactionId = GeneratedColumn<String>(
+    'transaction_id',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _reversesMovementIdMeta =
+      const VerificationMeta('reversesMovementId');
+  @override
+  late final GeneratedColumn<String> reversesMovementId =
+      GeneratedColumn<String>(
+        'reverses_movement_id',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _createdAtMeta = const VerificationMeta(
+    'createdAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
+    'created_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cachedAtMeta = const VerificationMeta(
+    'cachedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> cachedAt = GeneratedColumn<DateTime>(
+    'cached_at',
+    aliasedName,
+    false,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _syncStatusMeta = const VerificationMeta(
+    'syncStatus',
+  );
+  @override
+  late final GeneratedColumn<String> syncStatus = GeneratedColumn<String>(
+    'sync_status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('confirmed'),
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    remoteId,
+    ownerId,
+    businessId,
+    productId,
+    createdBy,
+    idempotencyKey,
+    movementType,
+    quantityMilli,
+    quantityDeltaMilli,
+    resultingQuantityMilli,
+    unitCostMinor,
+    reason,
+    notes,
+    reference,
+    transactionId,
+    reversesMovementId,
+    createdAt,
+    cachedAt,
+    syncStatus,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'cached_stock_movements';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CachedStockMovement> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('remote_id')) {
+      context.handle(
+        _remoteIdMeta,
+        remoteId.isAcceptableOrUnknown(data['remote_id']!, _remoteIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_remoteIdMeta);
+    }
+    if (data.containsKey('owner_id')) {
+      context.handle(
+        _ownerIdMeta,
+        ownerId.isAcceptableOrUnknown(data['owner_id']!, _ownerIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_ownerIdMeta);
+    }
+    if (data.containsKey('business_id')) {
+      context.handle(
+        _businessIdMeta,
+        businessId.isAcceptableOrUnknown(data['business_id']!, _businessIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_businessIdMeta);
+    }
+    if (data.containsKey('product_id')) {
+      context.handle(
+        _productIdMeta,
+        productId.isAcceptableOrUnknown(data['product_id']!, _productIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_productIdMeta);
+    }
+    if (data.containsKey('created_by')) {
+      context.handle(
+        _createdByMeta,
+        createdBy.isAcceptableOrUnknown(data['created_by']!, _createdByMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdByMeta);
+    }
+    if (data.containsKey('idempotency_key')) {
+      context.handle(
+        _idempotencyKeyMeta,
+        idempotencyKey.isAcceptableOrUnknown(
+          data['idempotency_key']!,
+          _idempotencyKeyMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_idempotencyKeyMeta);
+    }
+    if (data.containsKey('movement_type')) {
+      context.handle(
+        _movementTypeMeta,
+        movementType.isAcceptableOrUnknown(
+          data['movement_type']!,
+          _movementTypeMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_movementTypeMeta);
+    }
+    if (data.containsKey('quantity_milli')) {
+      context.handle(
+        _quantityMilliMeta,
+        quantityMilli.isAcceptableOrUnknown(
+          data['quantity_milli']!,
+          _quantityMilliMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityMilliMeta);
+    }
+    if (data.containsKey('quantity_delta_milli')) {
+      context.handle(
+        _quantityDeltaMilliMeta,
+        quantityDeltaMilli.isAcceptableOrUnknown(
+          data['quantity_delta_milli']!,
+          _quantityDeltaMilliMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityDeltaMilliMeta);
+    }
+    if (data.containsKey('resulting_quantity_milli')) {
+      context.handle(
+        _resultingQuantityMilliMeta,
+        resultingQuantityMilli.isAcceptableOrUnknown(
+          data['resulting_quantity_milli']!,
+          _resultingQuantityMilliMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_resultingQuantityMilliMeta);
+    }
+    if (data.containsKey('unit_cost_minor')) {
+      context.handle(
+        _unitCostMinorMeta,
+        unitCostMinor.isAcceptableOrUnknown(
+          data['unit_cost_minor']!,
+          _unitCostMinorMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reason')) {
+      context.handle(
+        _reasonMeta,
+        reason.isAcceptableOrUnknown(data['reason']!, _reasonMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('reference')) {
+      context.handle(
+        _referenceMeta,
+        reference.isAcceptableOrUnknown(data['reference']!, _referenceMeta),
+      );
+    }
+    if (data.containsKey('transaction_id')) {
+      context.handle(
+        _transactionIdMeta,
+        transactionId.isAcceptableOrUnknown(
+          data['transaction_id']!,
+          _transactionIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('reverses_movement_id')) {
+      context.handle(
+        _reversesMovementIdMeta,
+        reversesMovementId.isAcceptableOrUnknown(
+          data['reverses_movement_id']!,
+          _reversesMovementIdMeta,
+        ),
+      );
+    }
+    if (data.containsKey('created_at')) {
+      context.handle(
+        _createdAtMeta,
+        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_createdAtMeta);
+    }
+    if (data.containsKey('cached_at')) {
+      context.handle(
+        _cachedAtMeta,
+        cachedAt.isAcceptableOrUnknown(data['cached_at']!, _cachedAtMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cachedAtMeta);
+    }
+    if (data.containsKey('sync_status')) {
+      context.handle(
+        _syncStatusMeta,
+        syncStatus.isAcceptableOrUnknown(data['sync_status']!, _syncStatusMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {remoteId};
+  @override
+  List<Set<GeneratedColumn>> get uniqueKeys => [
+    {ownerId, businessId, idempotencyKey},
+  ];
+  @override
+  CachedStockMovement map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CachedStockMovement(
+      remoteId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}remote_id'],
+          )!,
+      ownerId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}owner_id'],
+          )!,
+      businessId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}business_id'],
+          )!,
+      productId:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}product_id'],
+          )!,
+      createdBy:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}created_by'],
+          )!,
+      idempotencyKey:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}idempotency_key'],
+          )!,
+      movementType:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}movement_type'],
+          )!,
+      quantityMilli:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}quantity_milli'],
+          )!,
+      quantityDeltaMilli:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}quantity_delta_milli'],
+          )!,
+      resultingQuantityMilli:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.int,
+            data['${effectivePrefix}resulting_quantity_milli'],
+          )!,
+      unitCostMinor: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}unit_cost_minor'],
+      ),
+      reason: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reason'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      reference: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reference'],
+      ),
+      transactionId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}transaction_id'],
+      ),
+      reversesMovementId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}reverses_movement_id'],
+      ),
+      createdAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}created_at'],
+          )!,
+      cachedAt:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.dateTime,
+            data['${effectivePrefix}cached_at'],
+          )!,
+      syncStatus:
+          attachedDatabase.typeMapping.read(
+            DriftSqlType.string,
+            data['${effectivePrefix}sync_status'],
+          )!,
+    );
+  }
+
+  @override
+  $CachedStockMovementsTable createAlias(String alias) {
+    return $CachedStockMovementsTable(attachedDatabase, alias);
+  }
+}
+
+class CachedStockMovement extends DataClass
+    implements Insertable<CachedStockMovement> {
+  final String remoteId;
+  final String ownerId;
+  final String businessId;
+  final String productId;
+  final String createdBy;
+  final String idempotencyKey;
+  final String movementType;
+  final int quantityMilli;
+  final int quantityDeltaMilli;
+  final int resultingQuantityMilli;
+  final int? unitCostMinor;
+  final String? reason;
+  final String? notes;
+  final String? reference;
+  final String? transactionId;
+  final String? reversesMovementId;
+  final DateTime createdAt;
+  final DateTime cachedAt;
+  final String syncStatus;
+  const CachedStockMovement({
+    required this.remoteId,
+    required this.ownerId,
+    required this.businessId,
+    required this.productId,
+    required this.createdBy,
+    required this.idempotencyKey,
+    required this.movementType,
+    required this.quantityMilli,
+    required this.quantityDeltaMilli,
+    required this.resultingQuantityMilli,
+    this.unitCostMinor,
+    this.reason,
+    this.notes,
+    this.reference,
+    this.transactionId,
+    this.reversesMovementId,
+    required this.createdAt,
+    required this.cachedAt,
+    required this.syncStatus,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['remote_id'] = Variable<String>(remoteId);
+    map['owner_id'] = Variable<String>(ownerId);
+    map['business_id'] = Variable<String>(businessId);
+    map['product_id'] = Variable<String>(productId);
+    map['created_by'] = Variable<String>(createdBy);
+    map['idempotency_key'] = Variable<String>(idempotencyKey);
+    map['movement_type'] = Variable<String>(movementType);
+    map['quantity_milli'] = Variable<int>(quantityMilli);
+    map['quantity_delta_milli'] = Variable<int>(quantityDeltaMilli);
+    map['resulting_quantity_milli'] = Variable<int>(resultingQuantityMilli);
+    if (!nullToAbsent || unitCostMinor != null) {
+      map['unit_cost_minor'] = Variable<int>(unitCostMinor);
+    }
+    if (!nullToAbsent || reason != null) {
+      map['reason'] = Variable<String>(reason);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || reference != null) {
+      map['reference'] = Variable<String>(reference);
+    }
+    if (!nullToAbsent || transactionId != null) {
+      map['transaction_id'] = Variable<String>(transactionId);
+    }
+    if (!nullToAbsent || reversesMovementId != null) {
+      map['reverses_movement_id'] = Variable<String>(reversesMovementId);
+    }
+    map['created_at'] = Variable<DateTime>(createdAt);
+    map['cached_at'] = Variable<DateTime>(cachedAt);
+    map['sync_status'] = Variable<String>(syncStatus);
+    return map;
+  }
+
+  CachedStockMovementsCompanion toCompanion(bool nullToAbsent) {
+    return CachedStockMovementsCompanion(
+      remoteId: Value(remoteId),
+      ownerId: Value(ownerId),
+      businessId: Value(businessId),
+      productId: Value(productId),
+      createdBy: Value(createdBy),
+      idempotencyKey: Value(idempotencyKey),
+      movementType: Value(movementType),
+      quantityMilli: Value(quantityMilli),
+      quantityDeltaMilli: Value(quantityDeltaMilli),
+      resultingQuantityMilli: Value(resultingQuantityMilli),
+      unitCostMinor:
+          unitCostMinor == null && nullToAbsent
+              ? const Value.absent()
+              : Value(unitCostMinor),
+      reason:
+          reason == null && nullToAbsent ? const Value.absent() : Value(reason),
+      notes:
+          notes == null && nullToAbsent ? const Value.absent() : Value(notes),
+      reference:
+          reference == null && nullToAbsent
+              ? const Value.absent()
+              : Value(reference),
+      transactionId:
+          transactionId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(transactionId),
+      reversesMovementId:
+          reversesMovementId == null && nullToAbsent
+              ? const Value.absent()
+              : Value(reversesMovementId),
+      createdAt: Value(createdAt),
+      cachedAt: Value(cachedAt),
+      syncStatus: Value(syncStatus),
+    );
+  }
+
+  factory CachedStockMovement.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CachedStockMovement(
+      remoteId: serializer.fromJson<String>(json['remoteId']),
+      ownerId: serializer.fromJson<String>(json['ownerId']),
+      businessId: serializer.fromJson<String>(json['businessId']),
+      productId: serializer.fromJson<String>(json['productId']),
+      createdBy: serializer.fromJson<String>(json['createdBy']),
+      idempotencyKey: serializer.fromJson<String>(json['idempotencyKey']),
+      movementType: serializer.fromJson<String>(json['movementType']),
+      quantityMilli: serializer.fromJson<int>(json['quantityMilli']),
+      quantityDeltaMilli: serializer.fromJson<int>(json['quantityDeltaMilli']),
+      resultingQuantityMilli: serializer.fromJson<int>(
+        json['resultingQuantityMilli'],
+      ),
+      unitCostMinor: serializer.fromJson<int?>(json['unitCostMinor']),
+      reason: serializer.fromJson<String?>(json['reason']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      reference: serializer.fromJson<String?>(json['reference']),
+      transactionId: serializer.fromJson<String?>(json['transactionId']),
+      reversesMovementId: serializer.fromJson<String?>(
+        json['reversesMovementId'],
+      ),
+      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
+      cachedAt: serializer.fromJson<DateTime>(json['cachedAt']),
+      syncStatus: serializer.fromJson<String>(json['syncStatus']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'remoteId': serializer.toJson<String>(remoteId),
+      'ownerId': serializer.toJson<String>(ownerId),
+      'businessId': serializer.toJson<String>(businessId),
+      'productId': serializer.toJson<String>(productId),
+      'createdBy': serializer.toJson<String>(createdBy),
+      'idempotencyKey': serializer.toJson<String>(idempotencyKey),
+      'movementType': serializer.toJson<String>(movementType),
+      'quantityMilli': serializer.toJson<int>(quantityMilli),
+      'quantityDeltaMilli': serializer.toJson<int>(quantityDeltaMilli),
+      'resultingQuantityMilli': serializer.toJson<int>(resultingQuantityMilli),
+      'unitCostMinor': serializer.toJson<int?>(unitCostMinor),
+      'reason': serializer.toJson<String?>(reason),
+      'notes': serializer.toJson<String?>(notes),
+      'reference': serializer.toJson<String?>(reference),
+      'transactionId': serializer.toJson<String?>(transactionId),
+      'reversesMovementId': serializer.toJson<String?>(reversesMovementId),
+      'createdAt': serializer.toJson<DateTime>(createdAt),
+      'cachedAt': serializer.toJson<DateTime>(cachedAt),
+      'syncStatus': serializer.toJson<String>(syncStatus),
+    };
+  }
+
+  CachedStockMovement copyWith({
+    String? remoteId,
+    String? ownerId,
+    String? businessId,
+    String? productId,
+    String? createdBy,
+    String? idempotencyKey,
+    String? movementType,
+    int? quantityMilli,
+    int? quantityDeltaMilli,
+    int? resultingQuantityMilli,
+    Value<int?> unitCostMinor = const Value.absent(),
+    Value<String?> reason = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    Value<String?> reference = const Value.absent(),
+    Value<String?> transactionId = const Value.absent(),
+    Value<String?> reversesMovementId = const Value.absent(),
+    DateTime? createdAt,
+    DateTime? cachedAt,
+    String? syncStatus,
+  }) => CachedStockMovement(
+    remoteId: remoteId ?? this.remoteId,
+    ownerId: ownerId ?? this.ownerId,
+    businessId: businessId ?? this.businessId,
+    productId: productId ?? this.productId,
+    createdBy: createdBy ?? this.createdBy,
+    idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+    movementType: movementType ?? this.movementType,
+    quantityMilli: quantityMilli ?? this.quantityMilli,
+    quantityDeltaMilli: quantityDeltaMilli ?? this.quantityDeltaMilli,
+    resultingQuantityMilli:
+        resultingQuantityMilli ?? this.resultingQuantityMilli,
+    unitCostMinor:
+        unitCostMinor.present ? unitCostMinor.value : this.unitCostMinor,
+    reason: reason.present ? reason.value : this.reason,
+    notes: notes.present ? notes.value : this.notes,
+    reference: reference.present ? reference.value : this.reference,
+    transactionId:
+        transactionId.present ? transactionId.value : this.transactionId,
+    reversesMovementId:
+        reversesMovementId.present
+            ? reversesMovementId.value
+            : this.reversesMovementId,
+    createdAt: createdAt ?? this.createdAt,
+    cachedAt: cachedAt ?? this.cachedAt,
+    syncStatus: syncStatus ?? this.syncStatus,
+  );
+  CachedStockMovement copyWithCompanion(CachedStockMovementsCompanion data) {
+    return CachedStockMovement(
+      remoteId: data.remoteId.present ? data.remoteId.value : this.remoteId,
+      ownerId: data.ownerId.present ? data.ownerId.value : this.ownerId,
+      businessId:
+          data.businessId.present ? data.businessId.value : this.businessId,
+      productId: data.productId.present ? data.productId.value : this.productId,
+      createdBy: data.createdBy.present ? data.createdBy.value : this.createdBy,
+      idempotencyKey:
+          data.idempotencyKey.present
+              ? data.idempotencyKey.value
+              : this.idempotencyKey,
+      movementType:
+          data.movementType.present
+              ? data.movementType.value
+              : this.movementType,
+      quantityMilli:
+          data.quantityMilli.present
+              ? data.quantityMilli.value
+              : this.quantityMilli,
+      quantityDeltaMilli:
+          data.quantityDeltaMilli.present
+              ? data.quantityDeltaMilli.value
+              : this.quantityDeltaMilli,
+      resultingQuantityMilli:
+          data.resultingQuantityMilli.present
+              ? data.resultingQuantityMilli.value
+              : this.resultingQuantityMilli,
+      unitCostMinor:
+          data.unitCostMinor.present
+              ? data.unitCostMinor.value
+              : this.unitCostMinor,
+      reason: data.reason.present ? data.reason.value : this.reason,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      reference: data.reference.present ? data.reference.value : this.reference,
+      transactionId:
+          data.transactionId.present
+              ? data.transactionId.value
+              : this.transactionId,
+      reversesMovementId:
+          data.reversesMovementId.present
+              ? data.reversesMovementId.value
+              : this.reversesMovementId,
+      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
+      cachedAt: data.cachedAt.present ? data.cachedAt.value : this.cachedAt,
+      syncStatus:
+          data.syncStatus.present ? data.syncStatus.value : this.syncStatus,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedStockMovement(')
+          ..write('remoteId: $remoteId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('businessId: $businessId, ')
+          ..write('productId: $productId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('movementType: $movementType, ')
+          ..write('quantityMilli: $quantityMilli, ')
+          ..write('quantityDeltaMilli: $quantityDeltaMilli, ')
+          ..write('resultingQuantityMilli: $resultingQuantityMilli, ')
+          ..write('unitCostMinor: $unitCostMinor, ')
+          ..write('reason: $reason, ')
+          ..write('notes: $notes, ')
+          ..write('reference: $reference, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('reversesMovementId: $reversesMovementId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('syncStatus: $syncStatus')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    remoteId,
+    ownerId,
+    businessId,
+    productId,
+    createdBy,
+    idempotencyKey,
+    movementType,
+    quantityMilli,
+    quantityDeltaMilli,
+    resultingQuantityMilli,
+    unitCostMinor,
+    reason,
+    notes,
+    reference,
+    transactionId,
+    reversesMovementId,
+    createdAt,
+    cachedAt,
+    syncStatus,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CachedStockMovement &&
+          other.remoteId == this.remoteId &&
+          other.ownerId == this.ownerId &&
+          other.businessId == this.businessId &&
+          other.productId == this.productId &&
+          other.createdBy == this.createdBy &&
+          other.idempotencyKey == this.idempotencyKey &&
+          other.movementType == this.movementType &&
+          other.quantityMilli == this.quantityMilli &&
+          other.quantityDeltaMilli == this.quantityDeltaMilli &&
+          other.resultingQuantityMilli == this.resultingQuantityMilli &&
+          other.unitCostMinor == this.unitCostMinor &&
+          other.reason == this.reason &&
+          other.notes == this.notes &&
+          other.reference == this.reference &&
+          other.transactionId == this.transactionId &&
+          other.reversesMovementId == this.reversesMovementId &&
+          other.createdAt == this.createdAt &&
+          other.cachedAt == this.cachedAt &&
+          other.syncStatus == this.syncStatus);
+}
+
+class CachedStockMovementsCompanion
+    extends UpdateCompanion<CachedStockMovement> {
+  final Value<String> remoteId;
+  final Value<String> ownerId;
+  final Value<String> businessId;
+  final Value<String> productId;
+  final Value<String> createdBy;
+  final Value<String> idempotencyKey;
+  final Value<String> movementType;
+  final Value<int> quantityMilli;
+  final Value<int> quantityDeltaMilli;
+  final Value<int> resultingQuantityMilli;
+  final Value<int?> unitCostMinor;
+  final Value<String?> reason;
+  final Value<String?> notes;
+  final Value<String?> reference;
+  final Value<String?> transactionId;
+  final Value<String?> reversesMovementId;
+  final Value<DateTime> createdAt;
+  final Value<DateTime> cachedAt;
+  final Value<String> syncStatus;
+  final Value<int> rowid;
+  const CachedStockMovementsCompanion({
+    this.remoteId = const Value.absent(),
+    this.ownerId = const Value.absent(),
+    this.businessId = const Value.absent(),
+    this.productId = const Value.absent(),
+    this.createdBy = const Value.absent(),
+    this.idempotencyKey = const Value.absent(),
+    this.movementType = const Value.absent(),
+    this.quantityMilli = const Value.absent(),
+    this.quantityDeltaMilli = const Value.absent(),
+    this.resultingQuantityMilli = const Value.absent(),
+    this.unitCostMinor = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.reversesMovementId = const Value.absent(),
+    this.createdAt = const Value.absent(),
+    this.cachedAt = const Value.absent(),
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CachedStockMovementsCompanion.insert({
+    required String remoteId,
+    required String ownerId,
+    required String businessId,
+    required String productId,
+    required String createdBy,
+    required String idempotencyKey,
+    required String movementType,
+    required int quantityMilli,
+    required int quantityDeltaMilli,
+    required int resultingQuantityMilli,
+    this.unitCostMinor = const Value.absent(),
+    this.reason = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.reference = const Value.absent(),
+    this.transactionId = const Value.absent(),
+    this.reversesMovementId = const Value.absent(),
+    required DateTime createdAt,
+    required DateTime cachedAt,
+    this.syncStatus = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : remoteId = Value(remoteId),
+       ownerId = Value(ownerId),
+       businessId = Value(businessId),
+       productId = Value(productId),
+       createdBy = Value(createdBy),
+       idempotencyKey = Value(idempotencyKey),
+       movementType = Value(movementType),
+       quantityMilli = Value(quantityMilli),
+       quantityDeltaMilli = Value(quantityDeltaMilli),
+       resultingQuantityMilli = Value(resultingQuantityMilli),
+       createdAt = Value(createdAt),
+       cachedAt = Value(cachedAt);
+  static Insertable<CachedStockMovement> custom({
+    Expression<String>? remoteId,
+    Expression<String>? ownerId,
+    Expression<String>? businessId,
+    Expression<String>? productId,
+    Expression<String>? createdBy,
+    Expression<String>? idempotencyKey,
+    Expression<String>? movementType,
+    Expression<int>? quantityMilli,
+    Expression<int>? quantityDeltaMilli,
+    Expression<int>? resultingQuantityMilli,
+    Expression<int>? unitCostMinor,
+    Expression<String>? reason,
+    Expression<String>? notes,
+    Expression<String>? reference,
+    Expression<String>? transactionId,
+    Expression<String>? reversesMovementId,
+    Expression<DateTime>? createdAt,
+    Expression<DateTime>? cachedAt,
+    Expression<String>? syncStatus,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (remoteId != null) 'remote_id': remoteId,
+      if (ownerId != null) 'owner_id': ownerId,
+      if (businessId != null) 'business_id': businessId,
+      if (productId != null) 'product_id': productId,
+      if (createdBy != null) 'created_by': createdBy,
+      if (idempotencyKey != null) 'idempotency_key': idempotencyKey,
+      if (movementType != null) 'movement_type': movementType,
+      if (quantityMilli != null) 'quantity_milli': quantityMilli,
+      if (quantityDeltaMilli != null)
+        'quantity_delta_milli': quantityDeltaMilli,
+      if (resultingQuantityMilli != null)
+        'resulting_quantity_milli': resultingQuantityMilli,
+      if (unitCostMinor != null) 'unit_cost_minor': unitCostMinor,
+      if (reason != null) 'reason': reason,
+      if (notes != null) 'notes': notes,
+      if (reference != null) 'reference': reference,
+      if (transactionId != null) 'transaction_id': transactionId,
+      if (reversesMovementId != null)
+        'reverses_movement_id': reversesMovementId,
+      if (createdAt != null) 'created_at': createdAt,
+      if (cachedAt != null) 'cached_at': cachedAt,
+      if (syncStatus != null) 'sync_status': syncStatus,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CachedStockMovementsCompanion copyWith({
+    Value<String>? remoteId,
+    Value<String>? ownerId,
+    Value<String>? businessId,
+    Value<String>? productId,
+    Value<String>? createdBy,
+    Value<String>? idempotencyKey,
+    Value<String>? movementType,
+    Value<int>? quantityMilli,
+    Value<int>? quantityDeltaMilli,
+    Value<int>? resultingQuantityMilli,
+    Value<int?>? unitCostMinor,
+    Value<String?>? reason,
+    Value<String?>? notes,
+    Value<String?>? reference,
+    Value<String?>? transactionId,
+    Value<String?>? reversesMovementId,
+    Value<DateTime>? createdAt,
+    Value<DateTime>? cachedAt,
+    Value<String>? syncStatus,
+    Value<int>? rowid,
+  }) {
+    return CachedStockMovementsCompanion(
+      remoteId: remoteId ?? this.remoteId,
+      ownerId: ownerId ?? this.ownerId,
+      businessId: businessId ?? this.businessId,
+      productId: productId ?? this.productId,
+      createdBy: createdBy ?? this.createdBy,
+      idempotencyKey: idempotencyKey ?? this.idempotencyKey,
+      movementType: movementType ?? this.movementType,
+      quantityMilli: quantityMilli ?? this.quantityMilli,
+      quantityDeltaMilli: quantityDeltaMilli ?? this.quantityDeltaMilli,
+      resultingQuantityMilli:
+          resultingQuantityMilli ?? this.resultingQuantityMilli,
+      unitCostMinor: unitCostMinor ?? this.unitCostMinor,
+      reason: reason ?? this.reason,
+      notes: notes ?? this.notes,
+      reference: reference ?? this.reference,
+      transactionId: transactionId ?? this.transactionId,
+      reversesMovementId: reversesMovementId ?? this.reversesMovementId,
+      createdAt: createdAt ?? this.createdAt,
+      cachedAt: cachedAt ?? this.cachedAt,
+      syncStatus: syncStatus ?? this.syncStatus,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (remoteId.present) {
+      map['remote_id'] = Variable<String>(remoteId.value);
+    }
+    if (ownerId.present) {
+      map['owner_id'] = Variable<String>(ownerId.value);
+    }
+    if (businessId.present) {
+      map['business_id'] = Variable<String>(businessId.value);
+    }
+    if (productId.present) {
+      map['product_id'] = Variable<String>(productId.value);
+    }
+    if (createdBy.present) {
+      map['created_by'] = Variable<String>(createdBy.value);
+    }
+    if (idempotencyKey.present) {
+      map['idempotency_key'] = Variable<String>(idempotencyKey.value);
+    }
+    if (movementType.present) {
+      map['movement_type'] = Variable<String>(movementType.value);
+    }
+    if (quantityMilli.present) {
+      map['quantity_milli'] = Variable<int>(quantityMilli.value);
+    }
+    if (quantityDeltaMilli.present) {
+      map['quantity_delta_milli'] = Variable<int>(quantityDeltaMilli.value);
+    }
+    if (resultingQuantityMilli.present) {
+      map['resulting_quantity_milli'] = Variable<int>(
+        resultingQuantityMilli.value,
+      );
+    }
+    if (unitCostMinor.present) {
+      map['unit_cost_minor'] = Variable<int>(unitCostMinor.value);
+    }
+    if (reason.present) {
+      map['reason'] = Variable<String>(reason.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (reference.present) {
+      map['reference'] = Variable<String>(reference.value);
+    }
+    if (transactionId.present) {
+      map['transaction_id'] = Variable<String>(transactionId.value);
+    }
+    if (reversesMovementId.present) {
+      map['reverses_movement_id'] = Variable<String>(reversesMovementId.value);
+    }
+    if (createdAt.present) {
+      map['created_at'] = Variable<DateTime>(createdAt.value);
+    }
+    if (cachedAt.present) {
+      map['cached_at'] = Variable<DateTime>(cachedAt.value);
+    }
+    if (syncStatus.present) {
+      map['sync_status'] = Variable<String>(syncStatus.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CachedStockMovementsCompanion(')
+          ..write('remoteId: $remoteId, ')
+          ..write('ownerId: $ownerId, ')
+          ..write('businessId: $businessId, ')
+          ..write('productId: $productId, ')
+          ..write('createdBy: $createdBy, ')
+          ..write('idempotencyKey: $idempotencyKey, ')
+          ..write('movementType: $movementType, ')
+          ..write('quantityMilli: $quantityMilli, ')
+          ..write('quantityDeltaMilli: $quantityDeltaMilli, ')
+          ..write('resultingQuantityMilli: $resultingQuantityMilli, ')
+          ..write('unitCostMinor: $unitCostMinor, ')
+          ..write('reason: $reason, ')
+          ..write('notes: $notes, ')
+          ..write('reference: $reference, ')
+          ..write('transactionId: $transactionId, ')
+          ..write('reversesMovementId: $reversesMovementId, ')
+          ..write('createdAt: $createdAt, ')
+          ..write('cachedAt: $cachedAt, ')
+          ..write('syncStatus: $syncStatus, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 abstract class _$KgweboDatabase extends GeneratedDatabase {
   _$KgweboDatabase(QueryExecutor e) : super(e);
   $KgweboDatabaseManager get managers => $KgweboDatabaseManager(this);
@@ -2869,6 +5008,9 @@ abstract class _$KgweboDatabase extends GeneratedDatabase {
       $CachedTransactionsTable(this);
   late final $CachedObligationsTable cachedObligations =
       $CachedObligationsTable(this);
+  late final $CachedProductsTable cachedProducts = $CachedProductsTable(this);
+  late final $CachedStockMovementsTable cachedStockMovements =
+      $CachedStockMovementsTable(this);
   @override
   Iterable<TableInfo<Table, Object?>> get allTables =>
       allSchemaEntities.whereType<TableInfo<Table, Object?>>();
@@ -2877,6 +5019,8 @@ abstract class _$KgweboDatabase extends GeneratedDatabase {
     cachedBusinesses,
     cachedTransactions,
     cachedObligations,
+    cachedProducts,
+    cachedStockMovements,
   ];
 }
 
@@ -4227,6 +6371,979 @@ typedef $$CachedObligationsTableProcessedTableManager =
       CachedObligation,
       PrefetchHooks Function()
     >;
+typedef $$CachedProductsTableCreateCompanionBuilder =
+    CachedProductsCompanion Function({
+      required String remoteId,
+      required String ownerId,
+      required String businessId,
+      required String createdBy,
+      required String name,
+      Value<String?> sku,
+      Value<String?> description,
+      required int sellingPriceMinor,
+      Value<int?> unitCostMinor,
+      required int stockQuantityMilli,
+      Value<int?> lowStockThresholdMilli,
+      required String unitOfMeasure,
+      required bool isActive,
+      required DateTime createdAt,
+      required DateTime updatedAt,
+      required DateTime cachedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$CachedProductsTableUpdateCompanionBuilder =
+    CachedProductsCompanion Function({
+      Value<String> remoteId,
+      Value<String> ownerId,
+      Value<String> businessId,
+      Value<String> createdBy,
+      Value<String> name,
+      Value<String?> sku,
+      Value<String?> description,
+      Value<int> sellingPriceMinor,
+      Value<int?> unitCostMinor,
+      Value<int> stockQuantityMilli,
+      Value<int?> lowStockThresholdMilli,
+      Value<String> unitOfMeasure,
+      Value<bool> isActive,
+      Value<DateTime> createdAt,
+      Value<DateTime> updatedAt,
+      Value<DateTime> cachedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+
+class $$CachedProductsTableFilterComposer
+    extends Composer<_$KgweboDatabase, $CachedProductsTable> {
+  $$CachedProductsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sku => $composableBuilder(
+    column: $table.sku,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get sellingPriceMinor => $composableBuilder(
+    column: $table.sellingPriceMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitCostMinor => $composableBuilder(
+    column: $table.unitCostMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get stockQuantityMilli => $composableBuilder(
+    column: $table.stockQuantityMilli,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get lowStockThresholdMilli => $composableBuilder(
+    column: $table.lowStockThresholdMilli,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unitOfMeasure => $composableBuilder(
+    column: $table.unitOfMeasure,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CachedProductsTableOrderingComposer
+    extends Composer<_$KgweboDatabase, $CachedProductsTable> {
+  $$CachedProductsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get name => $composableBuilder(
+    column: $table.name,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sku => $composableBuilder(
+    column: $table.sku,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get sellingPriceMinor => $composableBuilder(
+    column: $table.sellingPriceMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unitCostMinor => $composableBuilder(
+    column: $table.unitCostMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get stockQuantityMilli => $composableBuilder(
+    column: $table.stockQuantityMilli,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get lowStockThresholdMilli => $composableBuilder(
+    column: $table.lowStockThresholdMilli,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unitOfMeasure => $composableBuilder(
+    column: $table.unitOfMeasure,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isActive => $composableBuilder(
+    column: $table.isActive,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CachedProductsTableAnnotationComposer
+    extends Composer<_$KgweboDatabase, $CachedProductsTable> {
+  $$CachedProductsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<String> get name =>
+      $composableBuilder(column: $table.name, builder: (column) => column);
+
+  GeneratedColumn<String> get sku =>
+      $composableBuilder(column: $table.sku, builder: (column) => column);
+
+  GeneratedColumn<String> get description => $composableBuilder(
+    column: $table.description,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get sellingPriceMinor => $composableBuilder(
+    column: $table.sellingPriceMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get unitCostMinor => $composableBuilder(
+    column: $table.unitCostMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get stockQuantityMilli => $composableBuilder(
+    column: $table.stockQuantityMilli,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get lowStockThresholdMilli => $composableBuilder(
+    column: $table.lowStockThresholdMilli,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get unitOfMeasure => $composableBuilder(
+    column: $table.unitOfMeasure,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<bool> get isActive =>
+      $composableBuilder(column: $table.isActive, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+}
+
+class $$CachedProductsTableTableManager
+    extends
+        RootTableManager<
+          _$KgweboDatabase,
+          $CachedProductsTable,
+          CachedProduct,
+          $$CachedProductsTableFilterComposer,
+          $$CachedProductsTableOrderingComposer,
+          $$CachedProductsTableAnnotationComposer,
+          $$CachedProductsTableCreateCompanionBuilder,
+          $$CachedProductsTableUpdateCompanionBuilder,
+          (
+            CachedProduct,
+            BaseReferences<
+              _$KgweboDatabase,
+              $CachedProductsTable,
+              CachedProduct
+            >,
+          ),
+          CachedProduct,
+          PrefetchHooks Function()
+        > {
+  $$CachedProductsTableTableManager(
+    _$KgweboDatabase db,
+    $CachedProductsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$CachedProductsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer:
+              () =>
+                  $$CachedProductsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer:
+              () => $$CachedProductsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> remoteId = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> businessId = const Value.absent(),
+                Value<String> createdBy = const Value.absent(),
+                Value<String> name = const Value.absent(),
+                Value<String?> sku = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                Value<int> sellingPriceMinor = const Value.absent(),
+                Value<int?> unitCostMinor = const Value.absent(),
+                Value<int> stockQuantityMilli = const Value.absent(),
+                Value<int?> lowStockThresholdMilli = const Value.absent(),
+                Value<String> unitOfMeasure = const Value.absent(),
+                Value<bool> isActive = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> updatedAt = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedProductsCompanion(
+                remoteId: remoteId,
+                ownerId: ownerId,
+                businessId: businessId,
+                createdBy: createdBy,
+                name: name,
+                sku: sku,
+                description: description,
+                sellingPriceMinor: sellingPriceMinor,
+                unitCostMinor: unitCostMinor,
+                stockQuantityMilli: stockQuantityMilli,
+                lowStockThresholdMilli: lowStockThresholdMilli,
+                unitOfMeasure: unitOfMeasure,
+                isActive: isActive,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                cachedAt: cachedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String remoteId,
+                required String ownerId,
+                required String businessId,
+                required String createdBy,
+                required String name,
+                Value<String?> sku = const Value.absent(),
+                Value<String?> description = const Value.absent(),
+                required int sellingPriceMinor,
+                Value<int?> unitCostMinor = const Value.absent(),
+                required int stockQuantityMilli,
+                Value<int?> lowStockThresholdMilli = const Value.absent(),
+                required String unitOfMeasure,
+                required bool isActive,
+                required DateTime createdAt,
+                required DateTime updatedAt,
+                required DateTime cachedAt,
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedProductsCompanion.insert(
+                remoteId: remoteId,
+                ownerId: ownerId,
+                businessId: businessId,
+                createdBy: createdBy,
+                name: name,
+                sku: sku,
+                description: description,
+                sellingPriceMinor: sellingPriceMinor,
+                unitCostMinor: unitCostMinor,
+                stockQuantityMilli: stockQuantityMilli,
+                lowStockThresholdMilli: lowStockThresholdMilli,
+                unitOfMeasure: unitOfMeasure,
+                isActive: isActive,
+                createdAt: createdAt,
+                updatedAt: updatedAt,
+                cachedAt: cachedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CachedProductsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$KgweboDatabase,
+      $CachedProductsTable,
+      CachedProduct,
+      $$CachedProductsTableFilterComposer,
+      $$CachedProductsTableOrderingComposer,
+      $$CachedProductsTableAnnotationComposer,
+      $$CachedProductsTableCreateCompanionBuilder,
+      $$CachedProductsTableUpdateCompanionBuilder,
+      (
+        CachedProduct,
+        BaseReferences<_$KgweboDatabase, $CachedProductsTable, CachedProduct>,
+      ),
+      CachedProduct,
+      PrefetchHooks Function()
+    >;
+typedef $$CachedStockMovementsTableCreateCompanionBuilder =
+    CachedStockMovementsCompanion Function({
+      required String remoteId,
+      required String ownerId,
+      required String businessId,
+      required String productId,
+      required String createdBy,
+      required String idempotencyKey,
+      required String movementType,
+      required int quantityMilli,
+      required int quantityDeltaMilli,
+      required int resultingQuantityMilli,
+      Value<int?> unitCostMinor,
+      Value<String?> reason,
+      Value<String?> notes,
+      Value<String?> reference,
+      Value<String?> transactionId,
+      Value<String?> reversesMovementId,
+      required DateTime createdAt,
+      required DateTime cachedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+typedef $$CachedStockMovementsTableUpdateCompanionBuilder =
+    CachedStockMovementsCompanion Function({
+      Value<String> remoteId,
+      Value<String> ownerId,
+      Value<String> businessId,
+      Value<String> productId,
+      Value<String> createdBy,
+      Value<String> idempotencyKey,
+      Value<String> movementType,
+      Value<int> quantityMilli,
+      Value<int> quantityDeltaMilli,
+      Value<int> resultingQuantityMilli,
+      Value<int?> unitCostMinor,
+      Value<String?> reason,
+      Value<String?> notes,
+      Value<String?> reference,
+      Value<String?> transactionId,
+      Value<String?> reversesMovementId,
+      Value<DateTime> createdAt,
+      Value<DateTime> cachedAt,
+      Value<String> syncStatus,
+      Value<int> rowid,
+    });
+
+class $$CachedStockMovementsTableFilterComposer
+    extends Composer<_$KgweboDatabase, $CachedStockMovementsTable> {
+  $$CachedStockMovementsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get movementType => $composableBuilder(
+    column: $table.movementType,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantityMilli => $composableBuilder(
+    column: $table.quantityMilli,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get quantityDeltaMilli => $composableBuilder(
+    column: $table.quantityDeltaMilli,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get resultingQuantityMilli => $composableBuilder(
+    column: $table.resultingQuantityMilli,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get unitCostMinor => $composableBuilder(
+    column: $table.unitCostMinor,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get reversesMovementId => $composableBuilder(
+    column: $table.reversesMovementId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CachedStockMovementsTableOrderingComposer
+    extends Composer<_$KgweboDatabase, $CachedStockMovementsTable> {
+  $$CachedStockMovementsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get remoteId => $composableBuilder(
+    column: $table.remoteId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get ownerId => $composableBuilder(
+    column: $table.ownerId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productId => $composableBuilder(
+    column: $table.productId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get createdBy => $composableBuilder(
+    column: $table.createdBy,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get movementType => $composableBuilder(
+    column: $table.movementType,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantityMilli => $composableBuilder(
+    column: $table.quantityMilli,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get quantityDeltaMilli => $composableBuilder(
+    column: $table.quantityDeltaMilli,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get resultingQuantityMilli => $composableBuilder(
+    column: $table.resultingQuantityMilli,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get unitCostMinor => $composableBuilder(
+    column: $table.unitCostMinor,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reason => $composableBuilder(
+    column: $table.reason,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reference => $composableBuilder(
+    column: $table.reference,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get reversesMovementId => $composableBuilder(
+    column: $table.reversesMovementId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
+    column: $table.createdAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get cachedAt => $composableBuilder(
+    column: $table.cachedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CachedStockMovementsTableAnnotationComposer
+    extends Composer<_$KgweboDatabase, $CachedStockMovementsTable> {
+  $$CachedStockMovementsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get remoteId =>
+      $composableBuilder(column: $table.remoteId, builder: (column) => column);
+
+  GeneratedColumn<String> get ownerId =>
+      $composableBuilder(column: $table.ownerId, builder: (column) => column);
+
+  GeneratedColumn<String> get businessId => $composableBuilder(
+    column: $table.businessId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get productId =>
+      $composableBuilder(column: $table.productId, builder: (column) => column);
+
+  GeneratedColumn<String> get createdBy =>
+      $composableBuilder(column: $table.createdBy, builder: (column) => column);
+
+  GeneratedColumn<String> get idempotencyKey => $composableBuilder(
+    column: $table.idempotencyKey,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get movementType => $composableBuilder(
+    column: $table.movementType,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quantityMilli => $composableBuilder(
+    column: $table.quantityMilli,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get quantityDeltaMilli => $composableBuilder(
+    column: $table.quantityDeltaMilli,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get resultingQuantityMilli => $composableBuilder(
+    column: $table.resultingQuantityMilli,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<int> get unitCostMinor => $composableBuilder(
+    column: $table.unitCostMinor,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get reason =>
+      $composableBuilder(column: $table.reason, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<String> get reference =>
+      $composableBuilder(column: $table.reference, builder: (column) => column);
+
+  GeneratedColumn<String> get transactionId => $composableBuilder(
+    column: $table.transactionId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get reversesMovementId => $composableBuilder(
+    column: $table.reversesMovementId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get createdAt =>
+      $composableBuilder(column: $table.createdAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get cachedAt =>
+      $composableBuilder(column: $table.cachedAt, builder: (column) => column);
+
+  GeneratedColumn<String> get syncStatus => $composableBuilder(
+    column: $table.syncStatus,
+    builder: (column) => column,
+  );
+}
+
+class $$CachedStockMovementsTableTableManager
+    extends
+        RootTableManager<
+          _$KgweboDatabase,
+          $CachedStockMovementsTable,
+          CachedStockMovement,
+          $$CachedStockMovementsTableFilterComposer,
+          $$CachedStockMovementsTableOrderingComposer,
+          $$CachedStockMovementsTableAnnotationComposer,
+          $$CachedStockMovementsTableCreateCompanionBuilder,
+          $$CachedStockMovementsTableUpdateCompanionBuilder,
+          (
+            CachedStockMovement,
+            BaseReferences<
+              _$KgweboDatabase,
+              $CachedStockMovementsTable,
+              CachedStockMovement
+            >,
+          ),
+          CachedStockMovement,
+          PrefetchHooks Function()
+        > {
+  $$CachedStockMovementsTableTableManager(
+    _$KgweboDatabase db,
+    $CachedStockMovementsTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer:
+              () => $$CachedStockMovementsTableFilterComposer(
+                $db: db,
+                $table: table,
+              ),
+          createOrderingComposer:
+              () => $$CachedStockMovementsTableOrderingComposer(
+                $db: db,
+                $table: table,
+              ),
+          createComputedFieldComposer:
+              () => $$CachedStockMovementsTableAnnotationComposer(
+                $db: db,
+                $table: table,
+              ),
+          updateCompanionCallback:
+              ({
+                Value<String> remoteId = const Value.absent(),
+                Value<String> ownerId = const Value.absent(),
+                Value<String> businessId = const Value.absent(),
+                Value<String> productId = const Value.absent(),
+                Value<String> createdBy = const Value.absent(),
+                Value<String> idempotencyKey = const Value.absent(),
+                Value<String> movementType = const Value.absent(),
+                Value<int> quantityMilli = const Value.absent(),
+                Value<int> quantityDeltaMilli = const Value.absent(),
+                Value<int> resultingQuantityMilli = const Value.absent(),
+                Value<int?> unitCostMinor = const Value.absent(),
+                Value<String?> reason = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String?> reference = const Value.absent(),
+                Value<String?> transactionId = const Value.absent(),
+                Value<String?> reversesMovementId = const Value.absent(),
+                Value<DateTime> createdAt = const Value.absent(),
+                Value<DateTime> cachedAt = const Value.absent(),
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedStockMovementsCompanion(
+                remoteId: remoteId,
+                ownerId: ownerId,
+                businessId: businessId,
+                productId: productId,
+                createdBy: createdBy,
+                idempotencyKey: idempotencyKey,
+                movementType: movementType,
+                quantityMilli: quantityMilli,
+                quantityDeltaMilli: quantityDeltaMilli,
+                resultingQuantityMilli: resultingQuantityMilli,
+                unitCostMinor: unitCostMinor,
+                reason: reason,
+                notes: notes,
+                reference: reference,
+                transactionId: transactionId,
+                reversesMovementId: reversesMovementId,
+                createdAt: createdAt,
+                cachedAt: cachedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String remoteId,
+                required String ownerId,
+                required String businessId,
+                required String productId,
+                required String createdBy,
+                required String idempotencyKey,
+                required String movementType,
+                required int quantityMilli,
+                required int quantityDeltaMilli,
+                required int resultingQuantityMilli,
+                Value<int?> unitCostMinor = const Value.absent(),
+                Value<String?> reason = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<String?> reference = const Value.absent(),
+                Value<String?> transactionId = const Value.absent(),
+                Value<String?> reversesMovementId = const Value.absent(),
+                required DateTime createdAt,
+                required DateTime cachedAt,
+                Value<String> syncStatus = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CachedStockMovementsCompanion.insert(
+                remoteId: remoteId,
+                ownerId: ownerId,
+                businessId: businessId,
+                productId: productId,
+                createdBy: createdBy,
+                idempotencyKey: idempotencyKey,
+                movementType: movementType,
+                quantityMilli: quantityMilli,
+                quantityDeltaMilli: quantityDeltaMilli,
+                resultingQuantityMilli: resultingQuantityMilli,
+                unitCostMinor: unitCostMinor,
+                reason: reason,
+                notes: notes,
+                reference: reference,
+                transactionId: transactionId,
+                reversesMovementId: reversesMovementId,
+                createdAt: createdAt,
+                cachedAt: cachedAt,
+                syncStatus: syncStatus,
+                rowid: rowid,
+              ),
+          withReferenceMapper:
+              (p0) =>
+                  p0
+                      .map(
+                        (e) => (
+                          e.readTable(table),
+                          BaseReferences(db, table, e),
+                        ),
+                      )
+                      .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CachedStockMovementsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$KgweboDatabase,
+      $CachedStockMovementsTable,
+      CachedStockMovement,
+      $$CachedStockMovementsTableFilterComposer,
+      $$CachedStockMovementsTableOrderingComposer,
+      $$CachedStockMovementsTableAnnotationComposer,
+      $$CachedStockMovementsTableCreateCompanionBuilder,
+      $$CachedStockMovementsTableUpdateCompanionBuilder,
+      (
+        CachedStockMovement,
+        BaseReferences<
+          _$KgweboDatabase,
+          $CachedStockMovementsTable,
+          CachedStockMovement
+        >,
+      ),
+      CachedStockMovement,
+      PrefetchHooks Function()
+    >;
 
 class $KgweboDatabaseManager {
   final _$KgweboDatabase _db;
@@ -4237,4 +7354,8 @@ class $KgweboDatabaseManager {
       $$CachedTransactionsTableTableManager(_db, _db.cachedTransactions);
   $$CachedObligationsTableTableManager get cachedObligations =>
       $$CachedObligationsTableTableManager(_db, _db.cachedObligations);
+  $$CachedProductsTableTableManager get cachedProducts =>
+      $$CachedProductsTableTableManager(_db, _db.cachedProducts);
+  $$CachedStockMovementsTableTableManager get cachedStockMovements =>
+      $$CachedStockMovementsTableTableManager(_db, _db.cachedStockMovements);
 }

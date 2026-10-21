@@ -106,11 +106,30 @@ Phase 4 minimum: `FinancialEngine` spec cash fixture and related cases; sale/exp
 
 RLS verification on `hhwxajxjmyjntxykptvs` (21 Oct 2026): User B could not select, update, or delete User A's business; inserts by B could not keep `owner_id` = A (trigger forced `auth.uid()`); anon has no SELECT on `profiles` or `businesses`.
 
-Phase 4 RLS catalog (21 Oct 2026): `public.transactions` has FORCE RLS; anon has no select/insert/update/delete; authenticated has those four privileges; policies `transactions_select_own`, `transactions_insert_own`, `transactions_update_own`, `transactions_delete_own` exist. Two-user payload tests were not run (no staging users). Repeat `supabase/tests/rls_transactions.sql` with two Auth users before claiming empirical cross-account isolation.
+Phase 4 RLS catalog (21 Oct 2026): `public.transactions` has FORCE RLS; anon has no select/insert/update/delete; authenticated has those four privileges; policies `transactions_select_own`, `transactions_insert_own`, `transactions_update_own`, `transactions_delete_own` exist.
 
-Phase 5 minimum: period helpers (this/last month, last 3 months, this year, custom inclusive days); engine last-month vs this-month and unpaid-refund cases; cash outlook (unpaid commitments do not change recorded cash, overdue vs upcoming, paid/cancelled excluded, mixed currency skip); empty businesses get no false loss insight; overdue copy does not call commitments operating expenses; dashboard period selector recalculates sales while cash stays all-time; unpaid commitment estimate is labelled; obligation validators, idempotent create, owner isolation, stale cache; form validation and duplicate-tap guard; responsive dashboard including the cash-flow commitments screen at 320×568, 360×800, 800×360, 768×1024, 1024×768.
+Phase 5 minimum: period helpers (this/last month, last 3 months, this year, custom inclusive days); engine last-month vs this-month and unpaid-refund cases; cash outlook (unpaid commitments do not change recorded cash, overdue vs upcoming, paid/cancelled excluded, mixed currency skip); unpaid commitment is not an operating expense; marking paid does not create an expense; recording the matching expense does not double-count; empty businesses get no false loss insight; overdue copy does not call commitments operating expenses; dashboard period selector recalculates sales while cash stays all-time; unpaid commitment estimate is labelled; failed commitment refresh is not shown as zero unpaid bills; obligation validators, idempotent create, owner isolation, stale cache; form validation, duplicate-tap guard, and keyboard inset at 320×568; responsive dashboard including the cash-flow commitments screen at 320×568, 360×800, 800×360, 768×1024, 1024×768.
 
-Phase 5 RLS catalog (21 Oct 2026): `public.obligations` has FORCE RLS; anon has no select/insert/update/delete; authenticated can select/insert; policies `obligations_select_own`, `obligations_insert_own`, `obligations_update_own`, `obligations_delete_own` exist. Two-user payload tests for transactions and obligations were not run (no staging users). Repeat `supabase/tests/rls_transactions.sql` and `supabase/tests/rls_obligations.sql` with two Auth users before claiming empirical cross-account isolation.
+Phase 5 RLS (21 Oct 2026): FORCE RLS on `transactions` and `obligations`; anon has no select/insert/update/delete/truncate; authenticated has select/insert/update/delete and not truncate. Two dedicated Auth users signed in through GoTrue (`grant_type=password`) and called PostgREST with their access tokens: B saw 0 of A's rows; B insert against A's `business_id` returned 400; B update/delete of A's rows affected 0 rows; `created_by` was forced to `auth.uid()`; duplicate idempotency keys returned 409; A's own inserts and reads succeeded. Service-role was not used as a test identity. Throwaway users and their businesses were deleted after the run.
+
+Phase 6 minimum: product validators; milli-unit parse/format; zero stock is out of stock even when the threshold is 0; weighted-average cost; missing cost excluded from estimated value; snapshot COGS after a later cost change; oversell rejected; resellable vs damaged returns; reversal restores stock; failed multi-line sale leaves no partial rows; unpaid product sales increase recorded sales not cash; product sale counted once in the engine; Drift owner/business isolation and stale cache; product form validation and duplicate-tap guard; stock write-off confirmation; product list usable at 320×568; sale form product line uses the inventory RPC; dashboard restock notice is not treated as cash.
+
+Phase 6 RLS catalog (21 Oct 2026): FORCE RLS on `products`, `sale_items`, and `stock_movements`. Anon has no select/insert/update/delete/truncate. Authenticated can select/insert/update/delete products and cannot TRUNCATE. Authenticated can select `sale_items` and `stock_movements` and cannot insert or TRUNCATE them. Writes go through `create_catalog_product`, `record_stock_movement`, and `record_product_sale`. Two-user JWT isolation for inventory was not re-run in this session because new Auth sign-ups require email OTP confirmation.
+
+## 8. Android manual checklist (Phase 6)
+
+Run on a phone or emulator after a debug APK built with `--dart-define-from-file=.env`. Do not claim a physical device pass if only an emulator was used.
+
+- [ ] Portrait dashboard: opening cash labelled as not revenue; period chips visible; compact bottom bar (Home / Activity / Products / More).
+- [ ] Products: catalogue, search, filters, stock overview labelled as an estimate.
+- [ ] Product form and stock receipt/adjustment: keyboard does not overflow; write-offs ask for a reason and confirmation.
+- [ ] Sale form: amount-only sale still works; adding a product decreases stock once; unpaid product sale does not increase cash.
+- [ ] Expense form: labelled as an operating expense; same keyboard behaviour.
+- [ ] More → Cash Flow: unpaid bills are not expenses; empty commitments do not invent bills.
+- [ ] Commitment form: planned-payment copy; keyboard keeps the focused field usable.
+- [ ] Landscape: navigation rail appears at width ≥ 600; Cash Flow, dashboard and Products remain scrollable.
+- [ ] Airplane mode / failed refresh: last saved cash and products remain; stale/error copy appears; stock is not presented as unquestionably current.
+- [ ] Cancel form edits without saving if using a live account.
 
 Do not mark a phase complete if these commands were not run or if they failed.
 
@@ -119,4 +138,4 @@ Do not mark a phase complete if these commands were not run or if they failed.
 - Unit and widget tests must not require a live network by default.
 - Tests that hit Supabase are tagged and skipped when credentials are absent.
 - Demo seed data is allowed only in explicit demo tests and the labelled demo mode.
-- Android licenses were incomplete at audit; emulator tests may be blocked until licenses are accepted or a device is attached.
+- Android licenses were incomplete at the original audit. An API 37 x86_64 emulator was available on 21 Oct 2026 and was used for the Phase 5 manual checklist. No physical handset was attached.

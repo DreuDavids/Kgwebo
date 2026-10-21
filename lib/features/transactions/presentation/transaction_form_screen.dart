@@ -8,6 +8,11 @@ import '../../../app/theme/kgwebo_colors.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/finance/business_calendar.dart';
 import '../../../core/finance/ledger_entry.dart';
+import '../../../core/inventory/inventory_costing.dart';
+import '../../../core/inventory/quantity_formatter.dart';
+import '../../../core/inventory/quantity_parser.dart';
+import '../../../core/money/money_formatter.dart';
+import '../../../core/money/money_parser.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
 import '../../../shared/widgets/kgwebo_soft_card.dart';
@@ -17,6 +22,9 @@ import '../../../shared/widgets/kgwebo_text_field.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
+import '../../products/application/product_tick.dart';
+import '../../products/domain/catalog_product.dart';
+import '../../products/domain/sale_line.dart';
 import '../application/transaction_tick.dart';
 import '../application/transaction_validators.dart';
 import '../domain/payment_method.dart';
@@ -54,8 +62,15 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   bool _hydrated = false;
   String? _error;
   String? _existingId;
+  final List<SaleLineDraft> _lines = [];
+  List<CatalogProduct> _catalog = const [];
+  bool _hasExistingLines = false;
 
   bool get _isEdit => _existingId != null;
+
+  bool get _isProductSale =>
+      widget.type == MoneyMovementType.sale &&
+      (_lines.isNotEmpty || _hasExistingLines);
 
   @override
   void initState() {
@@ -70,6 +85,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       WidgetsBinding.instance.addPostFrameCallback((_) => _loadExisting());
     } else {
       _hydrated = true;
+      WidgetsBinding.instance.addPostFrameCallback((_) => _loadCatalog());
     }
   }
 
@@ -110,15 +126,24 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
       final wall = BusinessCalendar.gaboroneWallTime(existing.occurredAt);
       _amount.text = _amountText(existing.amountMinor);
       _description.text = existing.description ?? '';
+      final lines = await ref
+          .read(productRepositoryProvider)
+          .listSaleLines(
+            ownerId: session.user.id,
+            businessId: session.business.id,
+            transactionId: existing.id,
+          );
       setState(() {
         _occurredOn = DateTime(wall.year, wall.month, wall.day);
         _category = existing.category;
         _paymentMethod = existing.paymentMethod;
         _paymentStatus = existing.paymentStatus;
         _existingId = existing.id;
+        _hasExistingLines = lines.isNotEmpty;
         _loadingExisting = false;
         _hydrated = true;
       });
+      await _loadCatalog();
     } on AuthFailure catch (error) {
       if (!mounted) {
         return;
@@ -128,6 +153,97 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         _error = error.message;
       });
     }
+  }
+
+  Future<void> _loadCatalog() async {
+    if (widget.type != MoneyMovementType.sale) {
+      return;
+    }
+    final session = ref.read(appSessionProvider);
+    if (session is! AppSessionReady) {
+      return;
+    }
+    try {
+      final snapshot = await ref
+          .read(productRepositoryProvider)
+          .listAllConfirmed(
+            ownerId: session.user.id,
+            businessId: session.business.id,
+          );
+      if (!mounted) {
+        return;
+      }
+      setState(() {
+        _catalog = snapshot.items.where((item) => item.isActive).toList();
+      });
+    } on AuthFailure {
+      // Amount-only sales still work if the catalogue cannot be loaded.
+    }
+  }
+
+  void _syncAmountFromLines() {
+    var total = 0;
+    for (final line in _lines) {
+      final quantity = tryParseQuantityMilli(
+        line.quantityText,
+        allowZero: false,
+      );
+      final price = tryParseMinorUnits(line.unitPriceText);
+      if (quantity == null || price == null) {
+        return;
+      }
+      total += InventoryCosting.lineTotalMinor(
+        quantityMilli: quantity,
+        unitPriceMinor: price,
+      );
+    }
+    if (_lines.isNotEmpty) {
+      _amount.text = _amountText(total);
+    }
+  }
+
+  Future<void> _addProductLine() async {
+    if (_catalog.isEmpty || _saving || _isEdit) {
+      return;
+    }
+    final selected = await showModalBottomSheet<CatalogProduct>(
+      context: context,
+      showDragHandle: true,
+      builder: (context) {
+        return ListView(
+          padding: const EdgeInsets.all(KgweboSpacing.md),
+          children: [
+            Text(
+              'Add a product',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: KgweboSpacing.sm),
+            for (final product in _catalog)
+              ListTile(
+                title: Text(product.name),
+                subtitle: Text(
+                  '${MoneyFormatter.formatMinor(product.sellingPriceMinor, currencyCode: 'BWP')} · ${QuantityFormatter.format(product.stockQuantityMilli)} available',
+                ),
+                onTap: () => Navigator.of(context).pop(product),
+              ),
+          ],
+        );
+      },
+    );
+    if (selected == null || !mounted) {
+      return;
+    }
+    setState(() {
+      _lines.add(
+        SaleLineDraft(
+          productId: selected.id,
+          productName: selected.name,
+          quantityText: '1',
+          unitPriceText: _amountText(selected.sellingPriceMinor),
+        ),
+      );
+      _syncAmountFromLines();
+    });
   }
 
   String _amountText(int minor) {
@@ -203,6 +319,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     if (_saving) {
       return;
     }
+    if (_lines.isNotEmpty) {
+      _syncAmountFromLines();
+    }
     final errors = validateTransactionDraft(_draft());
     setState(() {
       _errors = errors;
@@ -218,21 +337,41 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     }
     setState(() => _saving = true);
     try {
-      final repository = ref.read(transactionRepositoryProvider);
-      if (_isEdit) {
-        await repository.update(
-          ownerId: session.user.id,
-          businessId: session.business.id,
-          currencyCode: session.business.currencyCode,
-          draft: _draft(),
-        );
+      if (!_isEdit &&
+          _lines.isNotEmpty &&
+          widget.type == MoneyMovementType.sale) {
+        await ref
+            .read(productRepositoryProvider)
+            .recordProductSale(
+              ownerId: session.user.id,
+              businessId: session.business.id,
+              currencyCode: session.business.currencyCode,
+              idempotencyKey: _idempotencyKey,
+              occurredOn: _occurredOn,
+              category: _category,
+              description: _description.text,
+              paymentMethod: _paymentMethod,
+              paymentStatus: _paymentStatus,
+              lines: List.of(_lines),
+            );
+        bumpProductTick(ref);
       } else {
-        await repository.create(
-          ownerId: session.user.id,
-          businessId: session.business.id,
-          currencyCode: session.business.currencyCode,
-          draft: _draft(),
-        );
+        final repository = ref.read(transactionRepositoryProvider);
+        if (_isEdit) {
+          await repository.update(
+            ownerId: session.user.id,
+            businessId: session.business.id,
+            currencyCode: session.business.currencyCode,
+            draft: _draft(),
+          );
+        } else {
+          await repository.create(
+            ownerId: session.user.id,
+            businessId: session.business.id,
+            currencyCode: session.business.currencyCode,
+            draft: _draft(),
+          );
+        }
       }
       if (!mounted) {
         return;
@@ -356,11 +495,66 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
                   ),
                   textInputAction: TextInputAction.next,
                   errorText: _errors.amount,
-                  enabled: !_saving,
+                  enabled: !_saving && !_isProductSale,
                   inputFormatters: [
                     FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
                   ],
                 ),
+                if (widget.type == MoneyMovementType.sale) ...[
+                  const SizedBox(height: KgweboSpacing.md),
+                  Text(
+                    _hasExistingLines
+                        ? 'This sale has product lines. Edit payment details only, or delete it to reverse stock.'
+                        : 'Optional: add stocked products. Amount comes from line totals. Stock decreases once when saved.',
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: KgweboColors.inkMuted,
+                    ),
+                  ),
+                  if (!_isEdit) ...[
+                    const SizedBox(height: KgweboSpacing.sm),
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: TextButton.icon(
+                        onPressed:
+                            _saving || _catalog.isEmpty
+                                ? null
+                                : _addProductLine,
+                        icon: const Icon(Icons.add),
+                        label: const Text('Add product'),
+                      ),
+                    ),
+                    for (var index = 0; index < _lines.length; index++)
+                      Padding(
+                        padding: const EdgeInsets.only(top: KgweboSpacing.sm),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                '${_lines[index].productName} × ${_lines[index].quantityText}',
+                                maxLines: 2,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            IconButton(
+                              tooltip: 'Remove ${_lines[index].productName}',
+                              onPressed:
+                                  _saving
+                                      ? null
+                                      : () => setState(() {
+                                        _lines.removeAt(index);
+                                        if (_lines.isEmpty) {
+                                          _amount.clear();
+                                        } else {
+                                          _syncAmountFromLines();
+                                        }
+                                      }),
+                              icon: const Icon(Icons.close),
+                            ),
+                          ],
+                        ),
+                      ),
+                  ],
+                ],
                 const SizedBox(height: KgweboSpacing.md),
                 DropdownButtonFormField<String>(
                   isExpanded: true,

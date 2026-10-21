@@ -11,6 +11,7 @@ import 'package:kgwebo/features/obligations/presentation/obligation_form_screen.
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_obligations.dart';
+import '../../helpers/fake_products.dart';
 import '../../helpers/fake_transactions.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/test_config.dart';
@@ -58,6 +59,9 @@ void main() {
             (ref) => FakeTransactionRepository(),
           ),
           obligationRepositoryProvider.overrideWith((ref) => obligations),
+          productRepositoryProvider.overrideWith(
+            (ref) => FakeProductRepository(),
+          ),
         ],
         child: MaterialApp(
           theme: KgweboTheme.light(),
@@ -110,5 +114,27 @@ void main() {
     await tester.pumpAndSettle();
     expect(repository.createCalls, 1);
     expect(repository.items, hasLength(1));
+  });
+
+  testWidgets('commitment form stays usable at 320x568 with keyboard inset', (
+    tester,
+  ) async {
+    tester.view.viewInsets = const FakeViewPadding(bottom: 280);
+    addTearDown(() => tester.view.resetViewInsets());
+    final overflows = <String>[];
+    final original = FlutterError.onError;
+    FlutterError.onError = (details) {
+      final text = details.exceptionAsString();
+      if (text.contains('overflowed')) {
+        overflows.add(text);
+      }
+      original?.call(details);
+    };
+    addTearDown(() => FlutterError.onError = original);
+
+    await pumpForm(tester, size: const Size(320, 568));
+    expect(find.textContaining('commitment'), findsWidgets);
+    expect(find.text('Save commitment'), findsOneWidget);
+    expect(overflows, isEmpty);
   });
 }

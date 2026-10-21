@@ -9,11 +9,16 @@ import '../../../app/supabase/kgwebo_supabase.dart';
 import '../../../core/persistence/business_cache.dart';
 import '../../../core/persistence/kgwebo_database.dart';
 import '../../../core/persistence/obligation_cache.dart';
+import '../../../core/persistence/product_cache.dart';
 import '../../../core/persistence/transaction_cache.dart';
 import '../../obligations/application/obligation_repository.dart';
 import '../../obligations/data/cached_obligation_repository.dart';
 import '../../obligations/data/preview_obligation_repository.dart';
 import '../../obligations/data/supabase_obligation_repository.dart';
+import '../../products/application/product_repository.dart';
+import '../../products/data/cached_product_repository.dart';
+import '../../products/data/preview_product_repository.dart';
+import '../../products/data/supabase_product_repository.dart';
 import '../../transactions/application/transaction_repository.dart';
 import '../../transactions/data/cached_transaction_repository.dart';
 import '../../transactions/data/preview_transaction_repository.dart';
@@ -91,6 +96,22 @@ final obligationRepositoryProvider = Provider<ObligationRepository>((ref) {
   return CachedObligationRepository(
     remote: SupabaseObligationRepository(kgweboSupabase),
     cache: ref.watch(obligationCacheProvider),
+    currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+  );
+});
+
+final productCacheProvider = Provider<ProductCache>((ref) {
+  return ProductCache(ref.watch(kgweboDatabaseProvider));
+});
+
+final productRepositoryProvider = Provider<ProductRepository>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (!config.connectsToBackend) {
+    return PreviewProductRepository();
+  }
+  return CachedProductRepository(
+    remote: SupabaseProductRepository(kgweboSupabase),
+    cache: ref.watch(productCacheProvider),
     currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
   );
 });

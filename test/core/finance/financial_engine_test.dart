@@ -379,6 +379,30 @@ void main() {
     },
   );
 
+  test('product sales use the same cash and operating-result rules', () {
+    final summary = FinancialEngine.summarize(
+      entries: [
+        entry(id: 'paid-goods', type: MoneyMovementType.sale, amount: 1250),
+        entry(
+          id: 'unpaid-goods',
+          type: MoneyMovementType.sale,
+          amount: 1250,
+          status: PaymentStatus.unpaid,
+        ),
+      ],
+      openingCashMinor: 200000,
+      currencyCode: 'BWP',
+      period: october,
+      asOf: asOf,
+    );
+
+    expect(summary.recordedSalesMinor, 2500);
+    expect(summary.unpaidSalesMinor, 1250);
+    expect(summary.currentCashMinor, 201250);
+    expect(summary.netRecordedOperatingResultMinor, 2500);
+    expect(summary.recordedOperatingExpensesMinor, 0);
+  });
+
   test('unpaid refunds reduce period sales but not cash', () {
     final summary = FinancialEngine.summarize(
       entries: [

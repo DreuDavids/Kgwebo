@@ -26,7 +26,7 @@ class DashboardInsight {
 abstract final class DashboardInsights {
   static List<DashboardInsight> from({
     required FinancialSummary summary,
-    required CashOutlook outlook,
+    required CashOutlook? outlook,
     required bool hitRecordCap,
   }) {
     final insights = <DashboardInsight>[];
@@ -81,7 +81,7 @@ abstract final class DashboardInsights {
       );
     }
 
-    if (outlook.overdueMinor > 0) {
+    if (outlook != null && outlook.overdueMinor > 0) {
       insights.add(
         DashboardInsight(
           kind: DashboardInsightKind.overdueCommitments,

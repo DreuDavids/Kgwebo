@@ -166,25 +166,40 @@ Phase 4 already replaced preview metric tiles with recorded cash, sales, expense
 
 **Exit:** Displayed totals match the engine; layouts do not overflow in tested sizes.
 
-Verification executed 21 Oct 2026:
+Verification executed 21 Oct 2026, then re-run as the Phase 5 gate before Phase 6:
 
-- Remote migration applied: `obligations` on `hhwxajxjmyjntxykptvs`
-- FORCE RLS on `obligations`; anon has no table privileges; authenticated has select/insert/update/delete; four ownership policies present
-- Security advisors: existing leaked-password warning only (no new obligation lints)
-- `dart format --set-exit-if-changed .` — pass after formatting
+- Remote migrations on `hhwxajxjmyjntxykptvs`: `obligations`, then `revoke_rls_bypassing_grants` (authenticated no longer has TRUNCATE, which bypasses RLS)
+- FORCE RLS on `obligations` and `transactions`; anon has no table privileges; authenticated has select/insert/update/delete
+- Two-user JWT payload tests: dedicated Auth users, GoTrue password grant, PostgREST with access tokens. Cross-account select/insert/update/delete denied; own-business writes succeeded; throwaway users deleted
+- Security advisors: existing leaked-password warning only
+- `dart format --set-exit-if-changed lib test` — pass
 - `flutter analyze` — No issues found
-- `flutter test` — All tests passed (222)
-- `flutter build apk --debug` — `build\app\outputs\flutter-apk\app-debug.apk`
-- Two-user payload RLS for transactions and obligations: not executed (no dedicated staging users). Repeat `supabase/tests/rls_transactions.sql` and `supabase/tests/rls_obligations.sql` with two Auth users before treating cross-account isolation as empirically proven.
+- `flutter test` — All tests passed (229)
+- `flutter build apk --debug --dart-define-from-file=.env` — `build\app\outputs\flutter-apk\app-debug.apk`
+- Emulator (API 37, no physical handset): dashboard, sale form, cash-flow, commitment form, keyboard, landscape rail, airplane-mode stale cash}
 
 ## Phase 6 — Inventory
 
-- Products, stock movements, product sales.
-- COGS from snapshotted unit cost.
-- Reject oversell unless backorders are enabled.
-- Low-stock recommendations.
+- Product catalogue: name, optional SKU, description, selling price, optional cost, quantity milli-units, low-stock threshold, unit of measure, active/archived. SKU is optional; duplicate SKUs are unique per business when present.
+- Stock is a ledger, not an editable balance. Movements: opening, received, sold, customer return, damaged return, damaged/lost, manual increase/decrease, reversal. Manual corrections and write-offs require a reason.
+- Quantities are integer milli-units (`1000` = 1). Money stays integer minor units. Weighted-average cost updates on restock; sale lines freeze unit price and unit cost.
+- Atomic product sales through `public.record_product_sale`: one PostgreSQL transaction writes the sale, line items, sold movements, and stock decrease. Amount-only sales without lines keep Phase 4 behaviour. Deleting a product sale reverses stock. Editing a product-line sale can change payment details only; line quantities are not rewritten.
+- Inventory overview (active / low / out of stock, estimated value at recorded cost) lives on Products. Dashboard shows a restock notice. Estimated inventory value is not cash, sales, profit, or an operating expense. COGS is informational and is not posted as an expense.
+- Drift schema **v4** caches confirmed products and stock movements per owner and business. Inventory writes are online-only.
+- Backorders are off. Oversell is rejected. Resellable returns increase stock; damaged returns are recorded with delta 0.
 
 **Exit:** Sale and stock stay consistent after success and failure.
+
+Verification executed 21 Oct 2026:
+
+- Remote migrations on `hhwxajxjmyjntxykptvs`: `inventory` tables, indexes, RPCs, triggers, FORCE RLS and grants, plus `inventory_function_search_path`
+- FORCE RLS on `products`, `sale_items`, `stock_movements`; anon has no table privileges; authenticated can select/insert/update/delete products, select sale lines and movements, and cannot TRUNCATE or insert movements/sale lines
+- Privilege catalog SQL executed against the live project. Two-user JWT isolation for inventory was not re-run in this session (email OTP confirmation is required for new Auth users)
+- Security advisors: intended `SECURITY DEFINER` RPCs callable by `authenticated`; leaked-password warning unchanged
+- `dart format --set-exit-if-changed lib test` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (270)
+- `flutter build apk --debug --dart-define-from-file=.env` — `build\app\outputs\flutter-apk\app-debug.apk`
 
 ## Phase 7 — Cash-flow intelligence
 

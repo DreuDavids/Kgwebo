@@ -17,6 +17,7 @@ abstract final class AppRoutes {
   static const recordContribution = '/transactions/owner-contribution';
   static const recordWithdrawal = '/transactions/owner-withdrawal';
   static const products = '/products';
+  static const productNew = '/products/new';
   static const cashFlow = '/cash-flow';
   static const recordObligation = '/cash-flow/new';
   static const reports = '/reports';
@@ -43,6 +44,10 @@ abstract final class AppRoutes {
   static const transactionDetailsName = 'transaction-details';
   static const transactionEditName = 'transaction-edit';
   static const productsName = 'products';
+  static const productNewName = 'product-new';
+  static const productDetailsName = 'product-details';
+  static const productEditName = 'product-edit';
+  static const productStockName = 'product-stock';
   static const cashFlowName = 'cash-flow';
   static const recordObligationName = 'record-obligation';
   static const obligationDetailsName = 'obligation-details';

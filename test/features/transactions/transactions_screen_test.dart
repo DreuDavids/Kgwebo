@@ -13,6 +13,7 @@ import 'package:kgwebo/features/transactions/presentation/transaction_details_sc
 import 'package:kgwebo/features/transactions/presentation/transactions_screen.dart';
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_products.dart';
 import '../../helpers/fake_transactions.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/test_config.dart';
@@ -55,6 +56,9 @@ void main() {
             (ref) => FakeOnboardingRepository(business: business),
           ),
           transactionRepositoryProvider.overrideWith((ref) => repository),
+          productRepositoryProvider.overrideWith(
+            (ref) => FakeProductRepository(),
+          ),
         ],
         child: MaterialApp(
           theme: KgweboTheme.light(),
@@ -102,6 +106,9 @@ void main() {
           appSessionProvider.overrideWith((ref) => session),
           currentOwnerIdProvider.overrideWithValue(user.id),
           transactionRepositoryProvider.overrideWith((ref) => repository),
+          productRepositoryProvider.overrideWith(
+            (ref) => FakeProductRepository(),
+          ),
         ],
         child: MaterialApp.router(
           theme: KgweboTheme.light(),

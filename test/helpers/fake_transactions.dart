@@ -261,6 +261,48 @@ BusinessTransaction sampleSale({
   PaymentStatus status = PaymentStatus.paid,
   DateTime? occurredAt,
 }) {
+  return _sampleTransaction(
+    id: id,
+    ownerId: ownerId,
+    businessId: businessId,
+    amount: amount,
+    status: status,
+    occurredAt: occurredAt,
+    type: MoneyMovementType.sale,
+    category: 'goods',
+  );
+}
+
+BusinessTransaction sampleExpense({
+  String id = 'tx-expense',
+  String ownerId = 'user-1',
+  String businessId = 'biz-1',
+  int amount = 80000,
+  PaymentStatus status = PaymentStatus.paid,
+  DateTime? occurredAt,
+}) {
+  return _sampleTransaction(
+    id: id,
+    ownerId: ownerId,
+    businessId: businessId,
+    amount: amount,
+    status: status,
+    occurredAt: occurredAt,
+    type: MoneyMovementType.expense,
+    category: 'rent',
+  );
+}
+
+BusinessTransaction _sampleTransaction({
+  required String id,
+  required String ownerId,
+  required String businessId,
+  required int amount,
+  required PaymentStatus status,
+  required MoneyMovementType type,
+  required String category,
+  DateTime? occurredAt,
+}) {
   final occurred = occurredAt ?? DateTime.now().toUtc();
   return BusinessTransaction(
     id: id,
@@ -268,10 +310,10 @@ BusinessTransaction sampleSale({
     ownerId: ownerId,
     createdBy: ownerId,
     idempotencyKey: 'key-$id',
-    type: MoneyMovementType.sale,
+    type: type,
     amountMinor: amount,
     currencyCode: 'BWP',
-    category: 'goods',
+    category: category,
     occurredAt: occurred,
     paymentMethod: PaymentMethod.cash,
     paymentStatus: status,

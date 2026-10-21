@@ -4,6 +4,7 @@ import 'package:kgwebo/app/routes.dart';
 import 'package:kgwebo/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:kgwebo/features/shell/compact_navigation.dart';
 import 'package:kgwebo/features/shell/rail_navigation.dart';
+import 'package:kgwebo/shared/widgets/kgwebo_brand_mark.dart';
 
 import '../../helpers/pump_app.dart';
 
@@ -37,7 +38,9 @@ void main() {
       expect(overflows, isEmpty, reason: overflows.join('\n'));
       expect(find.byType(ErrorWidget), findsNothing);
       expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(find.text('Record a sale'), findsOneWidget);
+      expect(find.text('Overview'), findsOneWidget);
+      expect(find.text('Records'), findsOneWidget);
+      expect(find.text('Outlook'), findsOneWidget);
 
       final width = profile.$2.width;
       if (width < 600) {
@@ -78,11 +81,32 @@ void main() {
     );
   });
 
+  testWidgets('Kgwebo brand stays pinned while the greeting scrolls away', (
+    tester,
+  ) async {
+    await pumpKgweboApp(tester, size: const Size(360, 800));
+
+    final brand = find.byType(KgweboBrandMark);
+    final startY = tester.getTopLeft(brand).dy;
+    expect(find.textContaining('Hello,'), findsOneWidget);
+
+    await tester.fling(
+      find.byType(CustomScrollView),
+      const Offset(0, -500),
+      1200,
+    );
+    await tester.pumpAndSettle();
+
+    expect(tester.getTopLeft(brand).dy, startY);
+    expect(find.byType(KgweboBrandMark), findsOneWidget);
+  });
+
   testWidgets('primary actions stay reachable on the smallest profile', (
     tester,
   ) async {
     await pumpKgweboApp(tester, size: const Size(320, 568));
 
+    await selectDashboardTab(tester, 'Records');
     await tester.ensureVisible(find.text('Record a sale'));
     expect(find.text('Record a sale'), findsOneWidget);
     expect(find.text('Record an expense'), findsOneWidget);

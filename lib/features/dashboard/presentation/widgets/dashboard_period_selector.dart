@@ -17,13 +17,18 @@ class DashboardPeriodSelector extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        KgweboSectionHeading(
-          title: 'Reporting period',
-          subtitle: 'Figures below use $label in the business calendar.',
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: KgweboSpacing.md),
+          child: KgweboSectionHeading(
+            title: 'Reporting period',
+            subtitle: 'Figures below use $label in the business calendar.',
+          ),
         ),
         const SizedBox(height: KgweboSpacing.sm),
         SingleChildScrollView(
+          key: const ValueKey('dashboard-period-carousel'),
           scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: KgweboSpacing.md),
           child: Row(
             children: [
               for (final kind in DashboardPeriodKind.values) ...[
@@ -33,7 +38,8 @@ class DashboardPeriodSelector extends ConsumerWidget {
                   enabled: !state.isPreview,
                   onTap: () => _select(context, ref, kind),
                 ),
-                const SizedBox(width: KgweboSpacing.xs),
+                if (kind != DashboardPeriodKind.values.last)
+                  const SizedBox(width: KgweboSpacing.xs),
               ],
             ],
           ),

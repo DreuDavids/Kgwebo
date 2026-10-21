@@ -14,10 +14,12 @@ import 'package:kgwebo/features/authentication/application/session_controller.da
 import 'package:kgwebo/features/authentication/domain/app_session.dart';
 import 'package:kgwebo/features/onboarding/application/onboarding_repository.dart';
 import 'package:kgwebo/features/obligations/application/obligation_repository.dart';
+import 'package:kgwebo/features/products/application/product_repository.dart';
 import 'package:kgwebo/features/transactions/application/transaction_repository.dart';
 
 import 'fake_auth.dart';
 import 'fake_obligations.dart';
+import 'fake_products.dart';
 import 'fake_transactions.dart';
 import 'test_config.dart';
 
@@ -33,6 +35,7 @@ Future<GoRouter> pumpKgweboApp(
   OnboardingRepository? onboarding,
   TransactionRepository? transactions,
   ObligationRepository? obligations,
+  ProductRepository? products,
   List<Override> overrides = const [],
 }) async {
   await setSurface(tester, size, textScale: textScale);
@@ -62,6 +65,9 @@ Future<GoRouter> pumpKgweboApp(
         ),
         obligationRepositoryProvider.overrideWith(
           (ref) => obligations ?? FakeObligationRepository(),
+        ),
+        productRepositoryProvider.overrideWith(
+          (ref) => products ?? FakeProductRepository(),
         ),
         ...overrides,
       ],
@@ -93,6 +99,15 @@ Future<void> setSurface(
   addTearDown(tester.platformDispatcher.clearTextScaleFactorTestValue);
   await tester.binding.setSurfaceSize(size);
   addTearDown(() => tester.binding.setSurfaceSize(null));
+}
+
+Future<void> selectDashboardTab(WidgetTester tester, String label) async {
+  final key = ValueKey('dashboard-tab-${label.toLowerCase()}');
+  final keyed = find.byKey(key);
+  final target = keyed.evaluate().isEmpty ? find.text(label) : keyed;
+  await tester.ensureVisible(target);
+  await tester.tap(target);
+  await tester.pumpAndSettle();
 }
 
 Future<void> pumpThemed(

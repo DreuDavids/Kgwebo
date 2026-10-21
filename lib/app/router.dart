@@ -18,7 +18,11 @@ import '../features/obligations/presentation/obligation_form_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/more/presentation/more_screen.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
+import '../features/products/presentation/product_details_screen.dart';
+import '../features/products/presentation/product_form_screen.dart';
 import '../features/products/presentation/products_screen.dart';
+import '../features/products/presentation/stock_movement_form_screen.dart';
+import '../features/products/domain/stock_movement_type.dart';
 import '../features/reports/presentation/reports_screen.dart';
 import '../features/business/presentation/business_profile_edit_screen.dart';
 import '../features/business/presentation/business_profile_screen.dart';
@@ -205,6 +209,46 @@ GoRouter createAppRouter({
                 path: AppRoutes.products,
                 name: AppRoutes.productsName,
                 builder: (context, state) => const ProductsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    name: AppRoutes.productNewName,
+                    builder: (context, state) => const ProductFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':productId',
+                    name: AppRoutes.productDetailsName,
+                    builder:
+                        (context, state) => ProductDetailsScreen(
+                          productId: state.pathParameters['productId']!,
+                        ),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        name: AppRoutes.productEditName,
+                        builder:
+                            (context, state) => ProductFormScreen(
+                              productId: state.pathParameters['productId'],
+                            ),
+                      ),
+                      GoRoute(
+                        path: 'stock',
+                        name: AppRoutes.productStockName,
+                        builder: (context, state) {
+                          final extra = state.extra;
+                          final type =
+                              extra is StockMovementType
+                                  ? extra
+                                  : StockMovementType.received;
+                          return StockMovementFormScreen(
+                            productId: state.pathParameters['productId']!,
+                            type: type,
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

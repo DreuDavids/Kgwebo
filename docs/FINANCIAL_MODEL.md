@@ -1,8 +1,8 @@
-# Kgwebo financial-domain model (Phase 4–5)
+# Kgwebo financial-domain model (Phase 4–6)
 
-Grounded in the repository on 21 October 2026. Remote public tables at that time were only `profiles` and `businesses`. There was no `transactions` table until the Phase 4 migration.
+Grounded in the repository on 21 October 2026 and updated for inventory. Remote public tables now include `profiles`, `businesses`, `transactions`, `obligations`, `products`, `sale_items`, and `stock_movements`.
 
-This document is the accounting contract for recorded sales, expenses, owner cash movements and dashboard totals. Widgets and Supabase clients must not invent a second set of rules.
+This document is the accounting contract for recorded sales, expenses, owner cash movements, inventory, and dashboard totals. Widgets and Supabase clients must not invent a second set of rules.
 
 ## Currency and minor units
 
@@ -66,7 +66,7 @@ Sum of `expense` amounts in the period, paid and unpaid.
 **Net recorded operating result (period)**  
 Net recorded sales − recorded operating expenses.
 
-This is **not** audited profit, taxable income, or cash on hand. It excludes owner movements, opening cash, unrecorded costs, tax, inventory COGS (Phase 6) and any amount in another currency.
+This is **not** audited profit, taxable income, or cash on hand. It excludes owner movements, opening cash, unrecorded costs, tax, inventory COGS (informational only in Phase 6) and any amount in another currency.
 
 **Current recorded cash position**  
 Opening cash
@@ -102,7 +102,7 @@ Do not display these as verified facts:
 
 - Tax
 - Profit margin
-- Inventory cost of goods sold
+- Inventory cost of goods sold as an operating expense (Phase 6 snapshots unit cost on sale lines but does not post COGS)
 - Formal profit after unmodelled costs
 - Bank-confirmed cash
 - Outstanding customer debt beyond unpaid recorded sales
@@ -124,14 +124,32 @@ An obligation is a planned payment (`rent`, `supplier`, `loan`, `utilities`, `wa
 
 Phase 7 still owns 7/14/30 day forecasts and persisted, dismissible recommendations.
 
+## Inventory (Phase 6)
+
+Stock is a movement ledger. The product `stock_quantity_milli` column is the derived on-hand balance and is not client-writable.
+
+**Quantity:** integer milli-units. `1000` = 1 unit. `each` and `pack` must be whole units. Kilogram, litre and metre may use up to three decimal places.
+
+**Costing:** weighted-average unit cost on the product card when stock is received or opening stock is recorded with a cost. Historical sale lines store the unit selling price and unit cost that were current at the time of the sale. Later cost edits do not rewrite those snapshots.
+
+**Estimated inventory value:** sum of `recorded cost × quantity` for active products that have a cost. Products with no cost are excluded and counted. This estimate is not cash, sales, profit, or a recorded operating expense.
+
+**Sales:** a product sale is still one `transactions` row of type `sale`. Paid product sales increase recorded cash; unpaid product sales increase recorded sales and not cash. Stock decreases for both. Amount-only sales with no `sale_items` keep their previous behaviour. Deleting a product sale reverses its stock movements. Line quantities cannot be edited after save.
+
+**Returns:** a resellable customer return increases stock. A damaged return is stored with quantity delta `0` (history only). Record a refund transaction separately if money was returned. Damaged/lost stock decreases available units and requires a reason.
+
+**Oversell:** rejected. Backorders are not enabled.
+
+**Idempotency:** stock movements and product sales use a unique `(business_id, idempotency_key)`. Retries return the existing row.
+
 ## Idempotency
 
 Each create uses a client-generated `idempotency_key` unique per business. The form keeps that key for retries of the same save. The database unique constraint `(business_id, idempotency_key)` plus “on conflict, return the existing row” prevents duplicate inserts after a timeout. Edits keep the existing `id` and do not mint a new row.
 
 ## Offline / cache policy (Phase 4)
 
-- **Writes are online-only.** A save, edit or delete is confirmed only after Supabase accepts it. There is no durable write-outbox in this phase (that is Phase 8).
-- **Reads may use Drift.** Confirmed transactions are cached per `owner_id` + `business_id`. A failed refresh keeps the last confirmed cache and labels it stale. A failed refresh never wipes cache.
+- **Writes are online-only.** A save, edit or delete is confirmed only after Supabase accepts it. There is no durable write-outbox in this phase (that is Phase 8). The same rule applies to products, stock movements and product sales.
+- **Reads may use Drift.** Confirmed transactions, obligations, products and stock movements are cached per `owner_id` + `business_id`. A failed refresh keeps the last confirmed cache and labels it stale. A failed refresh never wipes cache.
 - Cached rows are never shown as server-confirmed when the snapshot is stale.
 - Sign-out clears in-memory transaction state. On-disk rows stay keyed by owner; the next account cannot read them because queries require the current owner id.
 - Demo/local preview never writes to Supabase.
@@ -139,3 +157,5 @@ Each create uses a client-generated `idempotency_key` unique per business. The f
 ## Ownership
 
 RLS on `public.transactions` allows an authenticated user to select, insert, update or delete a row only when `businesses.owner_id = auth.uid()` for that `business_id`. `created_by` is forced to `auth.uid()` on insert. `business_id`, `created_by`, `currency_code` and `idempotency_key` cannot be reassigned on update.
+
+The same ownership function scopes `products`, `sale_items`, and `stock_movements`. Authenticated clients cannot insert sale lines or stock movements directly. Product `stock_quantity_milli` cannot be changed by an ordinary update.

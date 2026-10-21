@@ -34,10 +34,16 @@ class DashboardOutlook extends ConsumerWidget {
     }
 
     if (outlook == null || summary == null) {
-      return const _OutlookCard(
-        headline: 'Cash-flow outlook needs saved records.',
+      final failedRefresh = !state.isPreview && state.error != null;
+      return _OutlookCard(
+        headline:
+            failedRefresh
+                ? 'Commitments could not be loaded.'
+                : 'Cash-flow outlook needs saved records.',
         body:
-            'When totals load, Kgwebo will list unpaid commitments without treating them as cash already spent.',
+            failedRefresh
+                ? 'This is not a zero-bills result. Retry to load unpaid commitments; a failed refresh is not an empty list.'
+                : 'When totals load, Kgwebo will list unpaid commitments without treating them as cash already spent.',
       );
     }
 

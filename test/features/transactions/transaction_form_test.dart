@@ -12,6 +12,7 @@ import 'package:kgwebo/features/onboarding/domain/business_profile.dart';
 import 'package:kgwebo/features/transactions/presentation/transaction_form_screen.dart';
 
 import '../../helpers/fake_auth.dart';
+import '../../helpers/fake_products.dart';
 import '../../helpers/fake_transactions.dart';
 import '../../helpers/pump_app.dart';
 import '../../helpers/test_config.dart';
@@ -36,10 +37,12 @@ void main() {
     WidgetTester tester, {
     MoneyMovementType type = MoneyMovementType.sale,
     FakeTransactionRepository? repository,
+    FakeProductRepository? products,
     Size size = const Size(360, 800),
     AppSession? session,
   }) async {
     final transactions = repository ?? FakeTransactionRepository();
+    final catalog = products ?? FakeProductRepository();
     await setSurface(tester, size);
     await tester.pumpWidget(
       ProviderScope(
@@ -58,6 +61,7 @@ void main() {
             (ref) => FakeOnboardingRepository(business: business),
           ),
           transactionRepositoryProvider.overrideWith((ref) => transactions),
+          productRepositoryProvider.overrideWith((ref) => catalog),
         ],
         child: MaterialApp(
           theme: KgweboTheme.light(),
@@ -72,6 +76,7 @@ void main() {
   testWidgets('sale form validates empty amount', (tester) async {
     await pumpForm(tester);
     expect(find.text('Record a sale'), findsOneWidget);
+    await tester.ensureVisible(find.text('Save sale'));
     await tester.tap(find.text('Save sale'));
     await tester.pumpAndSettle();
     expect(
@@ -85,6 +90,7 @@ void main() {
   testWidgets('sale form saves a valid amount once', (tester) async {
     final repository = await pumpForm(tester);
     await tester.enterText(find.byType(TextField).first, '50.00');
+    await tester.ensureVisible(find.text('Save sale'));
     await tester.tap(find.text('Save sale'));
     await tester.pumpAndSettle();
     expect(repository.createCalls, 1);
@@ -100,6 +106,7 @@ void main() {
           ..createDelay = const Duration(milliseconds: 400);
     await pumpForm(tester, repository: repository);
     await tester.enterText(find.byType(TextField).first, '50.00');
+    await tester.ensureVisible(find.text('Save sale'));
     await tester.tap(find.text('Save sale'));
     await tester.tap(find.text('Save sale'));
     await tester.pumpAndSettle();
@@ -112,6 +119,7 @@ void main() {
         FakeTransactionRepository()..nextError = const AuthFailure.network();
     await pumpForm(tester, repository: repository);
     await tester.enterText(find.byType(TextField).first, '75.50');
+    await tester.ensureVisible(find.text('Save sale'));
     await tester.tap(find.text('Save sale'));
     await tester.pumpAndSettle();
     expect(find.text('75.50'), findsOneWidget);
@@ -123,6 +131,24 @@ void main() {
     await pumpForm(tester, type: MoneyMovementType.expense);
     expect(find.text('Record an expense'), findsOneWidget);
     expect(find.textContaining('operating expense'), findsOneWidget);
+  });
+
+  testWidgets('adding a product records one inventory sale', (tester) async {
+    final products = FakeProductRepository(products: [sampleProduct()]);
+    final transactions = await pumpForm(tester, products: products);
+    await tester.ensureVisible(find.text('Add product'));
+    await tester.tap(find.text('Add product'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tomatoes'));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.text('Save sale'));
+    await tester.tap(find.text('Save sale'));
+    await tester.pumpAndSettle();
+    expect(products.saleCalls, 1);
+    expect(products.sales, hasLength(1));
+    expect(products.sales.single.amountMinor, 1250);
+    expect(transactions.createCalls, 0);
+    expect(products.products.single.stockQuantityMilli, 4000);
   });
 
   testWidgets('sale form stays usable at 320x568 with keyboard inset', (
