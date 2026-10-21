@@ -18,6 +18,7 @@ class BusinessTransaction {
     required this.createdAt,
     required this.updatedAt,
     this.description,
+    this.pendingSync = false,
   });
 
   final String id;
@@ -35,12 +36,16 @@ class BusinessTransaction {
   final PaymentStatus paymentStatus;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool pendingSync;
 
   bool belongsTo({required String ownerId, required String businessId}) {
     return this.ownerId == ownerId && this.businessId == businessId;
   }
 
   LedgerEntry toLedgerEntry() {
+    if (pendingSync) {
+      throw StateError('Pending transactions are not ledger entries.');
+    }
     return LedgerEntry(
       id: id,
       type: type,

@@ -1,6 +1,8 @@
 import '../../../core/finance/business_calendar.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/persistence/transaction_cache.dart';
+import '../../../core/sync/outbox_models.dart';
+import '../../../core/sync/outbox_store.dart';
 import '../../authentication/domain/auth_failure.dart';
 import '../application/transaction_repository.dart';
 import '../domain/business_transaction.dart';
@@ -13,13 +15,22 @@ class CachedTransactionRepository implements TransactionRepository {
     required TransactionRepository remote,
     required TransactionCache cache,
     required String? Function() currentOwnerId,
+    OutboxStore? outbox,
+    void Function()? onOutboxChanged,
+    void Function()? onQueued,
   }) : _remote = remote,
        _cache = cache,
-       _currentOwnerId = currentOwnerId;
+       _currentOwnerId = currentOwnerId,
+       _outbox = outbox,
+       _onOutboxChanged = onOutboxChanged,
+       _onQueued = onQueued;
 
   final TransactionRepository _remote;
   final TransactionCache _cache;
   final String? Function() _currentOwnerId;
+  final OutboxStore? _outbox;
+  final void Function()? _onOutboxChanged;
+  final void Function()? _onQueued;
 
   @override
   Future<TransactionListSnapshot> list({
@@ -35,6 +46,11 @@ class CachedTransactionRepository implements TransactionRepository {
         query: query,
       );
       await _cache.upsertAll(remote.items);
+      await _reconcileConfirmed(
+        ownerId: ownerId,
+        businessId: businessId,
+        confirmed: remote.items,
+      );
       return remote;
     } on AuthFailure catch (error) {
       if (!error.isRetryable) {
@@ -114,6 +130,11 @@ class CachedTransactionRepository implements TransactionRepository {
       } else {
         await _cache.upsertAll(remote.items);
       }
+      await _reconcileConfirmed(
+        ownerId: ownerId,
+        businessId: businessId,
+        confirmed: remote.items,
+      );
       return remote;
     } on AuthFailure catch (error) {
       if (!error.isRetryable) {
@@ -178,15 +199,27 @@ class CachedTransactionRepository implements TransactionRepository {
     required TransactionDraft draft,
   }) async {
     _requireOwner(ownerId);
-    final saved = await _remote.create(
-      ownerId: ownerId,
-      businessId: businessId,
-      currencyCode: currencyCode,
-      draft: draft,
-    );
-    final owned = _owned(saved, ownerId, businessId);
-    await _cache.upsertConfirmed(owned);
-    return owned;
+    try {
+      final saved = await _remote.create(
+        ownerId: ownerId,
+        businessId: businessId,
+        currencyCode: currencyCode,
+        draft: draft,
+      );
+      final owned = _owned(saved, ownerId, businessId);
+      await _cache.upsertConfirmed(owned);
+      return owned;
+    } on AuthFailure catch (error) {
+      if (_outbox == null || !error.isRetryable) {
+        rethrow;
+      }
+      return _queueCreate(
+        ownerId: ownerId,
+        businessId: businessId,
+        currencyCode: currencyCode,
+        draft: draft,
+      );
+    }
   }
 
   @override
@@ -248,6 +281,54 @@ class CachedTransactionRepository implements TransactionRepository {
       throw const AuthFailure(
         'This business does not belong to the signed-in account.',
       );
+    }
+  }
+
+  Future<BusinessTransaction> _queueCreate({
+    required String ownerId,
+    required String businessId,
+    required String currencyCode,
+    required TransactionDraft draft,
+  }) async {
+    final payload = CreateTransactionPayload.fromDraft(
+      currencyCode: currencyCode,
+      draft: draft,
+    );
+    final queued = await _outbox!.enqueue(
+      ownerId: ownerId,
+      businessId: businessId,
+      operationType: OutboxOperationTypes.createTransactionV1,
+      payloadJson: payload.encode(),
+      idempotencyKey: draft.idempotencyKey,
+    );
+    _onOutboxChanged?.call();
+    _onQueued?.call();
+    AppLogger.info('Queued a transaction create for later synchronisation.');
+    return payload.toPendingTransaction(
+      operationId: queued.operationId,
+      ownerId: ownerId,
+      businessId: businessId,
+      createdAt: queued.createdAt,
+    );
+  }
+
+  Future<void> _reconcileConfirmed({
+    required String ownerId,
+    required String businessId,
+    required List<BusinessTransaction> confirmed,
+  }) async {
+    final outbox = _outbox;
+    if (outbox == null || confirmed.isEmpty) {
+      return;
+    }
+    final updated = await outbox.markSucceededMatching(
+      ownerId: ownerId,
+      businessId: businessId,
+      idempotencyKeys: confirmed.map((item) => item.idempotencyKey),
+      now: DateTime.now().toUtc(),
+    );
+    if (updated > 0) {
+      _onOutboxChanged?.call();
     }
   }
 

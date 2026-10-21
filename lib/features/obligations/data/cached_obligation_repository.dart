@@ -1,5 +1,7 @@
 import '../../../core/logging/app_logger.dart';
 import '../../../core/persistence/obligation_cache.dart';
+import '../../../core/sync/outbox_models.dart';
+import '../../../core/sync/outbox_store.dart';
 import '../../authentication/domain/auth_failure.dart';
 import '../application/obligation_repository.dart';
 import '../domain/business_obligation.dart';
@@ -11,13 +13,22 @@ class CachedObligationRepository implements ObligationRepository {
     required ObligationRepository remote,
     required ObligationCache cache,
     required String? Function() currentOwnerId,
+    OutboxStore? outbox,
+    void Function()? onOutboxChanged,
+    void Function()? onQueued,
   }) : _remote = remote,
        _cache = cache,
-       _currentOwnerId = currentOwnerId;
+       _currentOwnerId = currentOwnerId,
+       _outbox = outbox,
+       _onOutboxChanged = onOutboxChanged,
+       _onQueued = onQueued;
 
   final ObligationRepository _remote;
   final ObligationCache _cache;
   final String? Function() _currentOwnerId;
+  final OutboxStore? _outbox;
+  final void Function()? _onOutboxChanged;
+  final void Function()? _onQueued;
 
   @override
   Future<ObligationListSnapshot> listAllConfirmed({
@@ -34,6 +45,11 @@ class CachedObligationRepository implements ObligationRepository {
         ownerId: ownerId,
         businessId: businessId,
         obligations: remote.items,
+      );
+      await _reconcileConfirmed(
+        ownerId: ownerId,
+        businessId: businessId,
+        confirmed: remote.items,
       );
       return remote;
     } on AuthFailure catch (error) {
@@ -98,15 +114,27 @@ class CachedObligationRepository implements ObligationRepository {
     required ObligationDraft draft,
   }) async {
     _requireOwner(ownerId);
-    final saved = await _remote.create(
-      ownerId: ownerId,
-      businessId: businessId,
-      currencyCode: currencyCode,
-      draft: draft,
-    );
-    final owned = _owned(saved, ownerId, businessId);
-    await _cache.upsertConfirmed(owned);
-    return owned;
+    try {
+      final saved = await _remote.create(
+        ownerId: ownerId,
+        businessId: businessId,
+        currencyCode: currencyCode,
+        draft: draft,
+      );
+      final owned = _owned(saved, ownerId, businessId);
+      await _cache.upsertConfirmed(owned);
+      return owned;
+    } on AuthFailure catch (error) {
+      if (_outbox == null || !error.isRetryable) {
+        rethrow;
+      }
+      return _queueCreate(
+        ownerId: ownerId,
+        businessId: businessId,
+        currencyCode: currencyCode,
+        draft: draft,
+      );
+    }
   }
 
   @override
@@ -168,6 +196,54 @@ class CachedObligationRepository implements ObligationRepository {
       throw const AuthFailure(
         'This business does not belong to the signed-in account.',
       );
+    }
+  }
+
+  Future<BusinessObligation> _queueCreate({
+    required String ownerId,
+    required String businessId,
+    required String currencyCode,
+    required ObligationDraft draft,
+  }) async {
+    final payload = CreateObligationPayload.fromDraft(
+      currencyCode: currencyCode,
+      draft: draft,
+    );
+    final queued = await _outbox!.enqueue(
+      ownerId: ownerId,
+      businessId: businessId,
+      operationType: OutboxOperationTypes.createObligationV1,
+      payloadJson: payload.encode(),
+      idempotencyKey: draft.idempotencyKey,
+    );
+    _onOutboxChanged?.call();
+    _onQueued?.call();
+    AppLogger.info('Queued a commitment create for later synchronisation.');
+    return payload.toPendingObligation(
+      operationId: queued.operationId,
+      ownerId: ownerId,
+      businessId: businessId,
+      createdAt: queued.createdAt,
+    );
+  }
+
+  Future<void> _reconcileConfirmed({
+    required String ownerId,
+    required String businessId,
+    required List<BusinessObligation> confirmed,
+  }) async {
+    final outbox = _outbox;
+    if (outbox == null || confirmed.isEmpty) {
+      return;
+    }
+    final updated = await outbox.markSucceededMatching(
+      ownerId: ownerId,
+      businessId: businessId,
+      idempotencyKeys: confirmed.map((item) => item.idempotencyKey),
+      now: DateTime.now().toUtc(),
+    );
+    if (updated > 0) {
+      _onOutboxChanged?.call();
     }
   }
 

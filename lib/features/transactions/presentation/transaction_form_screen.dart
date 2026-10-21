@@ -337,6 +337,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     }
     setState(() => _saving = true);
     try {
+      var queued = false;
       if (!_isEdit &&
           _lines.isNotEmpty &&
           widget.type == MoneyMovementType.sale) {
@@ -365,18 +366,28 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             draft: _draft(),
           );
         } else {
-          await repository.create(
+          final saved = await repository.create(
             ownerId: session.user.id,
             businessId: session.business.id,
             currencyCode: session.business.currencyCode,
             draft: _draft(),
           );
+          queued = saved.pendingSync;
         }
       }
       if (!mounted) {
         return;
       }
       bumpTransactionTick(ref);
+      if (queued) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Saved on this device. Waiting to sync. It is not a confirmed server record.',
+            ),
+          ),
+        );
+      }
       _leave(Navigator.of(context), saved: true);
     } on AuthFailure catch (error) {
       if (!mounted) {
@@ -473,6 +484,16 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           KgweboStatusBanner(
             tone: KgweboBannerTone.info,
             message: _typeHelp(widget.type),
+          ),
+          const SizedBox(height: KgweboSpacing.sm),
+          KgweboStatusBanner(
+            tone: KgweboBannerTone.info,
+            message:
+                _isProductSale
+                    ? 'Product sales need a live connection. Stock is not queued offline.'
+                    : _isEdit
+                    ? 'Edits need a live connection. They are not queued offline.'
+                    : 'If the connection fails, this save can wait on this device as Pending sync. It is not confirmed cash until the server accepts it.',
           ),
           const SizedBox(height: KgweboSpacing.md),
           if (_error != null) ...[

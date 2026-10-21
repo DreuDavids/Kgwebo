@@ -197,13 +197,17 @@ Lifecycle:
 
 Each create uses a client-generated `idempotency_key` unique per business. The form keeps that key for retries of the same save. The database unique constraint `(business_id, idempotency_key)` plus “on conflict, return the existing row” prevents duplicate inserts after a timeout. Edits keep the existing `id` and do not mint a new row.
 
-## Offline / cache policy (Phase 4)
+## Offline / cache policy (Phase 8)
 
-- **Writes are online-only.** A save, edit or delete is confirmed only after Supabase accepts it. There is no durable write-outbox in this phase (that is Phase 8). The same rule applies to products, stock movements, product sales and recommendation status.
-- **Reads may use Drift.** Confirmed transactions, obligations, products, stock movements and recommendation status are cached per `owner_id` + `business_id`. A failed refresh keeps the last confirmed cache and labels it stale. A failed refresh never wipes cache. Forecasts are recalculated from those records and are not cached as a separate table.
-- Cached rows are never shown as server-confirmed when the snapshot is stale.
-- Sign-out clears in-memory transaction state. On-disk rows stay keyed by owner; the next account cannot read them because queries require the current owner id.
-- Demo/local preview never writes to Supabase.
+- **Confirmed writes** still require a server accept. Confirmed Drift rows are never pending.
+- **Queued creates:** a simple transaction create (no product lines) or a new unpaid commitment can wait in `sync_outbox` after a retryable network failure. The UI labels it **Pending sync**. It is not recorded cash, recorded sales, an operating expense, or a forecast input.
+- **Not queued:** product sales, stock movements, catalogue changes, edits, deletes, recommendation dismissals, and business profile saves. Product sales stay live because the server owns stock and the sale RPC writes the transaction, lines and movement together.
+- **Reads may use Drift.** Confirmed transactions, obligations, products, stock movements and recommendation status are cached per `owner_id` + `business_id`. A failed refresh keeps the last confirmed cache and labels it stale. Forecasts are recalculated from those confirmed records only; pending operations are excluded, not shown as a second forecast series.
+- Unpaid confirmed sales still do not increase recorded cash. Pending unpaid sales are not counted at all until confirmed.
+- Pending commitments are not recorded expenses and are not included in the cash outlook until the server accepts them.
+- Cached rows are never shown as server-confirmed when the snapshot is stale. Pending is a separate status from stale cache.
+- Sign-out clears in-memory session state. On-disk confirmed cache and outbox rows stay keyed by owner; the next account cannot read them. The coordinator will not submit one owner’s queue with another session.
+- Demo/local preview never writes to Supabase and does not queue live-account writes.
 
 ## Ownership
 

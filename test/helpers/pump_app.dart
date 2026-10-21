@@ -6,6 +6,7 @@ import 'package:kgwebo/app/app.dart';
 import 'package:kgwebo/app/config/app_config.dart';
 import 'package:kgwebo/app/config/app_environment.dart';
 import 'package:kgwebo/app/config/config_providers.dart';
+import 'package:kgwebo/core/persistence/kgwebo_database.dart';
 import 'package:kgwebo/app/router.dart';
 import 'package:kgwebo/app/routes.dart';
 import 'package:kgwebo/app/theme/kgwebo_theme.dart';
@@ -55,6 +56,7 @@ Future<GoRouter> pumpKgweboApp(
   await tester.pumpWidget(
     ProviderScope(
       overrides: [
+        memoryDatabaseOverride(),
         appConfigProvider.overrideWithValue(resolvedConfig),
         appSessionProvider.overrideWith((ref) => resolvedSession),
         authRepositoryProvider.overrideWith(
@@ -75,6 +77,7 @@ Future<GoRouter> pumpKgweboApp(
         recommendationRepositoryProvider.overrideWith(
           (ref) => recommendations ?? FakeRecommendationRepository(),
         ),
+        syncCoordinatorProvider.overrideWith((ref) => null),
         ...overrides,
       ],
       child: KgweboApp(router: appRouter),
@@ -90,6 +93,14 @@ AppSession sessionForConfig(AppConfig config) {
     AppRuntimeMode.local => AppSessionPreview(config.runtimeMode),
     AppRuntimeMode.live => const AppSessionGuest(),
   };
+}
+
+Override memoryDatabaseOverride() {
+  return kgweboDatabaseProvider.overrideWith((ref) {
+    final database = KgweboDatabase.memory();
+    ref.onDispose(database.close);
+    return database;
+  });
 }
 
 Future<void> setSurface(

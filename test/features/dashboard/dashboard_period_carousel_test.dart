@@ -14,6 +14,7 @@ import '../../helpers/fake_obligations.dart';
 import '../../helpers/fake_products.dart';
 import '../../helpers/fake_recommendations.dart';
 import '../../helpers/fake_transactions.dart';
+import '../../helpers/pump_app.dart';
 import '../../helpers/test_config.dart';
 
 void main() {
@@ -43,6 +44,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          memoryDatabaseOverride(),
           appConfigProvider.overrideWithValue(
             testConfig(anonKey: 'sb_publishable_test'),
           ),

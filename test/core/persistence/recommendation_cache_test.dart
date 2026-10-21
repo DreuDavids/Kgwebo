@@ -18,7 +18,7 @@ void main() {
   });
 
   test('schema version includes cached recommendations', () {
-    expect(database.schemaVersion, 5);
+    expect(database.schemaVersion, 6);
   });
 
   test('insert and read a confirmed recommendation for the owner', () async {

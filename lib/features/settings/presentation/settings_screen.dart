@@ -13,6 +13,7 @@ import '../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
+import '../../sync/application/sync_queue_controller.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -55,6 +56,8 @@ class _SettingsBody extends ConsumerWidget {
         ),
         const SizedBox(height: KgweboSpacing.lg),
         const _AccountCard(),
+        const SizedBox(height: KgweboSpacing.md),
+        const _PendingChangesCard(),
         const SizedBox(height: KgweboSpacing.md),
         const _BusinessProfileCard(),
         const SizedBox(height: KgweboSpacing.md),
@@ -168,6 +171,49 @@ class _AccountCard extends ConsumerWidget {
           'Sign-out clears the Supabase session on this device. It does not '
           'delete your business records.',
           style: textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
+        ),
+      ],
+    );
+  }
+}
+
+class _PendingChangesCard extends ConsumerWidget {
+  const _PendingChangesCard();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final session = ref.watch(appSessionProvider);
+    if (session is! AppSessionReady) {
+      return const SizedBox.shrink();
+    }
+    final queue = ref.watch(syncQueueControllerProvider);
+    final waiting = queue.waitingCount;
+    final blocked = queue.actionRequiredCount;
+    final status =
+        blocked > 0
+            ? '$blocked need review'
+            : waiting > 0
+            ? '$waiting waiting to sync'
+            : 'Nothing waiting';
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _InfoCard(
+          title: 'Pending changes',
+          rows: [
+            ('Status', status),
+            (
+              'What this means',
+              'Queued sales and commitments stay on this device until the server accepts them. They are not confirmed cash.',
+            ),
+          ],
+        ),
+        const SizedBox(height: KgweboSpacing.sm),
+        KgweboButton(
+          label: 'Review pending changes',
+          expanded: true,
+          variant: KgweboButtonVariant.secondary,
+          onPressed: () => context.pushNamed(AppRoutes.syncQueueName),
         ),
       ],
     );

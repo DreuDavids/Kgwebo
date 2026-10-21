@@ -84,6 +84,8 @@ Phase 6 adds Drift schema **v4** `cached_products` and `cached_stock_movements`:
 
 Phase 7 adds Drift schema **v5** `cached_recommendations`: remote UUID, owner id, business id, `ruleKey`, `conditionKey`, status (`active` / `dismissed` / `resolved`), and `syncStatus = confirmed`. Display copy is derived from current records. The cache stores lifecycle state only. Queries always filter by the current owner and business. Recommendation writes remain online-only.
 
+Phase 8 adds Drift schema **v6** `sync_outbox`: operation UUID, owner id, business id, operation type (`create_transaction.v1` / `create_obligation.v1`), JSON payload, idempotency key, created time, state (`pending` / `syncing` / `succeeded` / `retryable_failure` / `permanent_failure`), attempt count, next attempt time, redacted error fields, and optional dependency id. Unique `(ownerId, businessId, idempotencyKey)`. Outbox rows are never confirmed ledger entries. Confirmed caches stay `syncStatus = confirmed` only.
+
 ### Remote (Supabase / PostgreSQL)
 
 Project:
@@ -121,6 +123,18 @@ Phase 5 obligation writes follow the same online-only and idempotency rules. Das
 Phase 6 product and stock writes are **online-only**. The UI states that stock changes are not queued offline. Confirmed catalogue and movement reads are cached per owner and business; a failed refresh keeps the last confirmed cache and labels it stale. Product sales use one RPC so a retry with the same idempotency key cannot double-count revenue or stock.
 
 Phase 7 recommendation writes are **online-only**. Forecasts are computed from confirmed transactions and obligations; they are not a stored table. A failed recommendation refresh keeps the last confirmed status cache, labels it stale, and never presents an empty list as “no recommendations” when the load failed. Dashboard forecast horizon is UI state (default 14 days) and does not change recorded cash.
+
+### Sync (Phase 8 outbox)
+
+Supabase remains authoritative. Drift confirmed caches are still confirmed-read only.
+
+1. Simple transaction **creates** (sale without product lines, expense, refund, contribution, withdrawal) and **new unpaid commitment creates** try the server first. A retryable network/timeout failure enqueues a durable outbox row with the original idempotency key and shows **Pending sync**. The row is not upserted into confirmed caches and is not a ledger entry.
+2. `SyncCoordinator` runs on app resume (signed-in shell), after enqueue, and from Settings → Pending changes. Connectivity is not treated as proof that Supabase is reachable; success is a server confirmation. Interrupted `syncing` rows return to `pending` on the next run.
+3. Operations for the current owner and business are processed sequentially by `createdAt` then operation id. A dependency that is not succeeded is skipped. Retries reuse the same idempotency key. After a timeout where the server may have committed, the unique constraint plus fetch-on-conflict (or a later confirmed list) reconciles to one row.
+4. Transient failures stay `retryable_failure` with bounded automatic backoff (8 attempts, then paused until the user taps Retry). Validation and ownership failures become `permanent_failure` for review. Operations are never dropped silently.
+5. **Online-only:** product sales, stock movements, catalogue writes, transaction/commitment edits and deletes, recommendation dismissals, and business profile saves. Product sales stay online-only because stock is server-authoritative, `record_product_sale` is atomic, two-client oversell was not proven on the live project (one Auth user), and an optimistic sale would misrepresent stock.
+6. Sign-out retains owner-scoped outbox rows on disk. The coordinator refuses to submit another owner’s queue. Account B cannot list account A’s pending financial data. A deleted or inaccessible business surfaces as a permanent, reviewable failure rather than a silent overwrite.
+7. Forecasts, cash, recorded sales and recommendations use confirmed records only. Pending items can appear in history/commitment lists with an explicit status; they are excluded from `FinancialEngine` and `CashForecastEngine`.
 
 ## 7. Money and accounting scope
 

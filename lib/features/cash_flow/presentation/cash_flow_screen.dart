@@ -21,9 +21,12 @@ import '../../authentication/domain/app_session.dart';
 import '../../dashboard/application/dashboard_finance_controller.dart';
 import '../../dashboard/presentation/widgets/cash_forecast_card.dart';
 import '../../dashboard/presentation/widgets/forecast_horizon_chips.dart';
+import '../../../core/sync/outbox_models.dart';
 import '../../obligations/application/obligations_controller.dart';
 import '../../obligations/domain/business_obligation.dart';
 import '../../obligations/domain/obligation_categories.dart';
+import '../../sync/application/sync_queue_controller.dart';
+import '../../sync/presentation/sync_notice.dart';
 
 class CashFlowScreen extends ConsumerWidget {
   const CashFlowScreen({super.key});
@@ -66,6 +69,7 @@ class CashFlowScreen extends ConsumerWidget {
                       'Unpaid bills are not expenses and do not reduce current cash until you record a paid expense.',
                 ),
                 const SizedBox(height: KgweboSpacing.sm),
+                const KgweboSyncNotice(),
                 if (obligations.isPreview)
                   const KgweboStatusBanner(
                     tone: KgweboBannerTone.preview,
@@ -120,7 +124,7 @@ class CashFlowScreen extends ConsumerWidget {
                             ),
                   )
                 else
-                  ..._grouped(context, obligations.items, now, zone),
+                  ..._grouped(context, ref, obligations.items, now, zone),
                 const SizedBox(height: KgweboSpacing.lg),
                 Text(
                   'This outlook does not invent future sales and is not professional accounting, tax or investment advice.',
@@ -139,6 +143,7 @@ class CashFlowScreen extends ConsumerWidget {
 
   List<Widget> _grouped(
     BuildContext context,
+    WidgetRef ref,
     List<BusinessObligation> items,
     DateTime asOf,
     BusinessZone zone,
@@ -164,7 +169,7 @@ class CashFlowScreen extends ConsumerWidget {
           subtitle: 'Still unpaid after the due date.',
         ),
         const SizedBox(height: KgweboSpacing.sm),
-        _ObligationGroup(items: overdue, asOf: asOf, zone: zone),
+        _ObligationGroup(items: overdue, asOf: asOf, zone: zone, ref: ref),
         const SizedBox(height: KgweboSpacing.lg),
       ],
       if (unpaid.isNotEmpty) ...[
@@ -173,7 +178,7 @@ class CashFlowScreen extends ConsumerWidget {
           subtitle: 'Saved commitments that have not been paid.',
         ),
         const SizedBox(height: KgweboSpacing.sm),
-        _ObligationGroup(items: unpaid, asOf: asOf, zone: zone),
+        _ObligationGroup(items: unpaid, asOf: asOf, zone: zone, ref: ref),
         const SizedBox(height: KgweboSpacing.lg),
       ],
       if (settled.isNotEmpty) ...[
@@ -182,7 +187,7 @@ class CashFlowScreen extends ConsumerWidget {
           subtitle: 'These no longer affect the cash estimate.',
         ),
         const SizedBox(height: KgweboSpacing.sm),
-        _ObligationGroup(items: settled, asOf: asOf, zone: zone),
+        _ObligationGroup(items: settled, asOf: asOf, zone: zone, ref: ref),
       ],
     ];
   }
@@ -219,11 +224,13 @@ class _ObligationGroup extends StatelessWidget {
     required this.items,
     required this.asOf,
     required this.zone,
+    required this.ref,
   });
 
   final List<BusinessObligation> items;
   final DateTime asOf;
   final BusinessZone zone;
+  final WidgetRef ref;
 
   @override
   Widget build(BuildContext context) {
@@ -236,7 +243,7 @@ class _ObligationGroup extends StatelessWidget {
               icon: Icons.event_outlined,
               title: item.title,
               subtitle:
-                  '${ObligationCategories.labelFor(item.category)} · ${DateFormat.yMMMd().format(item.dueOn)} · ${_label(item)}',
+                  '${ObligationCategories.labelFor(item.category)} · ${DateFormat.yMMMd().format(item.dueOn)} · ${_label(item)}${_pendingSuffix(item)}',
               trailingLabel: MoneyFormatter.formatMinor(
                 item.amountMinor,
                 currencyCode: item.currencyCode,
@@ -245,10 +252,13 @@ class _ObligationGroup extends StatelessWidget {
                   item.displayStatus(asOf: asOf, zone: zone) ==
                   ObligationDisplayStatus.overdue,
               onTap:
-                  () => context.pushNamed(
-                    AppRoutes.obligationDetailsName,
-                    pathParameters: {'obligationId': item.id},
-                  ),
+                  () =>
+                      item.pendingSync
+                          ? context.pushNamed(AppRoutes.syncQueueName)
+                          : context.pushNamed(
+                            AppRoutes.obligationDetailsName,
+                            pathParameters: {'obligationId': item.id},
+                          ),
             ),
         ],
       ),
@@ -262,5 +272,18 @@ class _ObligationGroup extends StatelessWidget {
       ObligationDisplayStatus.paid => 'Paid',
       ObligationDisplayStatus.cancelled => 'Cancelled',
     };
+  }
+
+  String _pendingSuffix(BusinessObligation item) {
+    if (!item.pendingSync) {
+      return '';
+    }
+    final queue = ref.watch(syncQueueControllerProvider);
+    for (final operation in queue.operations) {
+      if (item.id == 'pending:${operation.operationId}') {
+        return ' · ${operation.state.userLabel}';
+      }
+    }
+    return ' · ${OutboxState.pending.userLabel}';
   }
 }

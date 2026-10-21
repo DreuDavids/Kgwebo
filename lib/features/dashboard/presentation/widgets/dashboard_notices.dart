@@ -8,6 +8,8 @@ import '../../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../../authentication/application/session_controller.dart';
 import '../../../authentication/domain/app_session.dart';
 import '../../../products/application/products_controller.dart';
+import '../../../sync/application/sync_queue_controller.dart';
+import '../../../sync/presentation/sync_notice.dart';
 import '../../application/dashboard_finance_controller.dart';
 
 class DashboardNotices extends ConsumerWidget {
@@ -20,7 +22,9 @@ class DashboardNotices extends ConsumerWidget {
     final finance = ref.watch(dashboardFinanceControllerProvider);
     final stockAttention = ref.watch(inventoryAttentionProvider).valueOrNull;
     final restockCount = stockAttention?.restockProductIds.length ?? 0;
+    final queue = ref.watch(syncQueueControllerProvider);
     final banners = <Widget>[
+      if (queue.hasOpen) const KgweboSyncNotice(),
       if (finance.isPreview)
         const KgweboStatusBanner(
           tone: KgweboBannerTone.preview,

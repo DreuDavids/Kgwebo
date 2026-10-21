@@ -7,15 +7,23 @@ import '../../../../app/theme/kgwebo_radii.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
 import '../../../../core/finance/business_calendar.dart';
 import '../../../../core/money/money_formatter.dart';
+import '../../../../core/sync/outbox_models.dart';
+import '../../../sync/presentation/sync_status_label.dart';
 import '../../domain/business_transaction.dart';
 import '../../domain/transaction_categories.dart';
 import 'transaction_type_style.dart';
 
 class TransactionListItem extends StatelessWidget {
-  const TransactionListItem({super.key, required this.transaction, this.onTap});
+  const TransactionListItem({
+    super.key,
+    required this.transaction,
+    this.onTap,
+    this.syncState,
+  });
 
   final BusinessTransaction transaction;
   final VoidCallback? onTap;
+  final OutboxState? syncState;
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +43,7 @@ class TransactionListItem extends StatelessWidget {
     return Semantics(
       button: onTap != null,
       label:
-          '${TransactionTypeStyle.label(type)}. $category. $sign$amount. $dateLabel',
+          '${TransactionTypeStyle.label(type)}. $category. $sign$amount. $dateLabel${syncState == null || syncState == OutboxState.succeeded ? '' : '. ${syncState!.userLabel}'}',
       child: Material(
         color: KgweboColors.surface,
         borderRadius: KgweboRadii.borderLg,
@@ -91,6 +99,14 @@ class TransactionListItem extends StatelessWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
+                        if (syncState != null &&
+                            syncState != OutboxState.succeeded) ...[
+                          const SizedBox(height: 4),
+                          KgweboSyncStatusLabel(
+                            state: syncState!,
+                            compact: true,
+                          ),
+                        ],
                       ],
                     ),
                   ),

@@ -25,6 +25,7 @@ abstract final class AppRoutes {
   static const settings = '/settings';
   static const businessProfile = '/settings/business';
   static const businessProfileEdit = '/settings/business/edit';
+  static const syncQueue = '/settings/sync';
   static const more = '/more';
 
   static const sessionName = 'session';
@@ -58,5 +59,6 @@ abstract final class AppRoutes {
   static const settingsName = 'settings';
   static const businessProfileName = 'business-profile';
   static const businessProfileEditName = 'business-profile-edit';
+  static const syncQueueName = 'sync-queue';
   static const moreName = 'more';
 }

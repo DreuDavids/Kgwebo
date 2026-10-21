@@ -12,9 +12,13 @@ import '../../../shared/widgets/kgwebo_empty_state.dart';
 import '../../../shared/widgets/kgwebo_loading_state.dart';
 import '../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../../shared/widgets/kgwebo_text_field.dart';
+import '../../../core/sync/outbox_models.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
+import '../../sync/application/sync_queue_controller.dart';
+import '../../sync/presentation/sync_notice.dart';
 import '../application/transactions_controller.dart';
+import '../domain/business_transaction.dart';
 import 'widgets/transaction_list_item.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
@@ -187,8 +191,13 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       );
     }
 
+    final queue = ref.watch(syncQueueControllerProvider);
     return Column(
       children: [
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: KgweboSpacing.md),
+          child: KgweboSyncNotice(),
+        ),
         if (state.isStale)
           const Padding(
             padding: EdgeInsets.symmetric(horizontal: KgweboSpacing.md),
@@ -232,18 +241,38 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 );
               }
               final transaction = state.items[index];
+              final syncState = _syncState(queue.operations, transaction);
               return TransactionListItem(
                 transaction: transaction,
+                syncState: syncState,
                 onTap:
-                    () => context.pushNamed(
-                      AppRoutes.transactionDetailsName,
-                      pathParameters: {'transactionId': transaction.id},
-                    ),
+                    () =>
+                        transaction.pendingSync
+                            ? context.pushNamed(AppRoutes.syncQueueName)
+                            : context.pushNamed(
+                              AppRoutes.transactionDetailsName,
+                              pathParameters: {'transactionId': transaction.id},
+                            ),
               );
             },
           ),
         ),
       ],
     );
+  }
+
+  OutboxState? _syncState(
+    List<OutboxOperation> operations,
+    BusinessTransaction transaction,
+  ) {
+    if (!transaction.pendingSync) {
+      return null;
+    }
+    for (final operation in operations) {
+      if (transaction.id == 'pending:${operation.operationId}') {
+        return operation.state;
+      }
+    }
+    return OutboxState.pending;
   }
 }

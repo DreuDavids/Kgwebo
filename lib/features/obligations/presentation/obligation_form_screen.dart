@@ -222,12 +222,21 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
           draft: _draft(),
         );
       } else {
-        await repository.create(
+        final saved = await repository.create(
           ownerId: session.user.id,
           businessId: session.business.id,
           currencyCode: session.business.currencyCode,
           draft: _draft(),
         );
+        if (saved.pendingSync && mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                'Saved on this device. Waiting to sync. This is not a recorded expense.',
+              ),
+            ),
+          );
+        }
       }
       if (!mounted) {
         return;
@@ -297,7 +306,7 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
         icon: Icons.event_outlined,
         title: 'Preview cannot save commitments',
         message:
-            'Sign in to record upcoming bills against your business. Writes are online-only in this phase.',
+            'Sign in to record upcoming bills against your business. Preview does not queue writes.',
       );
     }
     if (session is! AppSessionReady) {
@@ -325,6 +334,14 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
             tone: KgweboBannerTone.info,
             message:
                 'A commitment is a planned payment. It does not reduce recorded cash or the operating result until you record an expense.',
+          ),
+          const SizedBox(height: KgweboSpacing.sm),
+          KgweboStatusBanner(
+            tone: KgweboBannerTone.info,
+            message:
+                _isEdit
+                    ? 'Edits and status changes need a live connection. They are not queued offline.'
+                    : 'If the connection fails, a new commitment can wait on this device. It is not saved remotely until the server accepts it.',
           ),
           const SizedBox(height: KgweboSpacing.md),
           if (_error != null) ...[

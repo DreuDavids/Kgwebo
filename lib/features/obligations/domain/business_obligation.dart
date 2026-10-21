@@ -20,6 +20,7 @@ class BusinessObligation {
     required this.updatedAt,
     this.notes,
     this.recordedTransactionId,
+    this.pendingSync = false,
   });
 
   final String id;
@@ -37,12 +38,16 @@ class BusinessObligation {
   final String? recordedTransactionId;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool pendingSync;
 
   bool belongsTo({required String ownerId, required String businessId}) {
     return this.ownerId == ownerId && this.businessId == businessId;
   }
 
   ScheduledCommitment toScheduledCommitment() {
+    if (pendingSync) {
+      throw StateError('Pending commitments are not scheduled commitments.');
+    }
     return ScheduledCommitment(
       id: id,
       amountMinor: amountMinor,

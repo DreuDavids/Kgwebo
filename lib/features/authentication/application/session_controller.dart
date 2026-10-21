@@ -12,6 +12,8 @@ import '../../../core/persistence/obligation_cache.dart';
 import '../../../core/persistence/product_cache.dart';
 import '../../../core/persistence/recommendation_cache.dart';
 import '../../../core/persistence/transaction_cache.dart';
+import '../../../core/sync/outbox_store.dart';
+import '../../../core/sync/sync_coordinator.dart';
 import '../../obligations/application/obligation_repository.dart';
 import '../../obligations/data/cached_obligation_repository.dart';
 import '../../obligations/data/preview_obligation_repository.dart';
@@ -57,6 +59,28 @@ final kgweboDatabaseProvider = Provider<KgweboDatabase>((ref) {
   return database;
 });
 
+final outboxStoreProvider = Provider<OutboxStore>((ref) {
+  return OutboxStore(ref.watch(kgweboDatabaseProvider));
+});
+
+final syncTickProvider = StateProvider<int>((ref) => 0);
+
+void bumpSyncTick(Ref ref) {
+  ref.read(syncTickProvider.notifier).state++;
+}
+
+void requestSessionSync(Ref ref) {
+  final session = ref.read(appSessionProvider);
+  final coordinator = ref.read(syncCoordinatorProvider);
+  if (session is! AppSessionReady || coordinator == null) {
+    return;
+  }
+  coordinator.process(
+    ownerId: session.user.id,
+    businessId: session.business.id,
+  );
+}
+
 final businessCacheProvider = Provider<BusinessCache>((ref) {
   return BusinessCache(ref.watch(kgweboDatabaseProvider));
 });
@@ -86,6 +110,9 @@ final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
     remote: SupabaseTransactionRepository(kgweboSupabase),
     cache: ref.watch(transactionCacheProvider),
     currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+    outbox: ref.watch(outboxStoreProvider),
+    onOutboxChanged: () => bumpSyncTick(ref),
+    onQueued: () => requestSessionSync(ref),
   );
 });
 
@@ -102,6 +129,25 @@ final obligationRepositoryProvider = Provider<ObligationRepository>((ref) {
     remote: SupabaseObligationRepository(kgweboSupabase),
     cache: ref.watch(obligationCacheProvider),
     currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+    outbox: ref.watch(outboxStoreProvider),
+    onOutboxChanged: () => bumpSyncTick(ref),
+    onQueued: () => requestSessionSync(ref),
+  );
+});
+
+final syncCoordinatorProvider = Provider<SyncCoordinator?>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (!config.connectsToBackend || !kgweboSupabaseIsInitialized) {
+    return null;
+  }
+  return SyncCoordinator(
+    outbox: ref.watch(outboxStoreProvider),
+    remoteTransactions: SupabaseTransactionRepository(kgweboSupabase),
+    remoteObligations: SupabaseObligationRepository(kgweboSupabase),
+    transactionCache: ref.watch(transactionCacheProvider),
+    obligationCache: ref.watch(obligationCacheProvider),
+    currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+    onChange: () => bumpSyncTick(ref),
   );
 });
 

@@ -9,6 +9,7 @@ import '../../../core/finance/finance_exception.dart';
 import '../../../core/finance/financial_engine.dart';
 import '../../../core/finance/financial_summary.dart';
 import '../../../core/finance/ledger_entry.dart';
+import '../../../core/sync/pending_presentation.dart';
 import '../../../core/finance/sparkline_series.dart';
 import '../../../core/inventory/inventory_insights.dart';
 import '../../authentication/application/session_controller.dart';
@@ -119,6 +120,9 @@ final dashboardFinanceControllerProvider = StateNotifierProvider.autoDispose<
     controller.refresh();
   });
   ref.listen<int>(productTickProvider, (_, __) {
+    controller.refresh();
+  });
+  ref.listen<int>(syncTickProvider, (_, __) {
     controller.refresh();
   });
   return controller;
@@ -317,26 +321,30 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
     final now = DateTime.now().toUtc();
     final zone = BusinessZone.forCountry(session.business.countryCode);
     final selection = _selection(session);
+    final confirmedRecords =
+        records.where((item) => !item.pendingSync).toList();
+    final confirmedCommitments =
+        commitments?.where((item) => !item.pendingSync).toList();
     final summary = FinancialEngine.summarize(
-      entries: records.map((item) => item.toLedgerEntry()),
+      entries: confirmedLedgerEntries(confirmedRecords),
       openingCashMinor: session.business.openingBalanceMinor,
       currencyCode: session.business.currencyCode,
       period: selection.period,
       asOf: now,
     );
     final outlook =
-        commitments == null
+        confirmedCommitments == null
             ? null
             : CashOutlookEngine.summarize(
               currentCashMinor: summary.currentCashMinor,
               currencyCode: summary.currencyCode,
               asOf: now,
               zone: zone,
-              commitments: commitments.map(
+              commitments: confirmedCommitments.map(
                 (item) => item.toScheduledCommitment(),
               ),
             );
-    final recent = [...records]..sort((a, b) {
+    final recent = [...confirmedRecords]..sort((a, b) {
       final byDate = b.occurredAt.compareTo(a.occurredAt);
       if (byDate != 0) {
         return byDate;
@@ -344,9 +352,9 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
       return b.id.compareTo(a.id);
     });
     final open =
-        commitments == null
+        confirmedCommitments == null
             ? const <BusinessObligation>[]
-            : (commitments
+            : (confirmedCommitments
                 .where((item) => item.status == CommitmentStatus.unpaid)
                 .toList()
               ..sort((a, b) => a.dueOn.compareTo(b.dueOn)));
@@ -363,14 +371,14 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
           item,
     ];
     final sparkline = SparklineSeries.dailyTotals(
-      entries: records.map((item) => item.toLedgerEntry()),
+      entries: confirmedLedgerEntries(confirmedRecords),
       period: selection.period,
       asOf: now,
       types: const {MoneyMovementType.sale},
     );
     final inventory = InventoryInsights.fromProducts(_productsCached);
     final forecast =
-        commitments == null
+        confirmedCommitments == null
             ? null
             : CashForecastEngine.project(
               currentCashMinor: summary.currentCashMinor,
@@ -378,7 +386,7 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
               asOf: now,
               zone: zone,
               horizon: _horizon,
-              commitments: commitments.map(
+              commitments: confirmedCommitments.map(
                 (item) => item.toScheduledCommitment(),
               ),
               unpaidSalesMinor: summary.unpaidSalesMinor,

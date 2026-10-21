@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/sync/outbox_store.dart';
+import '../../../core/sync/pending_presentation.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
@@ -51,8 +53,12 @@ final obligationsControllerProvider = StateNotifierProvider.autoDispose<
   final controller = ObligationsController(
     session: ref.watch(appSessionProvider),
     repository: ref.watch(obligationRepositoryProvider),
+    outbox: ref.watch(outboxStoreProvider),
   );
   ref.listen<int>(obligationTickProvider, (_, __) {
+    controller.refresh();
+  });
+  ref.listen<int>(syncTickProvider, (_, __) {
     controller.refresh();
   });
   return controller;
@@ -62,14 +68,17 @@ class ObligationsController extends StateNotifier<ObligationsViewState> {
   ObligationsController({
     required AppSession session,
     required ObligationRepository repository,
+    OutboxStore? outbox,
   }) : _session = session,
        _repository = repository,
+       _outbox = outbox,
        super(const ObligationsViewState(loading: true)) {
     _load();
   }
 
   final AppSession _session;
   final ObligationRepository _repository;
+  final OutboxStore? _outbox;
 
   Future<void> refresh() => _load();
 
@@ -92,8 +101,22 @@ class ObligationsController extends StateNotifier<ObligationsViewState> {
       if (!mounted) {
         return;
       }
+      var items = snapshot.items;
+      if (_outbox != null) {
+        final pending = await _outbox.listOpen(
+          ownerId: session.user.id,
+          businessId: session.business.id,
+        );
+        items = mergePendingObligations(
+          confirmed: snapshot.items,
+          operations: pending,
+        );
+      }
+      if (!mounted) {
+        return;
+      }
       state = ObligationsViewState(
-        items: snapshot.items,
+        items: items,
         isStale: snapshot.isStale,
         error: snapshot.refreshError,
       );
@@ -108,6 +131,24 @@ class ObligationsController extends StateNotifier<ObligationsViewState> {
           error: error.message,
         );
         return;
+      }
+      if (_outbox != null && error.isRetryable) {
+        final pending = await _outbox.listOpen(
+          ownerId: session.user.id,
+          businessId: session.business.id,
+        );
+        final items = mergePendingObligations(
+          confirmed: const [],
+          operations: pending,
+        );
+        if (items.isNotEmpty) {
+          state = ObligationsViewState(
+            items: items,
+            isStale: true,
+            error: error.message,
+          );
+          return;
+        }
       }
       state = ObligationsViewState(isStale: true, error: error.message);
     }

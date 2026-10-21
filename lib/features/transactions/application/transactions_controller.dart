@@ -1,5 +1,7 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/sync/outbox_store.dart';
+import '../../../core/sync/pending_presentation.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
@@ -58,10 +60,12 @@ final transactionsControllerProvider = StateNotifierProvider.autoDispose<
   TransactionsViewState
 >((ref) {
   ref.watch(transactionTickProvider);
+  ref.watch(syncTickProvider);
   final session = ref.watch(appSessionProvider);
   return TransactionsController(
     session: session,
     repository: ref.watch(transactionRepositoryProvider),
+    outbox: ref.watch(outboxStoreProvider),
   );
 });
 
@@ -69,14 +73,17 @@ class TransactionsController extends StateNotifier<TransactionsViewState> {
   TransactionsController({
     required AppSession session,
     required TransactionRepository repository,
+    OutboxStore? outbox,
   }) : _session = session,
        _repository = repository,
+       _outbox = outbox,
        super(const TransactionsViewState(loading: true)) {
     _load();
   }
 
   final AppSession _session;
   final TransactionRepository _repository;
+  final OutboxStore? _outbox;
 
   Future<void> _load() async {
     final ready = _session;
@@ -94,14 +101,44 @@ class TransactionsController extends StateNotifier<TransactionsViewState> {
       if (!mounted) {
         return;
       }
+      final items = await _withPending(
+        ownerId: ready.user.id,
+        businessId: ready.business.id,
+        confirmed: snapshot.items,
+        search: state.search,
+      );
       state = state.copyWith(
         loading: false,
-        snapshot: snapshot,
+        snapshot: TransactionListSnapshot(
+          items: items,
+          origin: snapshot.origin,
+          refreshError: snapshot.refreshError,
+          hasMore: snapshot.hasMore,
+        ),
         error: snapshot.refreshError,
       );
     } on AuthFailure catch (error) {
       if (!mounted) {
         return;
+      }
+      if (error.isRetryable) {
+        final items = await _withPending(
+          ownerId: ready.user.id,
+          businessId: ready.business.id,
+          confirmed: const [],
+          search: state.search,
+        );
+        if (items.isNotEmpty) {
+          state = state.copyWith(
+            loading: false,
+            snapshot: TransactionListSnapshot.stale(
+              items: items,
+              refreshError: error.message,
+            ),
+            error: error.message,
+          );
+          return;
+        }
       }
       state = state.copyWith(loading: false, error: error.message);
     }
@@ -126,15 +163,22 @@ class TransactionsController extends StateNotifier<TransactionsViewState> {
     }
     state = state.copyWith(loadingMore: true, clearError: true);
     try {
-      final last = snapshot.items.last;
+      final lastConfirmed = snapshot.items.lastWhere(
+        (item) => !item.pendingSync,
+        orElse: () => snapshot.items.last,
+      );
+      if (lastConfirmed.pendingSync) {
+        state = state.copyWith(loadingMore: false);
+        return;
+      }
       final page = await _repository.list(
         ownerId: ready.user.id,
         businessId: ready.business.id,
         query: TransactionQuery(
           search: state.search,
           limit: 50,
-          beforeOccurredAt: last.occurredAt,
-          beforeId: last.id,
+          beforeOccurredAt: lastConfirmed.occurredAt,
+          beforeId: lastConfirmed.id,
         ),
       );
       if (!mounted) {
@@ -191,6 +235,36 @@ class TransactionsController extends StateNotifier<TransactionsViewState> {
       state = state.copyWith(deleting: false, error: error.message);
       return false;
     }
+  }
+
+  Future<List<BusinessTransaction>> _withPending({
+    required String ownerId,
+    required String businessId,
+    required List<BusinessTransaction> confirmed,
+    required String search,
+  }) async {
+    final outbox = _outbox;
+    if (outbox == null) {
+      return confirmed;
+    }
+    final pending = await outbox.listOpen(
+      ownerId: ownerId,
+      businessId: businessId,
+    );
+    var merged = mergePendingTransactions(
+      confirmed: confirmed,
+      operations: pending,
+    );
+    final needle = search.trim().toLowerCase();
+    if (needle.isNotEmpty) {
+      merged =
+          merged.where((item) {
+            final description = item.description?.toLowerCase() ?? '';
+            return item.category.toLowerCase().contains(needle) ||
+                description.contains(needle);
+          }).toList();
+    }
+    return _uniqueById(merged);
   }
 
   List<BusinessTransaction> _uniqueById(List<BusinessTransaction> items) {

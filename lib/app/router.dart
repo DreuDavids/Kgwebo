@@ -28,6 +28,8 @@ import '../features/reports/presentation/reports_screen.dart';
 import '../features/business/presentation/business_profile_edit_screen.dart';
 import '../features/business/presentation/business_profile_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
+import '../features/sync/presentation/sync_lifecycle_host.dart';
+import '../features/sync/presentation/sync_queue_screen.dart';
 import '../features/shell/app_shell.dart';
 import '../core/finance/ledger_entry.dart';
 import '../features/transactions/presentation/transaction_details_screen.dart';
@@ -115,7 +117,9 @@ GoRouter createAppRouter({
       ),
       StatefulShellRoute.indexedStack(
         builder: (context, state, navigationShell) {
-          return AppShell(navigationShell: navigationShell);
+          return SyncLifecycleHost(
+            child: AppShell(navigationShell: navigationShell),
+          );
         },
         branches: [
           StatefulShellBranch(
@@ -309,6 +313,11 @@ GoRouter createAppRouter({
                 name: AppRoutes.settingsName,
                 builder: (context, state) => const SettingsScreen(),
                 routes: [
+                  GoRoute(
+                    path: 'sync',
+                    name: AppRoutes.syncQueueName,
+                    builder: (context, state) => const SyncQueueScreen(),
+                  ),
                   GoRoute(
                     path: 'business',
                     name: AppRoutes.businessProfileName,

@@ -40,6 +40,7 @@ void main() {
     await tester.pumpWidget(
       ProviderScope(
         overrides: [
+          memoryDatabaseOverride(),
           appConfigProvider.overrideWithValue(
             testConfig(anonKey: 'sb_publishable_test'),
           ),

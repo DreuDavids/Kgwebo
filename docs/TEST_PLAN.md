@@ -120,6 +120,10 @@ Phase 7 minimum: `CashForecastEngine` inclusive 7/14/30 local-day windows; recor
 
 Phase 7 RLS catalog (21 Oct 2026): FORCE RLS on `recommendations`. Anon has no select/insert/update/delete/truncate. Authenticated has select/insert/update/delete and not TRUNCATE. Policies `recommendations_select_own`, `recommendations_insert_own`, `recommendations_update_own`, `recommendations_delete_own`. Two-user JWT isolation was not executed: one Auth user and one business exist; new sign-ups require email OTP confirmation. Flutter fakes do not prove database isolation.
 
+Phase 8 minimum: Drift v6 outbox persist after close/reopen; duplicate enqueue; owner/business isolation of queued rows; interrupted `syncing` recovery; automatic retry pause then manual retry; coordinator ordering and dependency wait; timeout-after-commit retries the same idempotency key without a second row; network loss before commit then later success; permanent validation quarantined; other-owner/sign-out skip; cached create queues on retryable failure and does not cache as confirmed; list reconcile hides pending when the server copy arrives; engine totals ignore pending; unpaid pending sales are not cash; pending commitments are not expenses or outlook inputs; sync-queue empty and action-required UI with text status (not colour only). Widget tests use fakes and an in-memory Drift database.
+
+Phase 8 security/concurrency: two-user JWT isolation for products/sale_items/stock_movements/recommendations and two-client last-unit oversell were **not** executed. The live project still has one Auth user and email OTP on new sign-ups. Flutter fakes are not a substitute. Product sales and stock writes remain online-only for that reason.
+
 ## 8. Android manual checklist (Phase 7)
 
 Run on a phone or emulator after a debug APK built with `--dart-define-from-file=.env`. Do not claim a physical device pass if only an emulator was used.
@@ -138,6 +142,17 @@ Run on a phone or emulator after a debug APK built with `--dart-define-from-file
 - [ ] Landscape: navigation rail appears at width ≥ 600; Cash Flow, dashboard Outlook and Recommendations remain scrollable.
 - [ ] Airplane mode / failed refresh: last saved cash, products and recommendation status remain; stale/error copy appears; stock and forecasts are not presented as unquestionably current.
 - [ ] Cancel form edits without saving if using a live account.
+
+## 8b. Android manual checklist (Phase 8 offline writes)
+
+- [ ] Airplane mode: record a cash sale (no products) and an unpaid commitment. Both appear as Waiting to sync, not as saved-on-server.
+- [ ] Force-stop and reopen: pending rows remain; cash and forecast figures are unchanged.
+- [ ] Restore connectivity / resume app: each queued create syncs once; history shows Saved on server; cash/sales update once.
+- [ ] Timeout simulation (poor network): retry does not create a duplicate transaction.
+- [ ] Product sale and stock receipt still require a connection and are not queued.
+- [ ] Sign out, sign in as the same owner: pending items return. A second account on the same device must not see them.
+- [ ] Settings → Pending changes: retryable vs action-required copy is readable without relying on colour.
+- [ ] Stale-cache banners still appear on failed refreshes and are not replaced by a false “offline mode” claim.
 
 Do not mark a phase complete if these commands were not run or if they failed.
 

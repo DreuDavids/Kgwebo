@@ -228,12 +228,25 @@ Verification executed 21 Oct 2026:
 
 ## Phase 8 — Reports and offline
 
-- In-app report from the engine.
-- PDF export/share.
-- Local queue with pending status.
-- Duplicate-safe retry.
+### Offline writes (implemented 21 Oct 2026)
 
-**Exit:** Report figures match the engine. Advertised offline behaviour has tests.
+- Drift schema **v6** `sync_outbox` with owner/business isolation, versioned payloads, stable idempotency keys, and bounded retry states.
+- Queued operations: simple transaction **creates** and new unpaid **commitment creates**, after a retryable network/timeout failure. Displayed as Pending sync; never confirmed ledger rows.
+- `SyncCoordinator` processes the current owner/business sequentially, recovers interrupted `syncing` rows, reuses idempotency keys, reconciles server copies that arrived without a client response, pauses after 8 automatic attempts, and quarantines permanent validation failures for review.
+- Online-only: product sales, stock movements, catalogue writes, edits/deletes, recommendation dismissals, business profile. Two-client oversell and two-user inventory/recommendation RLS were **not** re-run (one Auth user; sign-up requires email OTP). Inventory stays live until that proof exists.
+- UI: text+icon sync labels, Settings → Pending changes, dashboard/history/cash-flow notices. Forecasts and cash use confirmed records only.
+- Tests: outbox persistence and restart, duplicate enqueue, coordinator ordering/timeout/idempotency/isolation, pending vs confirmed merge and engine exclusion (including unpaid pending sales and pending commitments), failure-resolution screen.
+- `syncCoordinatorProvider` stays null until `initializeKgweboSupabase` completes, so widget tests with a live-looking config never construct `Supabase.instance`.
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (338)
+- `flutter build apk --debug --dart-define-from-file=.env` — `build\app\outputs\flutter-apk\app-debug.apk`
+
+### Reports (not in this slice)
+
+- In-app report from the engine and PDF export/share remain the placeholder on Reports. They are not rebuilt here.
+
+**Exit:** Advertised offline behaviour has tests. Report PDF remains outstanding for the rest of Phase 8.
 
 ## Phase 9 — Quality and demo polish
 

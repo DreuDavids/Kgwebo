@@ -139,6 +139,34 @@ class CachedRecommendations extends Table {
   ];
 }
 
+/// Durable write queue. Rows are owner- and business-scoped and are
+/// never treated as confirmed financial records.
+class SyncOutbox extends Table {
+  TextColumn get operationId => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get operationType => text()();
+  TextColumn get payloadJson => text()();
+  TextColumn get idempotencyKey => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  TextColumn get state => text()();
+  IntColumn get attemptCount => integer().withDefault(const Constant(0))();
+  DateTimeColumn get lastAttemptAt => dateTime().nullable()();
+  DateTimeColumn get nextAttemptAt => dateTime().nullable()();
+  TextColumn get lastErrorCode => text().nullable()();
+  TextColumn get lastErrorMessage => text().nullable()();
+  TextColumn get dependsOnOperationId => text().nullable()();
+  DateTimeColumn get succeededAt => dateTime().nullable()();
+
+  @override
+  Set<Column<Object>> get primaryKey => {operationId};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {ownerId, businessId, idempotencyKey},
+  ];
+}
+
 /// Confirmed local copy of a remote stock movement. Scoped by owner
 /// and business so account switching cannot leak rows.
 class CachedStockMovements extends Table {
@@ -180,6 +208,7 @@ class CachedStockMovements extends Table {
     CachedProducts,
     CachedStockMovements,
     CachedRecommendations,
+    SyncOutbox,
   ],
 )
 class KgweboDatabase extends _$KgweboDatabase {
@@ -192,7 +221,7 @@ class KgweboDatabase extends _$KgweboDatabase {
   }
 
   @override
-  int get schemaVersion => 5;
+  int get schemaVersion => 6;
 
   @override
   MigrationStrategy get migration {
@@ -213,6 +242,9 @@ class KgweboDatabase extends _$KgweboDatabase {
         }
         if (from < 5) {
           await m.createTable(cachedRecommendations);
+        }
+        if (from < 6) {
+          await m.createTable(syncOutbox);
         }
       },
     );
