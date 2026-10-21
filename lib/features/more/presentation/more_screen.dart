@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/theme/kgwebo_colors.dart';
-import '../../../app/theme/kgwebo_radii.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/responsive/responsive_layout.dart';
+import '../../../shared/widgets/kgwebo_pill_row.dart';
+import '../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../shell/app_destinations.dart';
 
 class MoreScreen extends StatelessWidget {
@@ -25,7 +26,10 @@ class MoreScreen extends StatelessWidget {
               KgweboSpacing.xl,
             ),
             children: [
-              Text('Further destinations', style: textTheme.titleMedium),
+              Text(
+                'Further destinations',
+                style: textTheme.titleMedium?.copyWith(color: KgweboColors.ink),
+              ),
               const SizedBox(height: KgweboSpacing.xs),
               Text(
                 'Cash flow, reports and settings stay one tap away on small screens '
@@ -35,22 +39,15 @@ class MoreScreen extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: KgweboSpacing.lg),
-              DecoratedBox(
-                decoration: BoxDecoration(
-                  color: KgweboColors.surface,
-                  borderRadius: KgweboRadii.borderMd,
-                  border: Border.all(color: KgweboColors.line),
-                ),
+              KgweboSoftCard(
+                padding: const EdgeInsets.symmetric(vertical: KgweboSpacing.xs),
                 child: Column(
                   children: [
                     for (final destination in AppDestinationX.moreDestinations)
-                      ListTile(
-                        leading: Icon(
-                          destination.icon,
-                          color: KgweboColors.forest,
-                        ),
-                        title: Text(destination.label),
-                        trailing: const Icon(Icons.chevron_right),
+                      KgweboPillRow(
+                        icon: destination.icon,
+                        title: destination.label,
+                        trailingLabel: 'Go',
                         onTap: () => context.goNamed(destination.routeName),
                       ),
                   ],

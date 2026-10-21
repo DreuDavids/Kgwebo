@@ -9,11 +9,10 @@ void main() {
     final theme = KgweboTheme.light();
 
     expect(theme.brightness, Brightness.light);
-    expect(theme.useMaterial3, isTrue);
+    expect(theme.useMaterial3, isFalse);
     expect(theme.scaffoldBackgroundColor, KgweboColors.canvas);
-    expect(theme.colorScheme.primary, KgweboColors.forest);
-    expect(theme.colorScheme.secondary, KgweboColors.teal);
-    expect(theme.colorScheme.tertiary, KgweboColors.amber);
+    expect(theme.colorScheme.primary, KgweboColors.ink);
+    expect(theme.colorScheme.secondary, KgweboColors.lime);
     expect(theme.colorScheme.surface, KgweboColors.surface);
     expect(theme.colorScheme.onSurface, KgweboColors.ink);
   });
@@ -22,13 +21,14 @@ void main() {
     final theme = KgweboTheme.light();
     final text = theme.textTheme;
 
-    expect(text.displayLarge?.fontFamily, KgweboTypography.serif);
-    expect(text.displayMedium?.fontFamily, KgweboTypography.serif);
-    expect(text.headlineLarge?.fontFamily, KgweboTypography.serif);
+    expect(text.displayLarge?.fontFamily, KgweboTypography.sans);
+    expect(text.displayMedium?.fontFamily, KgweboTypography.sans);
+    expect(text.headlineLarge?.fontFamily, KgweboTypography.sans);
     expect(text.bodyLarge?.fontFamily, KgweboTypography.sans);
     expect(text.bodyMedium?.fontFamily, KgweboTypography.sans);
     expect(text.labelLarge?.fontFamily, KgweboTypography.sans);
     expect(text.titleMedium?.fontFamily, KgweboTypography.sans);
+    expect(KgweboTypography.brandMark.fontFamily, KgweboTypography.serif);
   });
 
   test('component themes are configured', () {
@@ -36,13 +36,10 @@ void main() {
 
     expect(theme.appBarTheme.elevation, 0);
     expect(theme.appBarTheme.backgroundColor, KgweboColors.canvas);
-    expect(theme.filledButtonTheme.style, isNotNull);
-    expect(theme.outlinedButtonTheme.style, isNotNull);
     expect(theme.inputDecorationTheme.filled, isTrue);
-    expect(theme.inputDecorationTheme.fillColor, KgweboColors.surface);
-    expect(theme.navigationBarTheme.backgroundColor, KgweboColors.surface);
-    expect(theme.navigationRailTheme.backgroundColor, KgweboColors.surface);
+    expect(theme.inputDecorationTheme.fillColor, KgweboColors.surfaceMuted);
+    expect(theme.navigationRailTheme.backgroundColor, KgweboColors.canvas);
     expect(theme.cardTheme.elevation, 0);
-    expect(theme.progressIndicatorTheme.color, KgweboColors.forest);
+    expect(theme.progressIndicatorTheme.color, KgweboColors.ink);
   });
 }

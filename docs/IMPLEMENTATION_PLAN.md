@@ -35,8 +35,8 @@ Inspected before implementation:
   - Ref: `hhwxajxjmyjntxykptvs`
   - URL: `https://hhwxajxjmyjntxykptvs.supabase.co`
   - Status: `ACTIVE_HEALTHY`
-  - Public tables: none
-  - Remote migrations: none
+  - Public tables: `profiles`, `businesses`, `transactions`, `obligations`
+  - Remote migrations: applied through Phase 5 (`obligations`)
 - Publishable client keys are available. They belong in local `.env`, not in git.
 
 MVP boundary for a demonstrable first slice:
@@ -96,7 +96,7 @@ Implemented in the existing Flutter tree (Flutter 3.29.2 / Dart 3.7.2). The coun
 Implemented against the existing Kgwebo Supabase project (`hhwxajxjmyjntxykptvs`).
 
 - Welcome plus two skippable education screens, then email/password sign-up and sign-in.
-- Session restore, sign-out, password-reset request, recovery completion, and email-confirmation pending state.
+- Session restore, sign-out, password-reset request, 6-character recovery OTP, recovery completion, and email-confirmation pending state with a 6-character signup OTP.
 - `AppSession` + pure `redirectFor` policy. Live guests cannot open the shell. Preview (demo/local) still can, labelled.
 - Supabase initialises only when `runtimeMode == live` and the publishable/anon key is valid. Demo never connects.
 - `profiles` and `businesses` (one per owner) with RLS. Onboarding saves name, type, country (default BW), currency (default BWP), optional opening cash (not revenue) and description. Retries update the same row.
@@ -127,24 +127,55 @@ Verification executed 21 Oct 2026:
 - `flutter build apk --debug` — `build\app\outputs\flutter-apk\app-debug.apk`
 - Drift codegen: `dart run build_runner build` wrote `lib/core/persistence/kgwebo_database.g.dart`
 
-## Phase 4 — Transactions and financial engine
+## Phase 4 — Transactions and financial engine — complete
 
-- Domain `Money` and `FinancialEngine` with TDD first.
-- Record sale, expense, refund, owner contribution, owner withdrawal.
-- Idempotency keys; disable double-submit.
-- Paid vs unpaid expenses.
-- History, edit, delete, recalculation.
+Implemented against the existing Kgwebo schema. `public.transactions` did not exist before this phase.
 
-**Exit:** Spec cash example `2000 + 500 − 100 + 200 − 50 = 2550` and related cases pass independently of UI.
+- Pure `Money` + `FinancialEngine` in `lib/core/`. Integer thebe, Africa/Gaborone periods, opening cash excluded from sales. Definitions: `docs/FINANCIAL_MODEL.md`.
+- Remote table `public.transactions` with RLS, ownership trigger, amount/type checks, unique `(business_id, idempotency_key)`.
+- Sale, expense, refund, owner contribution and owner withdrawal forms. Paid vs unpaid is modelled; unpaid sales are not cash received; unpaid expenses do not reduce cash.
+- History, details, edit (same id) and confirmed delete.
+- Drift schema **v2** `cached_transactions`. Online-only writes; confirmed history may be read stale from cache. No write-outbox (Phase 8).
+- Dashboard tiles now show recorded cash, sales, expenses and net operating result from the engine, with an explicit month period. Empty, failed and stale states are distinct from a genuine zero.
+
+**Exit:** Spec cash example `2000 + 500 − 100 + 200 − 50 = 2550` and related engine cases pass independently of UI.
+
+Verification executed 21 Oct 2026:
+
+- Remote migrations applied: `transactions`, `transactions_created_by_idx`
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (170)
+- `flutter build apk --debug` — `build\app\outputs\flutter-apk\app-debug.apk`
+- Drift codegen: `dart run build_runner build` wrote `lib/core/persistence/kgwebo_database.g.dart`
+- RLS catalog: FORCE RLS on `transactions`; anon has no table privileges; authenticated has select/insert/update/delete; four ownership policies present; security advisors returned no lints
+- Two-user payload RLS: not executed (no dedicated staging users on this project). Repeat `supabase/tests/rls_transactions.sql` with two Auth users before treating cross-account isolation as empirically proven.
 
 ## Phase 5 — Dashboard and responsive layouts
 
-- Cash, sales, expenses, profit, recent activity, outlook, recommendations, quick actions.
-- Period selector updates figures from the engine.
-- Empty businesses get setup guidance, not a false loss warning.
-- Widget tests at 320, 390, 600, 840, 1024 widths and landscape.
+Phase 4 already replaced preview metric tiles with recorded cash, sales, expenses, net operating result and recent transactions. Phase 5 added a period selector, a thin persisted obligation model, and evidence-backed dashboard notices — not a rebuilt dashboard.
+
+**Scope conflict resolved:** `MASTER_PROJECT_SPEC` puts full obligations and recommendation persistence in Phase 7. This plan asked Phase 5 for outlook from real obligations rather than hardcoded copy. Phase 5 therefore ships CRUD + dashboard outlook for commitments, and leaves 7/14/30 forecasts and dismissible persisted recommendations to Phase 7.
+
+- Period chips: This month, Last month, Last 3 months, This year, custom inclusive range. Calendar uses `BusinessZone` (Africa/Gaborone for BW, fallback for unknown countries).
+- Period sales, expenses, refunds, net operating result and sparkline come from `FinancialEngine` / `SparklineSeries`. Cash stays all-time recorded cash.
+- `public.obligations` with FORCE RLS, ownership trigger, idempotency, Drift schema v3 cache. Writes remain online-only.
+- Unpaid commitments never reduce recorded cash or the operating result. Estimated cash after unpaid commitments is labelled an estimate.
+- Empty businesses get setup guidance, not a false loss warning. 5,000-row cap and mixed-currency skips stay labelled incomplete.
+- Widget tests at 320×568, 360×800, 800×360, 768×1024, 1024×768.
 
 **Exit:** Displayed totals match the engine; layouts do not overflow in tested sizes.
+
+Verification executed 21 Oct 2026:
+
+- Remote migration applied: `obligations` on `hhwxajxjmyjntxykptvs`
+- FORCE RLS on `obligations`; anon has no table privileges; authenticated has select/insert/update/delete; four ownership policies present
+- Security advisors: existing leaked-password warning only (no new obligation lints)
+- `dart format --set-exit-if-changed .` — pass after formatting
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (222)
+- `flutter build apk --debug` — `build\app\outputs\flutter-apk\app-debug.apk`
+- Two-user payload RLS for transactions and obligations: not executed (no dedicated staging users). Repeat `supabase/tests/rls_transactions.sql` and `supabase/tests/rls_obligations.sql` with two Auth users before treating cross-account isolation as empirically proven.
 
 ## Phase 6 — Inventory
 
@@ -185,7 +216,7 @@ Verification executed 21 Oct 2026:
 | Item                        | Status                                                                                                                               |
 | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Kgwebo Supabase project     | **Resolved.** Use `hhwxajxjmyjntxykptvs`. Phase 2 schema (`profiles`, `businesses`) is applied with RLS.                             |
-| Auth redirect URL           | Add `bw.kgwebo.kgwebo://login-callback` under Auth → URL Configuration → Additional Redirect URLs.                                   |
+| Auth email templates        | Styled OTP HTML is in `supabase/templates/`. Paste confirmation.html and recovery.html into Auth → Email Templates. OTP length is 6. |
 | Leaked-password protection  | Supabase advisor warning. Enable HaveIBeenPwned checks in the Auth dashboard if desired.                                             |
 | Service-role key in the app | Not required. Client uses publishable/anon key only.                                                                                 |
 | Android device attached     | None attached during Phase 3. Widget tests and a debug APK build are used. Visual device QA of the profile form remains outstanding. |

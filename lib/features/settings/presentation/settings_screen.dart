@@ -6,10 +6,10 @@ import '../../../app/config/app_environment.dart';
 import '../../../app/config/config_providers.dart';
 import '../../../app/routes.dart';
 import '../../../app/theme/kgwebo_colors.dart';
-import '../../../app/theme/kgwebo_radii.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
+import '../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
@@ -44,7 +44,10 @@ class _SettingsBody extends ConsumerWidget {
         KgweboSpacing.xl,
       ),
       children: [
-        Text('Kgwebo', style: textTheme.headlineSmall),
+        Text(
+          'Kgwebo',
+          style: textTheme.headlineSmall?.copyWith(color: KgweboColors.ink),
+        ),
         const SizedBox(height: KgweboSpacing.xxs),
         Text(
           'Account, session and environment. Working actions only.',
@@ -229,32 +232,27 @@ class _InfoCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: KgweboColors.surface,
-        borderRadius: KgweboRadii.borderMd,
-        border: Border.all(color: KgweboColors.line),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(KgweboSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(title, style: textTheme.titleMedium),
-            const SizedBox(height: KgweboSpacing.sm),
-            for (final row in rows) ...[
-              Text(
-                row.$1,
-                style: textTheme.labelMedium?.copyWith(
-                  color: KgweboColors.inkMuted,
-                ),
+    return KgweboSoftCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style: textTheme.titleMedium?.copyWith(color: KgweboColors.ink),
+          ),
+          const SizedBox(height: KgweboSpacing.sm),
+          for (final row in rows) ...[
+            Text(
+              row.$1,
+              style: textTheme.labelMedium?.copyWith(
+                color: KgweboColors.inkMuted,
               ),
-              const SizedBox(height: KgweboSpacing.xxs),
-              Text(row.$2, style: textTheme.bodyLarge),
-              const SizedBox(height: KgweboSpacing.sm),
-            ],
+            ),
+            const SizedBox(height: KgweboSpacing.xxs),
+            Text(row.$2, style: textTheme.bodyLarge),
+            const SizedBox(height: KgweboSpacing.sm),
           ],
-        ),
+        ],
       ),
     );
   }

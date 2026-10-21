@@ -35,3 +35,14 @@ String? validatePasswordConfirmation({
   }
   return null;
 }
+
+const authOtpLength = 6;
+final _otpPattern = RegExp(r'^\d{6}$');
+
+String? validateOtp(String value) {
+  final code = value.trim();
+  if (!_otpPattern.hasMatch(code)) {
+    return 'Enter the 6-character code.';
+  }
+  return null;
+}

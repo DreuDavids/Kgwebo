@@ -68,7 +68,7 @@ class _ResetPasswordScreenState extends ConsumerState<ResetPasswordScreen> {
     return AuthLayout(
       title: 'Choose a new password',
       subtitle:
-          'This screen is only used after a valid recovery link. Your previous password stops working once this save succeeds.',
+          'This screen is only used after a valid recovery code. Your previous password stops working once this save succeeds.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [

@@ -27,7 +27,7 @@ class AuthFailure implements Exception {
         code: 'invalid_credentials',
       ),
       'email_not_confirmed' => const AuthFailure(
-        'Confirm your email address before signing in. Check your inbox for a link from Kgwebo.',
+        'Confirm your email address before signing in. Check your inbox for a 6-character code from Kgwebo.',
         code: 'email_not_confirmed',
         requiresEmailConfirmation: true,
       ),
@@ -39,6 +39,11 @@ class AuthFailure implements Exception {
       'over_request_rate_limit' => const AuthFailure(
         'Please wait a moment before requesting another email.',
         code: 'over_email_send_rate_limit',
+        isRetryable: true,
+      ),
+      'otp_expired' || 'token_expired' => const AuthFailure(
+        'That code is incorrect or has expired. Request a new one.',
+        code: 'otp_expired',
         isRetryable: true,
       ),
       'weak_password' => const AuthFailure(
@@ -72,6 +77,10 @@ class AuthFailure implements Exception {
     }
     if (lower.contains('email not confirmed')) {
       return AuthFailure.fromCode('email_not_confirmed');
+    }
+    if (lower.contains('expired') &&
+        (lower.contains('otp') || lower.contains('token'))) {
+      return AuthFailure.fromCode('otp_expired');
     }
     if (lower.contains('already registered') ||
         lower.contains('already exists')) {

@@ -58,7 +58,7 @@ String? redirectFor(AppSession session, String location) {
 }
 
 String? _guestRedirect(String path) {
-  if (_protected.contains(path) ||
+  if (_isProtected(path) ||
       path == AppRoutes.onboarding ||
       path == AppRoutes.session ||
       path == AppRoutes.root) {
@@ -67,10 +67,14 @@ String? _guestRedirect(String path) {
   return null;
 }
 
+bool _isProtected(String path) {
+  return _protected.any((route) => path == route || path.startsWith('$route/'));
+}
+
 bool _isKnownAppPath(String path) {
   return path == AppRoutes.root ||
       path == AppRoutes.session ||
       path == AppRoutes.onboarding ||
-      _protected.contains(path) ||
+      _isProtected(path) ||
       _authRoutes.contains(path);
 }

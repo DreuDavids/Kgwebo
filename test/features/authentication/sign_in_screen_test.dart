@@ -5,8 +5,11 @@ import 'package:kgwebo/app/config/config_providers.dart';
 import 'package:kgwebo/app/theme/kgwebo_theme.dart';
 import 'package:kgwebo/features/authentication/application/session_controller.dart';
 import 'package:kgwebo/features/authentication/domain/auth_failure.dart';
+import 'package:kgwebo/features/authentication/domain/auth_user.dart';
+import 'package:kgwebo/features/authentication/presentation/confirm_email_screen.dart';
 import 'package:kgwebo/features/authentication/presentation/forgot_password_screen.dart';
 import 'package:kgwebo/features/authentication/presentation/sign_in_screen.dart';
+import 'package:kgwebo/shared/widgets/kgwebo_button.dart';
 import 'package:kgwebo/features/authentication/presentation/sign_up_screen.dart';
 
 import '../../helpers/fake_auth.dart';
@@ -42,7 +45,7 @@ void main() {
     await setSurface(tester, const Size(360, 800));
     await tester.pumpWidget(_harness(child: const SignInScreen(), auth: auth));
 
-    await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+    await tester.tap(find.widgetWithText(KgweboButton, 'Sign in'));
     await tester.pump();
 
     expect(find.text('Enter your email address.'), findsOneWidget);
@@ -69,7 +72,7 @@ void main() {
         find.widgetWithText(TextField, 'Password'),
         'correct1',
       );
-      await tester.tap(find.widgetWithText(FilledButton, 'Sign in'));
+      await tester.tap(find.widgetWithText(KgweboButton, 'Sign in'));
       await tester.pump();
       await tester.pump();
 
@@ -124,8 +127,74 @@ void main() {
     await setSurface(tester, const Size(360, 800));
     await tester.pumpWidget(_harness(child: const ForgotPasswordScreen()));
 
-    await tester.tap(find.text('Send reset link'));
+    await tester.tap(find.text('Send reset code'));
     await tester.pump();
     expect(find.text('Enter your email address.'), findsOneWidget);
+  });
+
+  testWidgets('password reset asks for a 6-character OTP after send', (
+    tester,
+  ) async {
+    final auth = FakeAuthRepository();
+    await setSurface(tester, const Size(360, 800));
+    await tester.pumpWidget(
+      _harness(child: const ForgotPasswordScreen(), auth: auth),
+    );
+
+    await tester.enterText(
+      find.widgetWithText(TextField, 'Email'),
+      'owner@example.com',
+    );
+    await tester.tap(find.text('Send reset code'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(auth.resetCalls, 1);
+    expect(find.textContaining('6-character code'), findsWidgets);
+
+    await tester.tap(find.text('Verify code'));
+    await tester.pump();
+    expect(find.text('Enter the 6-character code.'), findsOneWidget);
+    expect(auth.verifyRecoveryOtpCalls, 0);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, '6-character code'),
+      '123456',
+    );
+    await tester.tap(find.text('Verify code'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(auth.verifyRecoveryOtpCalls, 1);
+    expect(auth.lastOtpToken, '123456');
+  });
+
+  testWidgets('email confirmation verifies a 6-character OTP', (tester) async {
+    final auth = FakeAuthRepository(
+      user: const AuthUser(
+        id: 'user-1',
+        email: 'owner@example.com',
+        emailConfirmed: false,
+      ),
+    );
+    await setSurface(tester, const Size(360, 800));
+    await tester.pumpWidget(
+      _harness(child: const ConfirmEmailScreen(), auth: auth),
+    );
+    await tester.pump();
+    await tester.pump();
+
+    expect(find.textContaining('owner@example.com'), findsOneWidget);
+
+    await tester.enterText(
+      find.widgetWithText(TextField, '6-character code'),
+      '123456',
+    );
+    await tester.tap(find.text('Verify code'));
+    await tester.pump();
+    await tester.pump();
+
+    expect(auth.verifySignupOtpCalls, 1);
+    expect(auth.lastOtpToken, '123456');
   });
 }

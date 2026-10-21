@@ -1,6 +1,5 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../../../app/routes.dart';
 import '../../../core/logging/app_logger.dart';
 import '../application/auth_repository.dart';
 import '../domain/auth_change.dart';
@@ -39,7 +38,6 @@ class SupabaseAuthRepository implements AuthRepository {
       final response = await _auth.signUp(
         email: email.trim(),
         password: password,
-        emailRedirectTo: AppRoutes.authRedirectUri,
       );
       final user = response.user;
       if (response.session != null && user != null) {
@@ -92,10 +90,7 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> requestPasswordReset(String email) async {
     try {
-      await _auth.resetPasswordForEmail(
-        email.trim(),
-        redirectTo: AppRoutes.authRedirectUri,
-      );
+      await _auth.resetPasswordForEmail(email.trim());
     } on AuthException catch (error) {
       throw _fromAuthException(error);
     } catch (error) {
@@ -117,14 +112,49 @@ class SupabaseAuthRepository implements AuthRepository {
   @override
   Future<void> resendSignupEmail(String email) async {
     try {
-      await _auth.resend(
-        type: OtpType.signup,
-        email: email.trim(),
-        emailRedirectTo: AppRoutes.authRedirectUri,
-      );
+      await _auth.resend(type: OtpType.signup, email: email.trim());
     } on AuthException catch (error) {
       throw _fromAuthException(error);
     } catch (error) {
+      throw AuthFailure.fromMessage('$error');
+    }
+  }
+
+  @override
+  Future<void> verifySignupOtp({required String email, required String token}) {
+    return _verifyEmailOtp(email: email, token: token, type: OtpType.signup);
+  }
+
+  @override
+  Future<void> verifyRecoveryOtp({
+    required String email,
+    required String token,
+  }) {
+    return _verifyEmailOtp(email: email, token: token, type: OtpType.recovery);
+  }
+
+  Future<void> _verifyEmailOtp({
+    required String email,
+    required String token,
+    required OtpType type,
+  }) async {
+    try {
+      final response = await _auth.verifyOTP(
+        email: email.trim(),
+        token: token.trim(),
+        type: type,
+      );
+      if (response.session == null && response.user == null) {
+        throw const AuthFailure(
+          'That code is incorrect or has expired. Request a new one.',
+        );
+      }
+    } on AuthException catch (error) {
+      throw _fromAuthException(error);
+    } catch (error) {
+      if (error is AuthFailure) {
+        rethrow;
+      }
       throw AuthFailure.fromMessage('$error');
     }
   }

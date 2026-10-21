@@ -21,6 +21,11 @@ class FakeAuthRepository implements AuthRepository {
   int signOutCalls = 0;
   int resetCalls = 0;
   int updatePasswordCalls = 0;
+  int verifySignupOtpCalls = 0;
+  int verifyRecoveryOtpCalls = 0;
+  String expectedOtp = '123456';
+  String? lastOtpToken;
+  String? lastOtpEmail;
   final _controller = StreamController<AuthChange>.broadcast();
 
   void emit(AuthChange change) => _controller.add(change);
@@ -84,6 +89,42 @@ class FakeAuthRepository implements AuthRepository {
   @override
   Future<void> resendSignupEmail(String email) async {
     _throwIfNeeded();
+  }
+
+  @override
+  Future<void> verifySignupOtp({
+    required String email,
+    required String token,
+  }) async {
+    verifySignupOtpCalls += 1;
+    lastOtpEmail = email.trim();
+    lastOtpToken = token.trim();
+    _throwIfNeeded();
+    _requireExpectedOtp(token);
+    user = AuthUser(id: 'user-1', email: email.trim(), emailConfirmed: true);
+    emit(AuthChange(kind: AuthChangeKind.signedIn, user: user));
+  }
+
+  @override
+  Future<void> verifyRecoveryOtp({
+    required String email,
+    required String token,
+  }) async {
+    verifyRecoveryOtpCalls += 1;
+    lastOtpEmail = email.trim();
+    lastOtpToken = token.trim();
+    _throwIfNeeded();
+    _requireExpectedOtp(token);
+    user = AuthUser(id: 'user-1', email: email.trim(), emailConfirmed: true);
+    emit(AuthChange(kind: AuthChangeKind.passwordRecovery, user: user));
+  }
+
+  void _requireExpectedOtp(String token) {
+    if (token.trim() != expectedOtp) {
+      throw const AuthFailure(
+        'That code is incorrect or has expired. Request a new one.',
+      );
+    }
   }
 
   void _throwIfNeeded() {

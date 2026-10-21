@@ -24,7 +24,7 @@ Future<void> bootstrap({
     const SystemUiOverlayStyle(
       statusBarColor: Colors.transparent,
       statusBarIconBrightness: Brightness.dark,
-      systemNavigationBarColor: KgweboColors.canvas,
+      systemNavigationBarColor: KgweboColors.surface,
       systemNavigationBarIconBrightness: Brightness.dark,
     ),
   );

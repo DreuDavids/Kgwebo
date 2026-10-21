@@ -7,47 +7,40 @@ import 'kgwebo_radii.dart';
 import 'kgwebo_spacing.dart';
 import 'kgwebo_typography.dart';
 
-/// Light-only Kgwebo Material 3 theme.
+/// Light-only Kgwebo theme. Material 3 is off so surfaces are not seed-tinted.
 abstract final class KgweboTheme {
   static ThemeData light() {
     const colorScheme = ColorScheme(
       brightness: Brightness.light,
-      primary: KgweboColors.forest,
-      onPrimary: KgweboColors.onForest,
-      primaryContainer: KgweboColors.forestContainer,
-      onPrimaryContainer: KgweboColors.forest,
-      secondary: KgweboColors.teal,
-      onSecondary: Colors.white,
-      secondaryContainer: KgweboColors.tealSoft,
-      onSecondaryContainer: KgweboColors.forest,
-      tertiary: KgweboColors.amber,
-      onTertiary: Colors.white,
-      tertiaryContainer: KgweboColors.amberSoft,
-      onTertiaryContainer: KgweboColors.ink,
+      primary: KgweboColors.ink,
+      onPrimary: KgweboColors.onInk,
+      secondary: KgweboColors.lime,
+      onSecondary: KgweboColors.onLime,
       error: KgweboColors.danger,
       onError: Colors.white,
-      errorContainer: Color(0xFFF9DEDC),
-      onErrorContainer: KgweboColors.danger,
       surface: KgweboColors.surface,
       onSurface: KgweboColors.ink,
-      onSurfaceVariant: KgweboColors.inkMuted,
-      outline: KgweboColors.line,
-      outlineVariant: KgweboColors.line,
-      shadow: Color(0x1A000000),
-      scrim: Color(0x99000000),
-      inverseSurface: KgweboColors.ink,
-      onInverseSurface: KgweboColors.canvas,
-      inversePrimary: KgweboColors.forestContainer,
     );
 
     final textTheme = KgweboTypography.textTheme;
+    const pill = RoundedRectangleBorder(borderRadius: KgweboRadii.borderPill);
+    const fieldBorder = OutlineInputBorder(
+      borderRadius: KgweboRadii.borderMd,
+      borderSide: BorderSide.none,
+    );
 
     return ThemeData(
-      useMaterial3: true,
+      useMaterial3: false,
       brightness: Brightness.light,
+      applyElevationOverlayColor: false,
       colorScheme: colorScheme,
+      primaryColor: KgweboColors.ink,
       scaffoldBackgroundColor: KgweboColors.canvas,
       canvasColor: KgweboColors.canvas,
+      cardColor: KgweboColors.surface,
+      dividerColor: KgweboColors.line,
+      splashColor: KgweboColors.surfaceMuted,
+      highlightColor: Colors.transparent,
       fontFamily: KgweboTypography.sans,
       textTheme: textTheme,
       primaryTextTheme: textTheme,
@@ -65,55 +58,45 @@ abstract final class KgweboTheme {
           systemNavigationBarIconBrightness: Brightness.dark,
         ),
       ),
-      filledButtonTheme: FilledButtonThemeData(
-        style: FilledButton.styleFrom(
-          backgroundColor: KgweboColors.forest,
-          foregroundColor: KgweboColors.onForest,
+      elevatedButtonTheme: ElevatedButtonThemeData(
+        style: ElevatedButton.styleFrom(
+          backgroundColor: KgweboColors.lime,
+          foregroundColor: KgweboColors.onLime,
           disabledBackgroundColor: KgweboColors.surfaceMuted,
           disabledForegroundColor: KgweboColors.inkFaint,
-          minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(
-            horizontal: KgweboSpacing.lg,
-            vertical: KgweboSpacing.sm,
-          ),
-          shape: const RoundedRectangleBorder(
-            borderRadius: KgweboRadii.borderMd,
-          ),
+          minimumSize: const Size(48, 52),
           elevation: KgweboElevation.none,
+          shadowColor: Colors.transparent,
+          shape: pill,
           textStyle: textTheme.labelLarge,
         ),
       ),
       outlinedButtonTheme: OutlinedButtonThemeData(
         style: OutlinedButton.styleFrom(
-          foregroundColor: KgweboColors.forest,
-          minimumSize: const Size(48, 48),
-          padding: const EdgeInsets.symmetric(
-            horizontal: KgweboSpacing.lg,
-            vertical: KgweboSpacing.sm,
-          ),
-          side: const BorderSide(color: KgweboColors.forest, width: 1.2),
-          shape: const RoundedRectangleBorder(
-            borderRadius: KgweboRadii.borderMd,
-          ),
+          foregroundColor: KgweboColors.ink,
+          backgroundColor: KgweboColors.surface,
+          minimumSize: const Size(48, 52),
+          side: const BorderSide(color: KgweboColors.line),
+          shape: pill,
           textStyle: textTheme.labelLarge,
         ),
       ),
       textButtonTheme: TextButtonThemeData(
         style: TextButton.styleFrom(
-          foregroundColor: KgweboColors.teal,
+          foregroundColor: KgweboColors.ink,
           minimumSize: const Size(48, 40),
           textStyle: textTheme.labelLarge,
         ),
       ),
       iconButtonTheme: IconButtonThemeData(
         style: IconButton.styleFrom(
-          foregroundColor: KgweboColors.forest,
+          foregroundColor: KgweboColors.ink,
           minimumSize: const Size(48, 48),
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: KgweboColors.surface,
+        fillColor: KgweboColors.surfaceMuted,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: KgweboSpacing.md,
           vertical: KgweboSpacing.md,
@@ -123,65 +106,53 @@ abstract final class KgweboTheme {
           color: KgweboColors.inkMuted,
         ),
         errorStyle: textTheme.bodySmall?.copyWith(color: KgweboColors.danger),
-        border: const OutlineInputBorder(
+        border: fieldBorder,
+        enabledBorder: fieldBorder,
+        focusedBorder: OutlineInputBorder(
           borderRadius: KgweboRadii.borderMd,
-          borderSide: BorderSide(color: KgweboColors.line),
+          borderSide: const BorderSide(color: KgweboColors.ink, width: 1.6),
         ),
-        enabledBorder: const OutlineInputBorder(
+        errorBorder: OutlineInputBorder(
           borderRadius: KgweboRadii.borderMd,
-          borderSide: BorderSide(color: KgweboColors.line),
+          borderSide: const BorderSide(color: KgweboColors.danger),
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedErrorBorder: OutlineInputBorder(
           borderRadius: KgweboRadii.borderMd,
-          borderSide: BorderSide(color: KgweboColors.forest, width: 1.6),
-        ),
-        errorBorder: const OutlineInputBorder(
-          borderRadius: KgweboRadii.borderMd,
-          borderSide: BorderSide(color: KgweboColors.danger),
-        ),
-        focusedErrorBorder: const OutlineInputBorder(
-          borderRadius: KgweboRadii.borderMd,
-          borderSide: BorderSide(color: KgweboColors.danger, width: 1.6),
+          borderSide: const BorderSide(color: KgweboColors.danger, width: 1.6),
         ),
       ),
       cardTheme: const CardThemeData(
         color: KgweboColors.surface,
         elevation: KgweboElevation.none,
+        shadowColor: Colors.transparent,
         surfaceTintColor: Colors.transparent,
         margin: EdgeInsets.zero,
-        shape: RoundedRectangleBorder(
-          borderRadius: KgweboRadii.borderMd,
-          side: KgweboElevation.hairline,
-        ),
+        shape: RoundedRectangleBorder(borderRadius: KgweboRadii.borderLg),
       ),
-      navigationBarTheme: NavigationBarThemeData(
-        elevation: KgweboElevation.none,
-        height: 72,
+      chipTheme: ChipThemeData(
+        backgroundColor: KgweboColors.surfaceMuted,
+        selectedColor: KgweboColors.lime,
+        labelStyle: textTheme.labelMedium?.copyWith(color: KgweboColors.ink),
+        shape: pill,
+        side: BorderSide.none,
+        padding: const EdgeInsets.symmetric(horizontal: KgweboSpacing.sm),
+      ),
+      bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: KgweboColors.surface,
-        surfaceTintColor: Colors.transparent,
-        indicatorColor: KgweboColors.tealSoft,
-        labelTextStyle: WidgetStateProperty.resolveWith((states) {
-          final base = textTheme.labelMedium;
-          if (states.contains(WidgetState.selected)) {
-            return base?.copyWith(color: KgweboColors.forest);
-          }
-          return base?.copyWith(color: KgweboColors.inkMuted);
-        }),
-        iconTheme: WidgetStateProperty.resolveWith((states) {
-          if (states.contains(WidgetState.selected)) {
-            return const IconThemeData(color: KgweboColors.forest, size: 24);
-          }
-          return const IconThemeData(color: KgweboColors.inkMuted, size: 24);
-        }),
+        elevation: 0,
+        selectedItemColor: KgweboColors.ink,
+        unselectedItemColor: KgweboColors.inkMuted,
+        type: BottomNavigationBarType.fixed,
+        showUnselectedLabels: true,
       ),
       navigationRailTheme: NavigationRailThemeData(
-        backgroundColor: KgweboColors.surface,
+        backgroundColor: KgweboColors.canvas,
         elevation: KgweboElevation.none,
-        indicatorColor: KgweboColors.tealSoft,
-        selectedIconTheme: const IconThemeData(color: KgweboColors.forest),
+        indicatorColor: KgweboColors.ink,
+        selectedIconTheme: const IconThemeData(color: KgweboColors.lime),
         unselectedIconTheme: const IconThemeData(color: KgweboColors.inkMuted),
         selectedLabelTextStyle: textTheme.labelMedium?.copyWith(
-          color: KgweboColors.forest,
+          color: KgweboColors.ink,
         ),
         unselectedLabelTextStyle: textTheme.labelMedium?.copyWith(
           color: KgweboColors.inkMuted,
@@ -195,27 +166,32 @@ abstract final class KgweboTheme {
       snackBarTheme: SnackBarThemeData(
         backgroundColor: KgweboColors.ink,
         contentTextStyle: textTheme.bodyMedium?.copyWith(
-          color: KgweboColors.canvas,
+          color: KgweboColors.onInk,
         ),
         behavior: SnackBarBehavior.floating,
-        shape: const RoundedRectangleBorder(borderRadius: KgweboRadii.borderMd),
+        shape: const RoundedRectangleBorder(borderRadius: KgweboRadii.borderLg),
       ),
       dialogTheme: const DialogThemeData(
         backgroundColor: KgweboColors.surface,
         elevation: KgweboElevation.low,
-        shape: RoundedRectangleBorder(borderRadius: KgweboRadii.borderLg),
+        shape: RoundedRectangleBorder(borderRadius: KgweboRadii.borderXl),
       ),
       bottomSheetTheme: const BottomSheetThemeData(
         backgroundColor: KgweboColors.surface,
         elevation: KgweboElevation.mid,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.vertical(
-            top: Radius.circular(KgweboRadii.lg),
+            top: Radius.circular(KgweboRadii.xl),
           ),
         ),
       ),
+      popupMenuTheme: const PopupMenuThemeData(
+        color: KgweboColors.surface,
+        elevation: KgweboElevation.mid,
+        shape: RoundedRectangleBorder(borderRadius: KgweboRadii.borderLg),
+      ),
       progressIndicatorTheme: const ProgressIndicatorThemeData(
-        color: KgweboColors.forest,
+        color: KgweboColors.ink,
         linearTrackColor: KgweboColors.surfaceMuted,
       ),
     );

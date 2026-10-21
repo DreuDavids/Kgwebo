@@ -5,9 +5,9 @@ import '../../../app/routes.dart';
 import '../../../app/theme/kgwebo_colors.dart';
 import '../../../app/theme/kgwebo_radii.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
-import '../../../app/theme/kgwebo_typography.dart';
-import '../../../core/responsive/responsive_layout.dart';
+import '../../../shared/widgets/kgwebo_brand_mark.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
+import '../../../shared/widgets/kgwebo_wash_scaffold.dart';
 
 class WelcomeScreen extends StatefulWidget {
   const WelcomeScreen({super.key});
@@ -41,135 +41,97 @@ class _WelcomeScreenState extends State<WelcomeScreen> {
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
     final page = _pages[_step];
-    final bottom = MediaQuery.viewInsetsOf(context).bottom;
     final last = _step == _pages.length - 1;
 
-    return Scaffold(
-      body: SafeArea(
-        child: KgweboContentConstraint(
-          child: Padding(
-            padding: EdgeInsets.fromLTRB(
-              KgweboSpacing.md,
-              KgweboSpacing.lg,
-              KgweboSpacing.md,
-              KgweboSpacing.lg + bottom,
+    return KgweboWashScaffold(
+      header: Row(
+        children: [
+          const KgweboBrandMark(),
+          const Spacer(),
+          if (!last)
+            KgweboButton(
+              label: 'Skip',
+              variant: KgweboButtonVariant.text,
+              onPressed: () => context.go(AppRoutes.signUp),
             ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  children: [
-                    Container(
-                      width: 40,
-                      height: 40,
-                      decoration: const BoxDecoration(
-                        color: KgweboColors.forest,
-                        borderRadius: KgweboRadii.borderMd,
-                      ),
-                      alignment: Alignment.center,
-                      child: Text(
-                        'K',
-                        style: textTheme.titleLarge?.copyWith(
-                          fontFamily: KgweboTypography.serif,
-                          color: KgweboColors.onForest,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: KgweboSpacing.sm),
-                    Text(
-                      'Kgwebo',
-                      style: textTheme.titleLarge?.copyWith(
-                        color: KgweboColors.forest,
-                      ),
-                    ),
-                    const Spacer(),
-                    if (!last)
-                      KgweboButton(
-                        label: 'Skip',
-                        variant: KgweboButtonVariant.text,
-                        onPressed: () => context.go(AppRoutes.signUp),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: KgweboSpacing.xl),
-                Expanded(
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          page.title,
-                          style: textTheme.displayMedium?.copyWith(
-                            fontFamily: KgweboTypography.serif,
-                            color: KgweboColors.forest,
-                          ),
-                        ),
-                        const SizedBox(height: KgweboSpacing.md),
-                        Text(
-                          'Your business. Clearer decisions. Stronger growth.',
-                          style: textTheme.titleMedium?.copyWith(
-                            color: KgweboColors.teal,
-                          ),
-                        ),
-                        const SizedBox(height: KgweboSpacing.lg),
-                        Text(
-                          page.body,
-                          style: textTheme.bodyLarge?.copyWith(height: 1.55),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Row(
-                  children: [
-                    for (var i = 0; i < _pages.length; i++)
-                      Padding(
-                        padding: const EdgeInsets.only(right: KgweboSpacing.xs),
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          width: i == _step ? 20 : 8,
-                          height: 8,
-                          decoration: BoxDecoration(
-                            color:
-                                i == _step
-                                    ? KgweboColors.forest
-                                    : KgweboColors.line,
-                            borderRadius: KgweboRadii.borderSm,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: KgweboSpacing.lg),
-                KgweboButton(
-                  label: last ? 'Create an account' : 'Continue',
-                  expanded: true,
-                  onPressed: () {
-                    if (last) {
-                      context.go(AppRoutes.signUp);
-                    } else {
-                      setState(() => _step += 1);
-                    }
-                  },
-                ),
-                const SizedBox(height: KgweboSpacing.sm),
-                if (_step > 0)
-                  KgweboButton(
-                    label: 'Back',
-                    expanded: true,
-                    variant: KgweboButtonVariant.secondary,
-                    onPressed: () => setState(() => _step -= 1),
-                  ),
-                KgweboButton(
-                  label: 'I already have an account',
-                  expanded: true,
-                  variant: KgweboButtonVariant.text,
-                  onPressed: () => context.go(AppRoutes.signIn),
-                ),
-              ],
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.fromLTRB(
+          KgweboSpacing.lg,
+          KgweboSpacing.md,
+          KgweboSpacing.lg,
+          KgweboSpacing.md,
+        ),
+        children: [
+          Text(
+            page.title,
+            style: textTheme.displayMedium?.copyWith(color: KgweboColors.ink),
+          ),
+          const SizedBox(height: KgweboSpacing.md),
+          Text(
+            'Your business. Clearer decisions. Stronger growth.',
+            style: textTheme.titleMedium?.copyWith(
+              color: KgweboColors.inkMuted,
             ),
           ),
-        ),
+          const SizedBox(height: KgweboSpacing.lg),
+          Text(
+            page.body,
+            style: textTheme.bodyLarge?.copyWith(
+              color: KgweboColors.ink,
+              height: 1.55,
+            ),
+          ),
+        ],
+      ),
+      footer: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Row(
+            children: [
+              for (var i = 0; i < _pages.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: KgweboSpacing.xs),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: i == _step ? 20 : 8,
+                    height: 8,
+                    decoration: BoxDecoration(
+                      color: i == _step ? KgweboColors.ink : KgweboColors.line,
+                      borderRadius: KgweboRadii.borderPill,
+                    ),
+                  ),
+                ),
+            ],
+          ),
+          const SizedBox(height: KgweboSpacing.md),
+          KgweboButton(
+            label: last ? 'Create an account' : 'Continue',
+            expanded: true,
+            onPressed: () {
+              if (last) {
+                context.go(AppRoutes.signUp);
+              } else {
+                setState(() => _step += 1);
+              }
+            },
+          ),
+          const SizedBox(height: KgweboSpacing.sm),
+          if (_step > 0)
+            KgweboButton(
+              label: 'Back',
+              expanded: true,
+              variant: KgweboButtonVariant.secondary,
+              onPressed: () => setState(() => _step -= 1),
+            ),
+          KgweboButton(
+            label: 'I already have an account',
+            expanded: true,
+            variant: KgweboButtonVariant.text,
+            onPressed: () => context.go(AppRoutes.signIn),
+          ),
+        ],
       ),
     );
   }

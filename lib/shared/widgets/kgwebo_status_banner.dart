@@ -22,9 +22,9 @@ class KgweboStatusBanner extends StatelessWidget {
   Widget build(BuildContext context) {
     final colors = switch (tone) {
       KgweboBannerTone.info => (
-        background: KgweboColors.tealSoft,
-        foreground: KgweboColors.forest,
-        accent: KgweboColors.teal,
+        background: KgweboColors.limeSoft,
+        foreground: KgweboColors.ink,
+        accent: KgweboColors.ink,
       ),
       KgweboBannerTone.warning => (
         background: KgweboColors.amberSoft,
@@ -37,8 +37,8 @@ class KgweboStatusBanner extends StatelessWidget {
         accent: KgweboColors.amber,
       ),
       KgweboBannerTone.success => (
-        background: KgweboColors.forestContainer,
-        foreground: KgweboColors.forest,
+        background: KgweboColors.limeSoft,
+        foreground: KgweboColors.ink,
         accent: KgweboColors.success,
       ),
     };
@@ -48,8 +48,7 @@ class KgweboStatusBanner extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: colors.background,
-          borderRadius: KgweboRadii.borderMd,
-          border: Border(left: BorderSide(color: colors.accent, width: 3)),
+          borderRadius: KgweboRadii.borderLg,
         ),
         child: Padding(
           padding: const EdgeInsets.fromLTRB(

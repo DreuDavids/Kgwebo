@@ -27,7 +27,71 @@ class CachedBusinesses extends Table {
   Set<Column<Object>> get primaryKey => {remoteId};
 }
 
-@DriftDatabase(tables: [CachedBusinesses])
+/// Confirmed local copy of a remote money movement. Scoped by owner and
+/// business so account switching cannot leak rows.
+class CachedTransactions extends Table {
+  TextColumn get remoteId => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get createdBy => text()();
+  TextColumn get idempotencyKey => text()();
+  TextColumn get type => text()();
+  IntColumn get amountMinor => integer()();
+  TextColumn get currencyCode => text()();
+  TextColumn get category => text()();
+  TextColumn get description => text().nullable()();
+  DateTimeColumn get occurredAt => dateTime()();
+  TextColumn get paymentMethod => text()();
+  TextColumn get paymentStatus => text()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('confirmed'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {remoteId};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {ownerId, businessId, idempotencyKey},
+  ];
+}
+
+/// Confirmed local copy of a remote upcoming commitment. Scoped by owner
+/// and business so account switching cannot leak rows.
+class CachedObligations extends Table {
+  TextColumn get remoteId => text()();
+  TextColumn get ownerId => text()();
+  TextColumn get businessId => text()();
+  TextColumn get createdBy => text()();
+  TextColumn get idempotencyKey => text()();
+  TextColumn get title => text()();
+  IntColumn get amountMinor => integer()();
+  TextColumn get currencyCode => text()();
+  DateTimeColumn get dueOn => dateTime()();
+  TextColumn get status => text()();
+  TextColumn get category => text()();
+  TextColumn get notes => text().nullable()();
+  TextColumn get recordedTransactionId => text().nullable()();
+  DateTimeColumn get createdAt => dateTime()();
+  DateTimeColumn get updatedAt => dateTime()();
+  DateTimeColumn get cachedAt => dateTime()();
+  TextColumn get syncStatus =>
+      text().withDefault(const Constant('confirmed'))();
+
+  @override
+  Set<Column<Object>> get primaryKey => {remoteId};
+
+  @override
+  List<Set<Column<Object>>> get uniqueKeys => [
+    {ownerId, businessId, idempotencyKey},
+  ];
+}
+
+@DriftDatabase(
+  tables: [CachedBusinesses, CachedTransactions, CachedObligations],
+)
 class KgweboDatabase extends _$KgweboDatabase {
   KgweboDatabase() : super(_openConnection());
 
@@ -38,7 +102,7 @@ class KgweboDatabase extends _$KgweboDatabase {
   }
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -47,7 +111,12 @@ class KgweboDatabase extends _$KgweboDatabase {
         await m.createAll();
       },
       onUpgrade: (Migrator m, int from, int to) async {
-        // Schema v1 is the first Drift schema. Later phases append here.
+        if (from < 2) {
+          await m.createTable(cachedTransactions);
+        }
+        if (from < 3) {
+          await m.createTable(cachedObligations);
+        }
       },
     );
   }

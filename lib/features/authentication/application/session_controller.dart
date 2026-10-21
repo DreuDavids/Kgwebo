@@ -8,6 +8,16 @@ import '../../../app/config/config_providers.dart';
 import '../../../app/supabase/kgwebo_supabase.dart';
 import '../../../core/persistence/business_cache.dart';
 import '../../../core/persistence/kgwebo_database.dart';
+import '../../../core/persistence/obligation_cache.dart';
+import '../../../core/persistence/transaction_cache.dart';
+import '../../obligations/application/obligation_repository.dart';
+import '../../obligations/data/cached_obligation_repository.dart';
+import '../../obligations/data/preview_obligation_repository.dart';
+import '../../obligations/data/supabase_obligation_repository.dart';
+import '../../transactions/application/transaction_repository.dart';
+import '../../transactions/data/cached_transaction_repository.dart';
+import '../../transactions/data/preview_transaction_repository.dart';
+import '../../transactions/data/supabase_transaction_repository.dart';
 import '../../onboarding/application/onboarding_repository.dart';
 import '../../onboarding/data/cached_onboarding_repository.dart';
 import '../../onboarding/data/preview_onboarding_repository.dart';
@@ -49,6 +59,38 @@ final onboardingRepositoryProvider = Provider<OnboardingRepository>((ref) {
   return CachedOnboardingRepository(
     remote: SupabaseOnboardingRepository(kgweboSupabase),
     cache: ref.watch(businessCacheProvider),
+    currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+  );
+});
+
+final transactionCacheProvider = Provider<TransactionCache>((ref) {
+  return TransactionCache(ref.watch(kgweboDatabaseProvider));
+});
+
+final transactionRepositoryProvider = Provider<TransactionRepository>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (!config.connectsToBackend) {
+    return PreviewTransactionRepository();
+  }
+  return CachedTransactionRepository(
+    remote: SupabaseTransactionRepository(kgweboSupabase),
+    cache: ref.watch(transactionCacheProvider),
+    currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+  );
+});
+
+final obligationCacheProvider = Provider<ObligationCache>((ref) {
+  return ObligationCache(ref.watch(kgweboDatabaseProvider));
+});
+
+final obligationRepositoryProvider = Provider<ObligationRepository>((ref) {
+  final config = ref.watch(appConfigProvider);
+  if (!config.connectsToBackend) {
+    return PreviewObligationRepository();
+  }
+  return CachedObligationRepository(
+    remote: SupabaseObligationRepository(kgweboSupabase),
+    cache: ref.watch(obligationCacheProvider),
     currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
   );
 });
@@ -212,6 +254,21 @@ class SessionController extends StateNotifier<AppSession> {
 
   Future<void> resendSignupEmail(String email) {
     return _run(() => _auth.resendSignupEmail(email));
+  }
+
+  Future<void> verifySignupOtp({required String email, required String token}) {
+    return _run(() async {
+      await _auth.verifySignupOtp(email: email, token: token);
+      final user = await _auth.currentUser();
+      await _resolve(user);
+    });
+  }
+
+  Future<void> verifyRecoveryOtp({
+    required String email,
+    required String token,
+  }) {
+    return _run(() => _auth.verifyRecoveryOtp(email: email, token: token));
   }
 
   Future<void> completeOnboarding(OnboardingDraft draft) {

@@ -11,8 +11,14 @@ abstract final class AppRoutes {
   static const onboarding = '/onboarding';
   static const dashboard = '/dashboard';
   static const transactions = '/transactions';
+  static const recordSale = '/transactions/sale';
+  static const recordExpense = '/transactions/expense';
+  static const recordRefund = '/transactions/refund';
+  static const recordContribution = '/transactions/owner-contribution';
+  static const recordWithdrawal = '/transactions/owner-withdrawal';
   static const products = '/products';
   static const cashFlow = '/cash-flow';
+  static const recordObligation = '/cash-flow/new';
   static const reports = '/reports';
   static const settings = '/settings';
   static const businessProfile = '/settings/business';
@@ -29,13 +35,21 @@ abstract final class AppRoutes {
   static const onboardingName = 'onboarding';
   static const dashboardName = 'dashboard';
   static const transactionsName = 'transactions';
+  static const recordSaleName = 'record-sale';
+  static const recordExpenseName = 'record-expense';
+  static const recordRefundName = 'record-refund';
+  static const recordContributionName = 'record-contribution';
+  static const recordWithdrawalName = 'record-withdrawal';
+  static const transactionDetailsName = 'transaction-details';
+  static const transactionEditName = 'transaction-edit';
   static const productsName = 'products';
   static const cashFlowName = 'cash-flow';
+  static const recordObligationName = 'record-obligation';
+  static const obligationDetailsName = 'obligation-details';
+  static const obligationEditName = 'obligation-edit';
   static const reportsName = 'reports';
   static const settingsName = 'settings';
   static const businessProfileName = 'business-profile';
   static const businessProfileEditName = 'business-profile-edit';
   static const moreName = 'more';
-
-  static const authRedirectUri = 'bw.kgwebo.kgwebo://login-callback';
 }

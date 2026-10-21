@@ -29,7 +29,7 @@ class RailNavigation extends StatelessWidget {
     return SizedBox(
       width: extended ? 220 : 92,
       child: ColoredBox(
-        color: KgweboColors.surface,
+        color: KgweboColors.canvas,
         child: Column(
           children: [
             Padding(
@@ -44,8 +44,8 @@ class RailNavigation extends StatelessWidget {
                 child: Text(
                   extended ? 'Kgwebo' : 'K',
                   style: Theme.of(context).textTheme.headlineLarge?.copyWith(
-                    fontFamily: KgweboTypography.serif,
-                    color: KgweboColors.forest,
+                    fontFamily: extended ? null : KgweboTypography.serif,
+                    color: KgweboColors.ink,
                   ),
                 ),
               ),

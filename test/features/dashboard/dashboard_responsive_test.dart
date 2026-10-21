@@ -42,13 +42,12 @@ void main() {
       final width = profile.$2.width;
       if (width < 600) {
         expect(find.byType(CompactNavigation), findsOneWidget);
-        expect(find.byType(NavigationBar), findsOneWidget);
         expect(find.byType(RailNavigation), findsNothing);
         expect(find.text('Home'), findsOneWidget);
         expect(find.text('More'), findsOneWidget);
         expect(
           find.descendant(
-            of: find.byType(NavigationBar),
+            of: find.byType(CompactNavigation),
             matching: find.text('Cash Flow'),
           ),
           findsNothing,
@@ -56,7 +55,7 @@ void main() {
       } else {
         expect(find.byType(RailNavigation), findsOneWidget);
         expect(find.byType(NavigationRail), findsOneWidget);
-        expect(find.byType(NavigationBar), findsNothing);
+        expect(find.byType(CompactNavigation), findsNothing);
         expect(find.text('Dashboard'), findsWidgets);
         expect(find.text('Cash Flow'), findsWidgets);
         expect(find.text('Settings'), findsWidgets);
@@ -73,7 +72,10 @@ void main() {
 
     await tester.tap(find.text('Cash Flow'));
     await tester.pumpAndSettle();
-    expect(find.text('Forecasts will be explainable'), findsOneWidget);
+    expect(
+      find.textContaining('Commitments and recorded cash'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('primary actions stay reachable on the smallest profile', (
@@ -85,8 +87,8 @@ void main() {
     expect(find.text('Record a sale'), findsOneWidget);
     expect(find.text('Record an expense'), findsOneWidget);
     expect(find.text('Add a product'), findsOneWidget);
-    expect(find.text('View cash flow'), findsOneWidget);
-    expect(find.byType(NavigationBar), findsOneWidget);
+    expect(find.text('View transactions'), findsOneWidget);
+    expect(find.byType(CompactNavigation), findsOneWidget);
   });
 
   testWidgets('navigation and entered text survive a resize', (tester) async {

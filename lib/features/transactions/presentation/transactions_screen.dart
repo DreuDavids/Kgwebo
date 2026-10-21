@@ -1,19 +1,32 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
-import '../../../shared/widgets/feature_placeholder_page.dart';
+import '../../../app/theme/kgwebo_spacing.dart';
+import '../../../core/responsive/responsive_layout.dart';
+import '../../../shared/widgets/kgwebo_button.dart';
+import '../../../shared/widgets/kgwebo_empty_state.dart';
+import '../../../shared/widgets/kgwebo_loading_state.dart';
+import '../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../../shared/widgets/kgwebo_text_field.dart';
+import '../../authentication/application/session_controller.dart';
+import '../../authentication/domain/app_session.dart';
+import '../application/transactions_controller.dart';
+import 'widgets/transaction_list_item.dart';
 
-class TransactionsScreen extends StatefulWidget {
+class TransactionsScreen extends ConsumerStatefulWidget {
   const TransactionsScreen({super.key});
 
   @override
-  State<TransactionsScreen> createState() => _TransactionsScreenState();
+  ConsumerState<TransactionsScreen> createState() => _TransactionsScreenState();
 }
 
-class _TransactionsScreenState extends State<TransactionsScreen> {
+class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
   late final TextEditingController _searchController;
+  Timer? _debounce;
 
   @override
   void initState() {
@@ -23,29 +36,214 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _searchController.dispose();
     super.dispose();
   }
 
+  void _onSearch(String value) {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 280), () {
+      ref.read(transactionsControllerProvider.notifier).applySearch(value);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return FeaturePlaceholderPage(
-      title: 'Transactions',
-      icon: Icons.receipt_long_outlined,
-      headline: 'Sales and expenses will live here',
-      message:
-          'You will record sales, expenses, refunds and owner movements in this '
-          'section. Capture and totals are being built next — nothing is saved yet.',
-      actionLabel: 'Back to dashboard',
-      onAction: () => context.goNamed(AppRoutes.dashboardName),
-      header: KgweboTextField(
-        controller: _searchController,
-        label: 'Search transactions',
-        hint: 'Search will filter records once they exist',
-        prefixIcon: Icons.search,
-        textInputAction: TextInputAction.search,
-        onChanged: (_) => setState(() {}),
+    final session = ref.watch(appSessionProvider);
+    final state = ref.watch(transactionsControllerProvider);
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Transactions'),
+        actions: [
+          PopupMenuButton<String>(
+            tooltip: 'Record another movement',
+            onSelected: (value) {
+              switch (value) {
+                case 'refund':
+                  context.pushNamed(AppRoutes.recordRefundName);
+                case 'contribution':
+                  context.pushNamed(AppRoutes.recordContributionName);
+                case 'withdrawal':
+                  context.pushNamed(AppRoutes.recordWithdrawalName);
+                default:
+                  break;
+              }
+            },
+            itemBuilder:
+                (context) => const [
+                  PopupMenuItem(
+                    value: 'refund',
+                    child: Text('Record a refund'),
+                  ),
+                  PopupMenuItem(
+                    value: 'contribution',
+                    child: Text('Owner contribution'),
+                  ),
+                  PopupMenuItem(
+                    value: 'withdrawal',
+                    child: Text('Owner withdrawal'),
+                  ),
+                ],
+          ),
+        ],
       ),
+      body: SafeArea(
+        child: KgweboFilledBody(
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  KgweboSpacing.md,
+                  KgweboSpacing.sm,
+                  KgweboSpacing.md,
+                  0,
+                ),
+                child: KgweboTextField(
+                  controller: _searchController,
+                  label: 'Search transactions',
+                  hint: 'Category or note',
+                  prefixIcon: Icons.search,
+                  textInputAction: TextInputAction.search,
+                  onChanged: _onSearch,
+                ),
+              ),
+              const SizedBox(height: KgweboSpacing.sm),
+              Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: KgweboSpacing.md,
+                ),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: KgweboButton(
+                        label: 'Record a sale',
+                        icon: Icons.add_card_outlined,
+                        expanded: true,
+                        onPressed:
+                            () => context.pushNamed(AppRoutes.recordSaleName),
+                      ),
+                    ),
+                    const SizedBox(width: KgweboSpacing.sm),
+                    Expanded(
+                      child: KgweboButton(
+                        label: 'Record an expense',
+                        icon: Icons.outbox_outlined,
+                        variant: KgweboButtonVariant.secondary,
+                        expanded: true,
+                        onPressed:
+                            () =>
+                                context.pushNamed(AppRoutes.recordExpenseName),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: KgweboSpacing.sm),
+              Expanded(child: _buildList(session, state, bottomInset)),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildList(
+    AppSession session,
+    TransactionsViewState state,
+    double bottomInset,
+  ) {
+    if (session is AppSessionPreview) {
+      return const KgweboEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: 'No live transaction history',
+        message:
+            'Preview mode does not mix sample rows with a real account. Sign in to record sales and expenses.',
+      );
+    }
+    if (state.loading && state.items.isEmpty) {
+      return const KgweboLoadingState(message: 'Loading transactions');
+    }
+    if (state.error != null && state.items.isEmpty) {
+      return KgweboEmptyState(
+        icon: Icons.cloud_off_outlined,
+        title: 'Could not load transactions',
+        message: state.error!,
+        actionLabel: 'Retry',
+        onAction:
+            () => ref.read(transactionsControllerProvider.notifier).refresh(),
+      );
+    }
+    if (state.items.isEmpty) {
+      return KgweboEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: 'No transactions yet',
+        message:
+            'Record a sale or an expense to start your history. Opening cash is not listed here because it is a starting balance, not a transaction.',
+        actionLabel: 'Record a sale',
+        onAction: () => context.pushNamed(AppRoutes.recordSaleName),
+      );
+    }
+
+    return Column(
+      children: [
+        if (state.isStale)
+          const Padding(
+            padding: EdgeInsets.symmetric(horizontal: KgweboSpacing.md),
+            child: KgweboStatusBanner(
+              tone: KgweboBannerTone.warning,
+              message:
+                  'Showing saved transactions from this device. They may not include the latest changes.',
+            ),
+          )
+        else if (state.error != null)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: KgweboSpacing.md),
+            child: KgweboStatusBanner(
+              tone: KgweboBannerTone.warning,
+              message: state.error!,
+            ),
+          ),
+        Expanded(
+          child: ListView.separated(
+            padding: EdgeInsets.fromLTRB(
+              KgweboSpacing.md,
+              KgweboSpacing.sm,
+              KgweboSpacing.md,
+              KgweboSpacing.xl + bottomInset,
+            ),
+            itemCount: state.items.length + (state.hasMore ? 1 : 0),
+            separatorBuilder: (context, index) => const SizedBox(height: 8),
+            itemBuilder: (context, index) {
+              if (index >= state.items.length) {
+                return KgweboButton(
+                  label: state.loadingMore ? 'Loading' : 'Load more',
+                  variant: KgweboButtonVariant.text,
+                  isLoading: state.loadingMore,
+                  onPressed:
+                      state.loadingMore
+                          ? null
+                          : () =>
+                              ref
+                                  .read(transactionsControllerProvider.notifier)
+                                  .loadMore(),
+                );
+              }
+              final transaction = state.items[index];
+              return TransactionListItem(
+                transaction: transaction,
+                onTap:
+                    () => context.pushNamed(
+                      AppRoutes.transactionDetailsName,
+                      pathParameters: {'transactionId': transaction.id},
+                    ),
+              );
+            },
+          ),
+        ),
+      ],
     );
   }
 }

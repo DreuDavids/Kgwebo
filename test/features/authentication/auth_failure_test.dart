@@ -21,6 +21,10 @@ void main() {
         AuthFailure.fromCode('over_email_send_rate_limit').message,
         contains('wait'),
       );
+      expect(
+        AuthFailure.fromCode('otp_expired').message.toLowerCase(),
+        contains('expired'),
+      );
     },
   );
 

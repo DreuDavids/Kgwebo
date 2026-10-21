@@ -3,12 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../core/validation/auth_validators.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
 import '../../../shared/widgets/kgwebo_status_banner.dart';
 import '../application/session_controller.dart';
 import '../domain/app_session.dart';
 import '../domain/auth_failure.dart';
 import 'widgets/auth_layout.dart';
+import 'widgets/otp_code_field.dart';
 
 class ConfirmEmailScreen extends ConsumerStatefulWidget {
   const ConfirmEmailScreen({super.key});
@@ -18,19 +20,81 @@ class ConfirmEmailScreen extends ConsumerStatefulWidget {
 }
 
 class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
+  final _otp = TextEditingController();
   bool _submitting = false;
+  String? _otpError;
   String? _message;
   String? _error;
 
-  Future<void> _resend(String email) async {
+  @override
+  void dispose() {
+    _otp.dispose();
+    super.dispose();
+  }
+
+  String _emailFor(AppSession session) {
+    return session is AppSessionNeedsEmailConfirmation
+        ? session.email
+        : 'your email';
+  }
+
+  String? _confirmationEmail() {
+    final session = ref.read(appSessionProvider);
+    if (session is! AppSessionNeedsEmailConfirmation) {
+      return null;
+    }
+    final email = session.email.trim();
+    return email.isEmpty ? null : email;
+  }
+
+  Future<void> _verify() async {
+    final email = _confirmationEmail();
+    final otpError = validateOtp(_otp.text);
+    setState(() {
+      _otpError = otpError;
+      _error =
+          email == null
+              ? 'Enter this screen from sign-up or sign-in so we know which email to confirm.'
+              : null;
+      _message = null;
+    });
+    if (email == null || otpError != null || _submitting) {
+      return;
+    }
+    setState(() => _submitting = true);
+    try {
+      await ref
+          .read(sessionControllerProvider.notifier)
+          .verifySignupOtp(email: email, token: _otp.text);
+    } on AuthFailure catch (error) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _error = error.message);
+    } finally {
+      if (mounted) {
+        setState(() => _submitting = false);
+      }
+    }
+  }
+
+  Future<void> _resend() async {
+    final email = _confirmationEmail();
     if (_submitting) {
       return;
     }
     setState(() {
       _submitting = true;
-      _error = null;
+      _error =
+          email == null
+              ? 'Enter this screen from sign-up or sign-in so we know which email to confirm.'
+              : null;
       _message = null;
     });
+    if (email == null) {
+      setState(() => _submitting = false);
+      return;
+    }
     try {
       await ref
           .read(sessionControllerProvider.notifier)
@@ -38,7 +102,7 @@ class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
       if (!mounted) {
         return;
       }
-      setState(() => _message = 'A new confirmation email is on its way.');
+      setState(() => _message = 'A new 6-character code is on its way.');
     } on AuthFailure catch (error) {
       if (!mounted) {
         return;
@@ -54,15 +118,12 @@ class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(appSessionProvider);
-    final email =
-        session is AppSessionNeedsEmailConfirmation
-            ? session.email
-            : 'your email';
+    final email = _emailFor(session);
 
     return AuthLayout(
       title: 'Confirm your email',
       subtitle:
-          'This Supabase project requires email confirmation. Open the link sent to $email, then return to Kgwebo.',
+          'Enter the 6-character code sent to $email. It expires, so request a new one if it does not arrive in time.',
       footer: KgweboButton(
         label: 'Back to sign in',
         variant: KgweboButtonVariant.text,
@@ -79,12 +140,26 @@ class _ConfirmEmailScreenState extends ConsumerState<ConfirmEmailScreen> {
             ),
           if (_message != null)
             KgweboStatusBanner(tone: KgweboBannerTone.info, message: _message!),
-          const SizedBox(height: 16),
+          if (_error != null || _message != null) const SizedBox(height: 16),
+          OtpCodeField(
+            controller: _otp,
+            errorText: _otpError,
+            enabled: !_submitting,
+            onSubmitted: (_) => _verify(),
+          ),
+          const SizedBox(height: 24),
           KgweboButton(
-            label: 'Resend confirmation email',
+            label: 'Verify code',
             expanded: true,
             isLoading: _submitting,
-            onPressed: _submitting ? null : () => _resend(email),
+            onPressed: _submitting ? null : _verify,
+          ),
+          const SizedBox(height: 8),
+          KgweboButton(
+            label: 'Resend code',
+            variant: KgweboButtonVariant.text,
+            expanded: true,
+            onPressed: _submitting ? null : _resend,
           ),
         ],
       ),

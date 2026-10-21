@@ -37,8 +37,8 @@ void main() {
     await database.close();
   });
 
-  test('schema version is 1', () {
-    expect(database.schemaVersion, 1);
+  test('schema version is 3', () {
+    expect(database.schemaVersion, 3);
   });
 
   test('insert and read a confirmed business', () async {

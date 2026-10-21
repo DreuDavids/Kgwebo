@@ -13,6 +13,8 @@ import '../features/authentication/presentation/sign_in_screen.dart';
 import '../features/authentication/presentation/sign_up_screen.dart';
 import '../features/authentication/presentation/welcome_screen.dart';
 import '../features/cash_flow/presentation/cash_flow_screen.dart';
+import '../features/obligations/presentation/obligation_details_screen.dart';
+import '../features/obligations/presentation/obligation_form_screen.dart';
 import '../features/dashboard/presentation/dashboard_screen.dart';
 import '../features/more/presentation/more_screen.dart';
 import '../features/onboarding/presentation/onboarding_screen.dart';
@@ -22,6 +24,9 @@ import '../features/business/presentation/business_profile_edit_screen.dart';
 import '../features/business/presentation/business_profile_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/shell/app_shell.dart';
+import '../core/finance/ledger_entry.dart';
+import '../features/transactions/presentation/transaction_details_screen.dart';
+import '../features/transactions/presentation/transaction_form_screen.dart';
 import '../features/transactions/presentation/transactions_screen.dart';
 import 'config/app_environment.dart';
 import 'routes.dart';
@@ -123,6 +128,74 @@ GoRouter createAppRouter({
                 path: AppRoutes.transactions,
                 name: AppRoutes.transactionsName,
                 builder: (context, state) => const TransactionsScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'sale',
+                    name: AppRoutes.recordSaleName,
+                    builder:
+                        (context, state) => const TransactionFormScreen(
+                          type: MoneyMovementType.sale,
+                        ),
+                  ),
+                  GoRoute(
+                    path: 'expense',
+                    name: AppRoutes.recordExpenseName,
+                    builder:
+                        (context, state) => const TransactionFormScreen(
+                          type: MoneyMovementType.expense,
+                        ),
+                  ),
+                  GoRoute(
+                    path: 'refund',
+                    name: AppRoutes.recordRefundName,
+                    builder:
+                        (context, state) => const TransactionFormScreen(
+                          type: MoneyMovementType.refund,
+                        ),
+                  ),
+                  GoRoute(
+                    path: 'owner-contribution',
+                    name: AppRoutes.recordContributionName,
+                    builder:
+                        (context, state) => const TransactionFormScreen(
+                          type: MoneyMovementType.ownerContribution,
+                        ),
+                  ),
+                  GoRoute(
+                    path: 'owner-withdrawal',
+                    name: AppRoutes.recordWithdrawalName,
+                    builder:
+                        (context, state) => const TransactionFormScreen(
+                          type: MoneyMovementType.ownerWithdrawal,
+                        ),
+                  ),
+                  GoRoute(
+                    path: ':transactionId',
+                    name: AppRoutes.transactionDetailsName,
+                    builder:
+                        (context, state) => TransactionDetailsScreen(
+                          transactionId: state.pathParameters['transactionId']!,
+                        ),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        name: AppRoutes.transactionEditName,
+                        builder: (context, state) {
+                          final extra = state.extra;
+                          final type =
+                              extra is MoneyMovementType
+                                  ? extra
+                                  : MoneyMovementType.sale;
+                          return TransactionFormScreen(
+                            type: type,
+                            transactionId:
+                                state.pathParameters['transactionId'],
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),
@@ -141,6 +214,32 @@ GoRouter createAppRouter({
                 path: AppRoutes.cashFlow,
                 name: AppRoutes.cashFlowName,
                 builder: (context, state) => const CashFlowScreen(),
+                routes: [
+                  GoRoute(
+                    path: 'new',
+                    name: AppRoutes.recordObligationName,
+                    builder: (context, state) => const ObligationFormScreen(),
+                  ),
+                  GoRoute(
+                    path: ':obligationId',
+                    name: AppRoutes.obligationDetailsName,
+                    builder:
+                        (context, state) => ObligationDetailsScreen(
+                          obligationId: state.pathParameters['obligationId']!,
+                        ),
+                    routes: [
+                      GoRoute(
+                        path: 'edit',
+                        name: AppRoutes.obligationEditName,
+                        builder:
+                            (context, state) => ObligationFormScreen(
+                              obligationId:
+                                  state.pathParameters['obligationId'],
+                            ),
+                      ),
+                    ],
+                  ),
+                ],
               ),
             ],
           ),

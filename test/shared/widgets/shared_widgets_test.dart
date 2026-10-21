@@ -28,7 +28,7 @@ void main() {
       child: const Scaffold(body: KgweboButton(label: 'Save', onPressed: null)),
     );
 
-    final button = tester.widget<FilledButton>(find.byType(FilledButton));
+    final button = tester.widget<KgweboButton>(find.byType(KgweboButton));
     expect(button.onPressed, isNull);
   });
 

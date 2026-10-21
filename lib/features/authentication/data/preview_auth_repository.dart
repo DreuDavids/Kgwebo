@@ -56,4 +56,20 @@ class PreviewAuthRepository implements AuthRepository {
   Future<void> resendSignupEmail(String email) async {
     throw AuthFailure(_blocked);
   }
+
+  @override
+  Future<void> verifySignupOtp({
+    required String email,
+    required String token,
+  }) async {
+    throw AuthFailure(_blocked);
+  }
+
+  @override
+  Future<void> verifyRecoveryOtp({
+    required String email,
+    required String token,
+  }) async {
+    throw AuthFailure(_blocked);
+  }
 }

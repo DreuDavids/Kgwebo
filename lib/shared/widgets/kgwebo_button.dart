@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 
+import '../../app/theme/kgwebo_colors.dart';
+import '../../app/theme/kgwebo_radii.dart';
+import '../../app/theme/kgwebo_spacing.dart';
+
 enum KgweboButtonVariant { primary, secondary, text }
 
-/// Accessible Kgwebo button. A null [onPressed] disables the control; it
-/// never fakes a completed action.
+/// Accessible Kgwebo pill button. Drawn by us, not by Material 3.
+/// A null [onPressed] disables the control; it never fakes a completed action.
 class KgweboButton extends StatelessWidget {
   const KgweboButton({
     super.key,
@@ -22,70 +26,82 @@ class KgweboButton extends StatelessWidget {
   final bool expanded;
   final bool isLoading;
 
+  bool get enabled => onPressed != null && !isLoading;
+
   @override
   Widget build(BuildContext context) {
-    final child = switch (variant) {
-      KgweboButtonVariant.primary => _filled(),
-      KgweboButtonVariant.secondary => _outlined(),
-      KgweboButtonVariant.text => _text(),
+    final textTheme = Theme.of(context).textTheme;
+    final colors = switch (variant) {
+      KgweboButtonVariant.primary => (
+        background: enabled ? KgweboColors.lime : KgweboColors.surfaceMuted,
+        foreground: enabled ? KgweboColors.onLime : KgweboColors.inkFaint,
+      ),
+      KgweboButtonVariant.secondary => (
+        background: enabled ? KgweboColors.ink : KgweboColors.surfaceMuted,
+        foreground: enabled ? KgweboColors.onInk : KgweboColors.inkFaint,
+      ),
+      KgweboButtonVariant.text => (
+        background: Colors.transparent,
+        foreground: enabled ? KgweboColors.ink : KgweboColors.inkFaint,
+      ),
     };
-    if (!expanded) {
-      return child;
-    }
-    return SizedBox(width: double.infinity, child: child);
-  }
 
-  VoidCallback? get _onPressed => isLoading ? null : onPressed;
-
-  Widget _label() {
-    if (!isLoading) {
-      return Text(label);
-    }
-    return Row(
-      mainAxisSize: MainAxisSize.min,
+    final child = Row(
+      mainAxisSize: expanded ? MainAxisSize.max : MainAxisSize.min,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        const SizedBox(
-          width: 16,
-          height: 16,
-          child: CircularProgressIndicator(strokeWidth: 2),
+        if (isLoading) ...[
+          SizedBox(
+            width: 16,
+            height: 16,
+            child: CircularProgressIndicator(
+              strokeWidth: 2,
+              color: colors.foreground,
+            ),
+          ),
+          const SizedBox(width: 8),
+        ] else if (icon != null) ...[
+          Icon(icon, size: 20, color: colors.foreground),
+          const SizedBox(width: 8),
+        ],
+        Flexible(
+          child: Text(
+            label,
+            style: textTheme.labelLarge?.copyWith(color: colors.foreground),
+          ),
         ),
-        const SizedBox(width: 8),
-        Text(label),
       ],
     );
-  }
 
-  Widget _filled() {
-    if (icon == null || isLoading) {
-      return FilledButton(onPressed: _onPressed, child: _label());
-    }
-    return FilledButton.icon(
-      onPressed: _onPressed,
-      icon: Icon(icon, size: 20),
-      label: Text(label),
+    final button = ConstrainedBox(
+      constraints: BoxConstraints(
+        minHeight: 52,
+        minWidth: expanded ? double.infinity : 48,
+      ),
+      child: Material(
+        color: colors.background,
+        elevation: 0,
+        shadowColor: Colors.transparent,
+        borderRadius: KgweboRadii.borderPill,
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          onTap: enabled ? onPressed : null,
+          borderRadius: KgweboRadii.borderPill,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: KgweboSpacing.lg,
+              vertical: KgweboSpacing.sm,
+            ),
+            child: child,
+          ),
+        ),
+      ),
     );
-  }
 
-  Widget _outlined() {
-    if (icon == null || isLoading) {
-      return OutlinedButton(onPressed: _onPressed, child: _label());
+    if (!expanded) {
+      return button;
     }
-    return OutlinedButton.icon(
-      onPressed: _onPressed,
-      icon: Icon(icon, size: 20),
-      label: Text(label),
-    );
-  }
-
-  Widget _text() {
-    if (icon == null || isLoading) {
-      return TextButton(onPressed: _onPressed, child: _label());
-    }
-    return TextButton.icon(
-      onPressed: _onPressed,
-      icon: Icon(icon, size: 20),
-      label: Text(label),
-    );
+    return SizedBox(width: double.infinity, child: button);
   }
 }
 

@@ -76,7 +76,9 @@ Phase 3 ships Drift schema **v1** in `lib/core/persistence/kgwebo_database.dart`
 
 Monetary columns use integer minor units. For BWP, `1.00` pula is `100` thebe. Passwords, tokens and service-role keys are never stored in this cache.
 
-Later phases will add transactions, products, stock, obligations and a write queue. Those tables are not in v1.
+Phase 4 adds Drift schema **v2** `cached_transactions`: remote UUID, owner id, business id, type, integer `amountMinor`, currency, category, description, `occurredAt`, payment method/status, idempotency key, and `syncStatus = confirmed`. Queries always filter by the current owner and business. A write-outbox is still not present.
+
+Phase 5 adds Drift schema **v3** `cached_obligations`: remote UUID, owner id, business id, title, integer `amountMinor`, currency, `dueOn`, status, category, notes, optional `recordedTransactionId`, idempotency key, and `syncStatus = confirmed`. Queries always filter by the current owner and business.
 
 ### Remote (Supabase / PostgreSQL)
 
@@ -89,7 +91,7 @@ Project:
 - Postgres 17
 - MCP account used: `user-supabaseAndreuModise`
 
-Phase 2 tables live in `public.profiles` and `public.businesses`. Versioned SQL is under `supabase/migrations/` and has been applied to this project. Every exposed table enables RLS. Policies authorize through `auth.uid()` and business ownership, never through user-editable JWT metadata. A `private` schema holds trigger functions that are not exposed on the Data API.
+Phase 2 tables live in `public.profiles` and `public.businesses`. Phase 4 adds `public.transactions` with FORCE RLS, an ownership trigger (`private.set_transaction_defaults`), and `private.owns_business(business_id)` on SELECT/INSERT/UPDATE/DELETE. Phase 5 adds `public.obligations` with the same ownership pattern (`private.set_obligation_defaults`). Versioned SQL is under `supabase/migrations/` and has been applied to this project. Every exposed table enables RLS. Policies authorize through `auth.uid()` and business ownership, never through user-editable JWT metadata. A `private` schema holds trigger functions that are not exposed on the Data API.
 
 Ownership of a business is forced to `auth.uid()` on insert and frozen on update. Clients cannot assign another user's id. Profile rows are created by a trigger on `auth.users`; authenticated clients may select/update their own profile but not insert or delete it.
 
@@ -108,7 +110,9 @@ Atomic remote operations (product sale + line items + stock movement) use a Post
 
 Sign-out **retains** on-disk rows keyed by `ownerId` and clears in-memory session/profile providers. Queries always filter by the current owner; account B cannot read account A’s cache. Remote `owner_id` is never taken from the client payload; `private.set_business_owner()` freezes it.
 
-Financial write queues and idempotency keys arrive with Phase 4+. Conflicting financial edits are not last-write-wins.
+Phase 4 transaction writes are **online-only**. The client sends a stable `idempotency_key` per create; unique `(business_id, idempotency_key)` plus fetch-on-conflict prevents duplicate inserts after a timeout. Edits keep the existing `id`. Failed reads keep the last confirmed cache and label it stale. A durable write queue remains Phase 8. Conflicting financial edits are not last-write-wins.
+
+Phase 5 obligation writes follow the same online-only and idempotency rules. Dashboard periods are `[startInclusive, endExclusive)` in the business zone (`BusinessZone.forCountry`, currently Africa/Gaborone for BW). Period totals come from `FinancialEngine`; cash is all-time recorded cash. Unpaid obligations never reduce that cash figure.
 
 ## 7. Money and accounting scope
 
@@ -121,7 +125,7 @@ MVP accounting is **cash basis**, not IFRS/GAAP:
 - Owner withdrawals decrease cash and are not operating expenses.
 - Unpaid obligations do not reduce current cash.
 - Product COGS uses the unit cost snapshotted at sale time.
-- Business reporting timezone is `Africa/Gaborone`.
+- Business reporting timezone is resolved from the business country (`BusinessZone.forCountry`). Botswana uses `Africa/Gaborone` (UTC+2, no DST). Unknown countries currently fall back to Gaborone until regional zones ship.
 - Default currency is BWP with two decimal places; the currency is stored per business, not hardcoded into the engine.
 
 These limitations must appear in reports and cash-flow copy. The app does not present simplified cash figures as audited statements.
@@ -149,7 +153,7 @@ Dashboard cards wrap. Forms scroll with the keyboard. `SafeArea` and system inse
 - Route access is a pure function (`redirectFor`) over `AppSession`. Hiding UI is not the guard. Client routing is not a substitute for RLS.
 - Live guests land on welcome/sign-in. Incomplete onboarding cannot open the shell. Ready users skip auth screens.
 - Demo (`APP_ENV=demo`) and local preview never open a Supabase session and never write to a real account.
-- Password recovery and email confirmation use `bw.kgwebo.kgwebo://login-callback`. That URL must also be listed in the Supabase Auth additional redirect URLs.
+- Password recovery and email confirmation use a 6-character email OTP. The app calls `verifyOTP` with `signup` or `recovery`. Hosted templates live in `supabase/templates/` and must include `{{ .Token }}` with no confirmation links.
 - RLS on every exposed user/business table. Anon cannot select `profiles` or `businesses`.
 - Passwords and access tokens are never logged. `AppLogger` redacts JWTs and secret assignments.
 - `.env` is gitignored. `.env.example` contains placeholders only.
@@ -160,8 +164,10 @@ Pure Dart:
 
 - `Money`
 - `FinancialEngine`
-- cash-flow forecast
-- recommendation rules
+- `CashOutlookEngine`
+- `DashboardPeriodSelection` / `BusinessZone`
+- cash-flow forecast (Phase 7)
+- recommendation rules (Phase 7)
 - validators and formatters
 
 Flutter:

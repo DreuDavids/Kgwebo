@@ -40,6 +40,25 @@ void main() {
     });
   });
 
+  group('validateOtp', () {
+    test('rejects empty and whitespace', () {
+      expect(validateOtp(''), 'Enter the 6-character code.');
+      expect(validateOtp('   '), 'Enter the 6-character code.');
+    });
+
+    test('rejects codes that are not exactly 6 digits', () {
+      expect(validateOtp('12345'), 'Enter the 6-character code.');
+      expect(validateOtp('1234567'), 'Enter the 6-character code.');
+      expect(validateOtp('12 3456'), 'Enter the 6-character code.');
+      expect(validateOtp('abcdef'), 'Enter the 6-character code.');
+      expect(validateOtp('-12345'), 'Enter the 6-character code.');
+    });
+
+    test('accepts a trimmed 6-digit code', () {
+      expect(validateOtp(' 123456 '), isNull);
+    });
+  });
+
   group('validatePasswordConfirmation', () {
     test('requires a matching confirmation', () {
       expect(

@@ -2,7 +2,7 @@
 
 Your business. Clearer decisions. Stronger growth.
 
-Kgwebo is a Flutter Android companion for informal traders and small retailers in Botswana. This repository currently contains **Phase 2**: the application shell, design system, Supabase email/password authentication, session-aware routing, and first-business onboarding. Transaction capture and the financial engine are later phases.
+Kgwebo is a Flutter Android companion for informal traders and small retailers in Botswana. This repository currently contains **Phase 5**: authentication, business profiles, transactions, the financial engine, a period-aware dashboard, and persisted upcoming commitments. Inventory, 7/14/30 forecasts and offline writes are later phases.
 
 ## Requirements
 
@@ -29,7 +29,7 @@ The Cursor / VS Code launch configuration passes the same flag.
 
 Live mode (`APP_ENV` development/staging/production with a valid publishable key) initialises the Supabase client and restores the Auth session. `APP_ENV=demo` is an explicit labelled demo and never opens a backend session. Missing development credentials start a labelled local preview. Missing production or staging credentials block startup. Neither case substitutes demo figures.
 
-Add `bw.kgwebo.kgwebo://login-callback` to Supabase Auth additional redirect URLs for email confirmation and password recovery.
+Email confirmation and password reset use a **6-character OTP**, not a magic link. Paste `supabase/templates/confirmation.html` into **Confirm signup** and `supabase/templates/recovery.html` into **Reset password**. Both show `{{ .Token }}` and omit `{{ .ConfirmationURL }}`. Keep OTP length at 6.
 
 ## Run, test, and build
 

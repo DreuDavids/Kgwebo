@@ -5,13 +5,13 @@ import 'package:intl/intl.dart';
 
 import '../../../app/routes.dart';
 import '../../../app/theme/kgwebo_colors.dart';
-import '../../../app/theme/kgwebo_radii.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/money/minor_units.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
 import '../../../shared/widgets/kgwebo_empty_state.dart';
 import '../../../shared/widgets/kgwebo_loading_state.dart';
+import '../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../onboarding/domain/business_profile.dart';
 import '../../onboarding/domain/onboarding_options.dart';
@@ -177,39 +177,32 @@ class _ProfileCard extends StatelessWidget {
       ),
     ];
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: KgweboColors.surface,
-        borderRadius: KgweboRadii.borderMd,
-        border: Border.all(color: KgweboColors.line),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(KgweboSpacing.md),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(profile.name, style: textTheme.headlineSmall),
-            const SizedBox(height: KgweboSpacing.xxs),
+    return KgweboSoftCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            profile.name,
+            style: textTheme.headlineSmall?.copyWith(color: KgweboColors.ink),
+          ),
+          const SizedBox(height: KgweboSpacing.xxs),
+          Text(
+            'Opening cash is a starting position, not revenue.',
+            style: textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
+          ),
+          const SizedBox(height: KgweboSpacing.md),
+          for (final row in rows) ...[
             Text(
-              'Opening cash is a starting position, not revenue.',
-              style: textTheme.bodySmall?.copyWith(
+              row.$1,
+              style: textTheme.labelMedium?.copyWith(
                 color: KgweboColors.inkMuted,
               ),
             ),
-            const SizedBox(height: KgweboSpacing.md),
-            for (final row in rows) ...[
-              Text(
-                row.$1,
-                style: textTheme.labelMedium?.copyWith(
-                  color: KgweboColors.inkMuted,
-                ),
-              ),
-              const SizedBox(height: KgweboSpacing.xxs),
-              Text(row.$2, style: textTheme.bodyLarge),
-              const SizedBox(height: KgweboSpacing.sm),
-            ],
+            const SizedBox(height: KgweboSpacing.xxs),
+            Text(row.$2, style: textTheme.bodyLarge),
+            const SizedBox(height: KgweboSpacing.sm),
           ],
-        ),
+        ],
       ),
     );
   }

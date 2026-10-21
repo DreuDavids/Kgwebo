@@ -8,6 +8,7 @@ import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../core/validation/onboarding_validators.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
+import '../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../../shared/widgets/kgwebo_empty_state.dart';
 import '../../../shared/widgets/kgwebo_loading_state.dart';
 import '../../../shared/widgets/kgwebo_status_banner.dart';
@@ -260,124 +261,140 @@ class _BusinessProfileEditScreenState
             ),
             const SizedBox(height: KgweboSpacing.md),
           ],
-          KgweboTextField(
-            controller: _name,
-            label: 'Business name',
-            textInputAction: TextInputAction.next,
-            textCapitalization: TextCapitalization.words,
-            errorText: _errors.name,
-            enabled: !saving,
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          DropdownButtonFormField<String>(
-            isExpanded: true,
-            value: _businessType.isEmpty ? null : _businessType,
-            decoration: InputDecoration(
-              labelText: 'Business type',
-              errorText: _errors.businessType,
-            ),
-            items: [
-              for (final type in OnboardingOptions.businessTypes)
-                DropdownMenuItem(value: type, child: Text(type)),
-            ],
-            onChanged:
-                saving
-                    ? null
-                    : (value) => setState(() => _businessType = value ?? ''),
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          DropdownButtonFormField<String>(
-            isExpanded: true,
-            value: _countryCode,
-            decoration: const InputDecoration(labelText: 'Country'),
-            items: [
-              for (final country in OnboardingOptions.countries)
-                DropdownMenuItem(
-                  value: country.code,
-                  child: Text(country.label),
-                ),
-            ],
-            onChanged:
-                saving
-                    ? null
-                    : (value) => setState(() => _countryCode = value ?? 'BW'),
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          DropdownButtonFormField<String>(
-            isExpanded: true,
-            value: _currencyCode,
-            decoration: const InputDecoration(labelText: 'Currency'),
-            items: [
-              for (final currency in OnboardingOptions.currencies)
-                DropdownMenuItem(
-                  value: currency.code,
-                  child: Text(currency.label),
-                ),
-            ],
-            onChanged:
-                saving
-                    ? null
-                    : (value) => setState(() => _currencyCode = value ?? 'BWP'),
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          KgweboTextField(
-            controller: _openingCash,
-            label: 'Opening / starting cash',
-            hint: '0.00',
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            errorText: _errors.openingCash,
-            enabled: !saving,
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-            ],
-          ),
-          const SizedBox(height: KgweboSpacing.xs),
-          Text(
-            'Cash already on hand when you started tracking. This is not a sale or revenue.',
-            style: Theme.of(
-              context,
-            ).textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          KgweboTextField(
-            controller: _description,
-            label: 'Description (optional)',
-            textCapitalization: TextCapitalization.sentences,
-            enabled: !saving,
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          InputDecorator(
-            decoration: const InputDecoration(labelText: 'Business start date'),
-            child: Row(
+          KgweboSoftCard(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                Expanded(
-                  child: Text(
-                    _startedOn == null
-                        ? 'Not set'
-                        : DateFormat.yMMMd().format(_startedOn!),
+                KgweboTextField(
+                  controller: _name,
+                  label: 'Business name',
+                  textInputAction: TextInputAction.next,
+                  textCapitalization: TextCapitalization.words,
+                  errorText: _errors.name,
+                  enabled: !saving,
+                ),
+                const SizedBox(height: KgweboSpacing.md),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _businessType.isEmpty ? null : _businessType,
+                  decoration: InputDecoration(
+                    labelText: 'Business type',
+                    errorText: _errors.businessType,
+                  ),
+                  items: [
+                    for (final type in OnboardingOptions.businessTypes)
+                      DropdownMenuItem(value: type, child: Text(type)),
+                  ],
+                  onChanged:
+                      saving
+                          ? null
+                          : (value) =>
+                              setState(() => _businessType = value ?? ''),
+                ),
+                const SizedBox(height: KgweboSpacing.md),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _countryCode,
+                  decoration: const InputDecoration(labelText: 'Country'),
+                  items: [
+                    for (final country in OnboardingOptions.countries)
+                      DropdownMenuItem(
+                        value: country.code,
+                        child: Text(country.label),
+                      ),
+                  ],
+                  onChanged:
+                      saving
+                          ? null
+                          : (value) =>
+                              setState(() => _countryCode = value ?? 'BW'),
+                ),
+                const SizedBox(height: KgweboSpacing.md),
+                DropdownButtonFormField<String>(
+                  isExpanded: true,
+                  value: _currencyCode,
+                  decoration: const InputDecoration(labelText: 'Currency'),
+                  items: [
+                    for (final currency in OnboardingOptions.currencies)
+                      DropdownMenuItem(
+                        value: currency.code,
+                        child: Text(currency.label),
+                      ),
+                  ],
+                  onChanged:
+                      saving
+                          ? null
+                          : (value) =>
+                              setState(() => _currencyCode = value ?? 'BWP'),
+                ),
+                const SizedBox(height: KgweboSpacing.md),
+                KgweboTextField(
+                  controller: _openingCash,
+                  label: 'Opening / starting cash',
+                  hint: '0.00',
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  errorText: _errors.openingCash,
+                  enabled: !saving,
+                  inputFormatters: [
+                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                  ],
+                ),
+                const SizedBox(height: KgweboSpacing.xs),
+                Text(
+                  'Cash already on hand when you started tracking. This is not a sale or revenue.',
+                  style: Theme.of(
+                    context,
+                  ).textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
+                ),
+                const SizedBox(height: KgweboSpacing.md),
+                KgweboTextField(
+                  controller: _description,
+                  label: 'Description (optional)',
+                  textCapitalization: TextCapitalization.sentences,
+                  enabled: !saving,
+                ),
+                const SizedBox(height: KgweboSpacing.md),
+                InputDecorator(
+                  decoration: const InputDecoration(
+                    labelText: 'Business start date',
+                  ),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          _startedOn == null
+                              ? 'Not set'
+                              : DateFormat.yMMMd().format(_startedOn!),
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: saving ? null : _pickDate,
+                        child: const Text('Choose'),
+                      ),
+                      if (_startedOn != null)
+                        TextButton(
+                          onPressed:
+                              saving
+                                  ? null
+                                  : () => setState(() => _startedOn = null),
+                          child: const Text('Clear'),
+                        ),
+                    ],
                   ),
                 ),
-                TextButton(
-                  onPressed: saving ? null : _pickDate,
-                  child: const Text('Choose'),
+                const SizedBox(height: KgweboSpacing.md),
+                KgweboTextField(
+                  controller: _contactPhone,
+                  label: 'Contact phone (optional)',
+                  keyboardType: TextInputType.phone,
+                  enabled: !saving,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _save(),
                 ),
-                if (_startedOn != null)
-                  TextButton(
-                    onPressed:
-                        saving ? null : () => setState(() => _startedOn = null),
-                    child: const Text('Clear'),
-                  ),
               ],
             ),
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          KgweboTextField(
-            controller: _contactPhone,
-            label: 'Contact phone (optional)',
-            keyboardType: TextInputType.phone,
-            enabled: !saving,
-            textInputAction: TextInputAction.done,
-            onSubmitted: (_) => _save(),
           ),
           const SizedBox(height: KgweboSpacing.xl),
           KgweboButton(

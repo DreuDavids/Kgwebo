@@ -1,0 +1,191 @@
+<!-- Confirm signup. Paste into Auth → Email Templates. OTP only: {{ .Token }}, no confirmation link. -->
+<table
+  role="presentation"
+  width="100%"
+  cellpadding="0"
+  cellspacing="0"
+  style="margin: 0; padding: 0; background-color: #fafcfa"
+>
+  <tr>
+    <td align="center" style="padding: 32px 16px">
+      <table
+        role="presentation"
+        width="560"
+        cellpadding="0"
+        cellspacing="0"
+        style="
+          width: 100%;
+          max-width: 560px;
+          background-color: #16382c;
+          border-radius: 28px 28px 0 0;
+        "
+      >
+        <tr>
+          <td style="padding: 28px 32px 24px 32px">
+            <table role="presentation" cellpadding="0" cellspacing="0">
+              <tr>
+                <td
+                  width="40"
+                  height="40"
+                  align="center"
+                  valign="middle"
+                  style="
+                    width: 40px;
+                    height: 40px;
+                    background-color: #d7ebdd;
+                    border-radius: 12px;
+                    font-family: Georgia, &quot;Times New Roman&quot;, serif;
+                    font-size: 20px;
+                    font-weight: 600;
+                    color: #16382c;
+                    line-height: 40px;
+                  "
+                >
+                  K
+                </td>
+                <td
+                  style="
+                    padding-left: 12px;
+                    font-family:
+                      &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif;
+                    font-size: 18px;
+                    font-weight: 700;
+                    letter-spacing: -0.3px;
+                    color: #f7fbf8;
+                  "
+                >
+                  Kgwebo
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <table
+        role="presentation"
+        width="560"
+        cellpadding="0"
+        cellspacing="0"
+        style="
+          width: 100%;
+          max-width: 560px;
+          background-color: #ffffff;
+          border-radius: 0 0 28px 28px;
+        "
+      >
+        <tr>
+          <td style="padding: 32px 32px 36px 32px">
+            <p
+              style="
+                margin: 0 0 8px 0;
+                font-family:
+                  &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif;
+                font-size: 12px;
+                font-weight: 600;
+                letter-spacing: 0.08em;
+                text-transform: uppercase;
+                color: #3d7a55;
+              "
+            >
+              Confirm your email
+            </p>
+            <h1
+              style="
+                margin: 0 0 12px 0;
+                font-family:
+                  &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif;
+                font-size: 26px;
+                line-height: 1.2;
+                font-weight: 700;
+                letter-spacing: -0.4px;
+                color: #16382c;
+              "
+            >
+              Your 6-digit code
+            </h1>
+            <p
+              style="
+                margin: 0 0 24px 0;
+                font-family:
+                  &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif;
+                font-size: 16px;
+                line-height: 1.5;
+                color: #5f7168;
+              "
+            >
+              Enter this code in Kgwebo to confirm
+              <strong style="color: #16382c">{{ .Email }}</strong>. It expires
+              shortly, so request a new one if it does not arrive in time.
+            </p>
+            <table
+              role="presentation"
+              width="100%"
+              cellpadding="0"
+              cellspacing="0"
+              style="background-color: #eef6f0; border-radius: 20px"
+            >
+              <tr>
+                <td align="center" style="padding: 28px 16px">
+                  <p
+                    style="
+                      margin: 0 0 6px 0;
+                      font-family:
+                        &quot;Segoe UI&quot;, Roboto, Helvetica, Arial,
+                        sans-serif;
+                      font-size: 11px;
+                      font-weight: 600;
+                      letter-spacing: 0.12em;
+                      text-transform: uppercase;
+                      color: #7eaa88;
+                    "
+                  >
+                    Kgwebo code
+                  </p>
+                  <p
+                    style="
+                      margin: 0;
+                      font-family:
+                        &quot;Segoe UI&quot;, Roboto, Helvetica, Arial,
+                        sans-serif;
+                      font-size: 36px;
+                      line-height: 1.2;
+                      font-weight: 700;
+                      letter-spacing: 10px;
+                      color: #16382c;
+                    "
+                  >
+                    {{ .Token }}
+                  </p>
+                </td>
+              </tr>
+            </table>
+            <p
+              style="
+                margin: 24px 0 0 0;
+                font-family:
+                  &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif;
+                font-size: 14px;
+                line-height: 1.5;
+                color: #8a9a90;
+              "
+            >
+              If you did not create a Kgwebo account, you can ignore this email.
+            </p>
+          </td>
+        </tr>
+      </table>
+      <p
+        style="
+          margin: 20px 0 0 0;
+          font-family:
+            &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif;
+          font-size: 12px;
+          line-height: 1.5;
+          color: #8a9a90;
+        "
+      >
+        Kgwebo. Your business. Clearer decisions. Stronger growth.
+      </p>
+    </td>
+  </tr>
+</table>

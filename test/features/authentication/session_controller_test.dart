@@ -130,6 +130,63 @@ void main() {
       expect(controller.state, isA<AppSessionNeedsEmailConfirmation>());
     },
   );
+
+  test('signup OTP confirmation authenticates the user', () async {
+    final auth = FakeAuthRepository(requireEmailConfirmation: true);
+    final controller = SessionController(
+      config: testConfig(anonKey: 'sb_publishable_test'),
+      auth: auth,
+      onboarding: FakeOnboardingRepository(),
+    );
+    await pumpEventQueue();
+    await controller.signUp(email: 'owner@example.com', password: 'correct1');
+
+    await controller.verifySignupOtp(
+      email: 'owner@example.com',
+      token: '123456',
+    );
+    await pumpEventQueue();
+
+    expect(controller.state, isA<AppSessionNeedsOnboarding>());
+    expect(auth.verifySignupOtpCalls, 1);
+  });
+
+  test('wrong signup OTP keeps the confirmation session', () async {
+    final auth = FakeAuthRepository(requireEmailConfirmation: true);
+    final controller = SessionController(
+      config: testConfig(anonKey: 'sb_publishable_test'),
+      auth: auth,
+      onboarding: FakeOnboardingRepository(),
+    );
+    await pumpEventQueue();
+    await controller.signUp(email: 'owner@example.com', password: 'correct1');
+
+    await expectLater(
+      controller.verifySignupOtp(email: 'owner@example.com', token: '000000'),
+      throwsA(isA<AuthFailure>()),
+    );
+    expect(controller.state, isA<AppSessionNeedsEmailConfirmation>());
+  });
+
+  test('recovery OTP moves the session to password reset', () async {
+    final auth = FakeAuthRepository();
+    final controller = SessionController(
+      config: testConfig(anonKey: 'sb_publishable_test'),
+      auth: auth,
+      onboarding: FakeOnboardingRepository(),
+    );
+    await pumpEventQueue();
+    await controller.requestPasswordReset('owner@example.com');
+
+    await controller.verifyRecoveryOtp(
+      email: 'owner@example.com',
+      token: '123456',
+    );
+    await pumpEventQueue();
+
+    expect(controller.state, isA<AppSessionPasswordRecovery>());
+    expect(auth.verifyRecoveryOtpCalls, 1);
+  });
 }
 
 Future<void> pumpEventQueue() async {

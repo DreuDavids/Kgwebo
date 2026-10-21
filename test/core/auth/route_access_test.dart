@@ -67,6 +67,18 @@ void main() {
       redirectFor(const AppSessionGuest(), AppRoutes.transactions),
       AppRoutes.welcome,
     );
+    expect(
+      redirectFor(const AppSessionGuest(), AppRoutes.recordSale),
+      AppRoutes.welcome,
+    );
+    expect(
+      redirectFor(const AppSessionGuest(), AppRoutes.recordObligation),
+      AppRoutes.welcome,
+    );
+    expect(
+      redirectFor(const AppSessionGuest(), '/transactions/abc/edit'),
+      AppRoutes.welcome,
+    );
     expect(redirectFor(const AppSessionGuest(), AppRoutes.signIn), isNull);
     expect(redirectFor(const AppSessionGuest(), AppRoutes.welcome), isNull);
   });

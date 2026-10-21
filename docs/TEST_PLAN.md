@@ -102,7 +102,15 @@ Phase 2 minimum: email/password validators, `redirectFor` policy, session restor
 
 Phase 3 minimum: remote/local mapping, opening-cash preservation, business update without insert, Drift insert/update/owner filter/empty DB/unverified rows, cache fallback vs missing-cache network failure, account switching, sign-out cache retention, profile view/edit/validation/save/cancel/loading/stale/offline copy, and the listed viewport sizes. Widget tests use fakes, not production credentials.
 
+Phase 4 minimum: `FinancialEngine` spec cash fixture and related cases; sale/expense create; update keeps id; delete; idempotent retry; cache preserved after failed read; owner isolation in the repository; sale/expense form validation and duplicate-tap guard; history empty/populated; delete confirmation; dashboard loading/empty/stale/populated/failed-load. Widget tests use fakes, not production credentials.
+
 RLS verification on `hhwxajxjmyjntxykptvs` (21 Oct 2026): User B could not select, update, or delete User A's business; inserts by B could not keep `owner_id` = A (trigger forced `auth.uid()`); anon has no SELECT on `profiles` or `businesses`.
+
+Phase 4 RLS catalog (21 Oct 2026): `public.transactions` has FORCE RLS; anon has no select/insert/update/delete; authenticated has those four privileges; policies `transactions_select_own`, `transactions_insert_own`, `transactions_update_own`, `transactions_delete_own` exist. Two-user payload tests were not run (no staging users). Repeat `supabase/tests/rls_transactions.sql` with two Auth users before claiming empirical cross-account isolation.
+
+Phase 5 minimum: period helpers (this/last month, last 3 months, this year, custom inclusive days); engine last-month vs this-month and unpaid-refund cases; cash outlook (unpaid commitments do not change recorded cash, overdue vs upcoming, paid/cancelled excluded, mixed currency skip); empty businesses get no false loss insight; overdue copy does not call commitments operating expenses; dashboard period selector recalculates sales while cash stays all-time; unpaid commitment estimate is labelled; obligation validators, idempotent create, owner isolation, stale cache; form validation and duplicate-tap guard; responsive dashboard including the cash-flow commitments screen at 320×568, 360×800, 800×360, 768×1024, 1024×768.
+
+Phase 5 RLS catalog (21 Oct 2026): `public.obligations` has FORCE RLS; anon has no select/insert/update/delete; authenticated can select/insert; policies `obligations_select_own`, `obligations_insert_own`, `obligations_update_own`, `obligations_delete_own` exist. Two-user payload tests for transactions and obligations were not run (no staging users). Repeat `supabase/tests/rls_transactions.sql` and `supabase/tests/rls_obligations.sql` with two Auth users before claiming empirical cross-account isolation.
 
 Do not mark a phase complete if these commands were not run or if they failed.
 

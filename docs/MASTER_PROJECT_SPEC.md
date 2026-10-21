@@ -130,7 +130,7 @@ The complete journey must work end to end.
 
 Create a premium, modern, approachable financial-product experience.
 
-The visual identity should feel trustworthy, energetic and polished. Avoid generic admin-dashboard styling, excessive gradients, excessive rounded cards, overcrowded screens and default-looking Flutter components.
+The visual identity should feel trustworthy, energetic and polished. Use a cool off-white canvas, extra-round white cards, black hero totals, lime primary pills and a circular black selected nav with a lime icon. Do not seed-tint the whole app. Avoid generic admin-dashboard styling, overcrowded screens, decorative 3D artwork and default-looking Material 3 components.
 
 Use a consistent design system across every screen.
 
@@ -152,17 +152,19 @@ Do not use national flags, cultural motifs or decorative imagery merely for deco
 
 Treat these as initial design tokens, not arbitrary values scattered through widgets.
 
-- Primary: deep forest green.
-- Secondary: teal.
-- Accent: warm amber for selected highlights.
-- Background: warm off-white.
-- Surface: white.
-- Primary text: dark charcoal.
-- Secondary text: muted slate.
+- Primary: near-black ink for type, icons and selected nav wells.
+- Secondary: lime for primary CTAs, selected nav icons and highlight banners.
+- Accent: warm amber for warnings only, not highlight cards.
+- Background: cool off-white canvas. Lime is never a full-screen fill.
+- Surface: white extra-round cards with a soft neutral shadow.
+- Nested fills: cool gray for inputs, icon circles and rows.
+- Primary text: near-black ink.
+- Secondary text: muted gray.
 - Success: accessible green.
 - Warning: amber with sufficient contrast.
 - Error: accessible red.
-- Borders: subtle neutral grey.
+- Shape: extra-round cards (~28px) and fully pill buttons, chips and CTAs.
+- Typeface: Plus Jakarta Sans for UI and greetings. Fraunces only for the brand mark.
 
 Create a central theme and token system. Every screen must reuse it.
 
@@ -175,7 +177,7 @@ Use color, icons and text together to communicate status. Never use color alone.
 - Use strong typography and consistent alignment.
 - Present financial information in a way that makes the important numbers easy to scan.
 - Avoid showing every possible metric at once.
-- Use subtle borders, restrained elevation and consistent corner radii.
+- Use soft green-tinted shadows and consistent extra-round corners instead of hairline card borders.
 - Use charts only when they help the user understand their business.
 - Use appropriate empty states with clear calls to action.
 - Provide useful loading, success, error and offline states.
@@ -270,7 +272,7 @@ Use compatible stable versions of dependencies, selecting versions that work wit
 
 - Flutter.
 - Dart.
-- Material 3 with a customised design system.
+- Custom Kgwebo widgets on Flutter, with Material 3 turned off so surfaces are not seed-tinted.
 - Riverpod for state management and dependency injection.
 - GoRouter for navigation and route guards.
 - `fl_chart` for charts where appropriate.
@@ -430,7 +432,7 @@ Do not make onboarding unnecessarily long.
 - Appropriate loading states.
 - Session expiry handling.
 
-If email confirmation is enabled in Supabase, implement the confirmation flow and tell the user what to do next.
+If email confirmation is enabled in Supabase, implement the confirmation flow with a 6-character email OTP and tell the user what to do next.
 
 ### Behaviour
 
@@ -439,7 +441,7 @@ If email confirmation is enabled in Supabase, implement the confirmation flow an
 - Network errors must provide retry options.
 - Protected screens must not expose another user's business data.
 - Logout must clear the active authenticated session.
-- Password reset must use a secure Supabase-supported flow.
+- Password reset must use a secure Supabase-supported 6-character email OTP, then a new-password form.
 - Never log passwords or access tokens.
 
 ### Acceptance tests
