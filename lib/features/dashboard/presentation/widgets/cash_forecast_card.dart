@@ -4,18 +4,21 @@ import 'package:intl/intl.dart';
 import '../../../../app/theme/kgwebo_colors.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
 import '../../../../core/finance/cash_forecast.dart';
+import '../../../../core/finance/cash_path.dart';
 import '../../../../core/money/money_formatter.dart';
+import '../../../../shared/widgets/kgwebo_cash_path_chart.dart';
 import '../../../../shared/widgets/kgwebo_soft_card.dart';
-import '../../../../shared/widgets/kgwebo_sparkline.dart';
 
 class CashForecastCard extends StatelessWidget {
   const CashForecastCard({
     super.key,
     required this.forecast,
+    this.bills = const [],
     this.compact = false,
   });
 
   final CashForecast forecast;
+  final Iterable<CashPathBill> bills;
   final bool compact;
 
   @override
@@ -80,20 +83,9 @@ class CashForecastCard extends StatelessWidget {
           ],
           if (forecast.hasProjectedPath) ...[
             const SizedBox(height: KgweboSpacing.md),
-            KgweboSparkline(
-              values: [
-                for (final day in forecast.daily)
-                  day.projectedCashMinor.toDouble(),
-              ],
-              color: KgweboColors.ink,
-            ),
-            const SizedBox(height: KgweboSpacing.xs),
-            Text(
-              'Projected cash after known commitments each day in this window. The chart is not a sales forecast.',
-              style: textTheme.bodySmall?.copyWith(
-                color: KgweboColors.inkMuted,
-                height: 1.4,
-              ),
+            KgweboCashPathChart(
+              path: CashPath.fromForecast(forecast: forecast, bills: bills),
+              compact: compact,
             ),
           ],
           const SizedBox(height: KgweboSpacing.md),

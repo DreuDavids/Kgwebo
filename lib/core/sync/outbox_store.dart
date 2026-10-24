@@ -11,6 +11,7 @@ class OutboxStore {
 
   final KgweboDatabase _db;
   final String Function() _idGenerator;
+  final Set<String> _inFlight = <String>{};
 
   Future<OutboxOperation> enqueue({
     required String ownerId,
@@ -160,10 +161,24 @@ class OutboxStore {
     return rows.map(_fromRow).where((row) => row.ownerId == ownerId).toList();
   }
 
-  Future<void> recoverInterrupted() async {
-    await (_db.update(_db.syncOutbox)..where(
-      (tbl) => tbl.state.equals(OutboxState.syncing.storageValue),
-    )).write(
+  Future<void> recoverInterrupted({
+    required String ownerId,
+    required String businessId,
+  }) async {
+    if (ownerId.isEmpty || businessId.isEmpty) {
+      return;
+    }
+    final inFlight = _inFlight.toList();
+    await (_db.update(_db.syncOutbox)..where((tbl) {
+      final ownedAndSyncing =
+          tbl.ownerId.equals(ownerId) &
+          tbl.businessId.equals(businessId) &
+          tbl.state.equals(OutboxState.syncing.storageValue);
+      if (inFlight.isEmpty) {
+        return ownedAndSyncing;
+      }
+      return ownedAndSyncing & tbl.operationId.isNotIn(inFlight);
+    })).write(
       SyncOutboxCompanion(
         state: Value(OutboxState.pending.storageValue),
         lastErrorCode: const Value('interrupted'),
@@ -174,19 +189,64 @@ class OutboxStore {
     );
   }
 
-  Future<void> markSyncing(String operationId, DateTime now) async {
-    await (_db.update(_db.syncOutbox)
-      ..where((tbl) => tbl.operationId.equals(operationId))).write(
+  Future<bool> tryClaimForSync({
+    required String operationId,
+    required String ownerId,
+    required String businessId,
+    required DateTime now,
+  }) async {
+    if (operationId.isEmpty || ownerId.isEmpty || businessId.isEmpty) {
+      return false;
+    }
+    final updated = await (_db.update(_db.syncOutbox)..where(
+      (tbl) =>
+          tbl.operationId.equals(operationId) &
+          tbl.ownerId.equals(ownerId) &
+          tbl.businessId.equals(businessId) &
+          (tbl.state.equals(OutboxState.pending.storageValue) |
+              tbl.state.equals(OutboxState.retryableFailure.storageValue)),
+    )).write(
       SyncOutboxCompanion(
+        state: Value(OutboxState.syncing.storageValue),
+        lastAttemptAt: Value(now.toUtc()),
+      ),
+    );
+    if (updated == 1) {
+      _inFlight.add(operationId);
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> markSyncing({
+    required String operationId,
+    required String ownerId,
+    required String businessId,
+    required DateTime now,
+  }) async {
+    await _updateOwnedIfNotSucceeded(
+      operationId: operationId,
+      ownerId: ownerId,
+      businessId: businessId,
+      companion: SyncOutboxCompanion(
         state: Value(OutboxState.syncing.storageValue),
         lastAttemptAt: Value(now.toUtc()),
       ),
     );
   }
 
-  Future<void> markSucceeded(String operationId, DateTime now) async {
-    await (_db.update(_db.syncOutbox)
-      ..where((tbl) => tbl.operationId.equals(operationId))).write(
+  Future<void> markSucceeded({
+    required String operationId,
+    required String ownerId,
+    required String businessId,
+    required DateTime now,
+  }) async {
+    await (_db.update(_db.syncOutbox)..where(
+      (tbl) =>
+          tbl.operationId.equals(operationId) &
+          tbl.ownerId.equals(ownerId) &
+          tbl.businessId.equals(businessId),
+    )).write(
       SyncOutboxCompanion(
         state: Value(OutboxState.succeeded.storageValue),
         succeededAt: Value(now.toUtc()),
@@ -195,6 +255,7 @@ class OutboxStore {
         lastErrorMessage: const Value(null),
       ),
     );
+    _inFlight.remove(operationId);
   }
 
   Future<int> markSucceededMatching({
@@ -233,14 +294,18 @@ class OutboxStore {
 
   Future<void> markRetryable({
     required String operationId,
+    required String ownerId,
+    required String businessId,
     required Object error,
     required DateTime now,
     required int attemptCount,
   }) async {
     final paused = attemptCount >= SyncPolicy.maxAutomaticAttempts;
-    await (_db.update(_db.syncOutbox)
-      ..where((tbl) => tbl.operationId.equals(operationId))).write(
-      SyncOutboxCompanion(
+    await _updateOwnedIfNotSucceeded(
+      operationId: operationId,
+      ownerId: ownerId,
+      businessId: businessId,
+      companion: SyncOutboxCompanion(
         state: Value(OutboxState.retryableFailure.storageValue),
         attemptCount: Value(attemptCount),
         lastAttemptAt: Value(now.toUtc()),
@@ -251,17 +316,22 @@ class OutboxStore {
         lastErrorMessage: Value(SyncPolicy.safeMessage(error)),
       ),
     );
+    _inFlight.remove(operationId);
   }
 
   Future<void> markPermanent({
     required String operationId,
+    required String ownerId,
+    required String businessId,
     required Object error,
     required DateTime now,
     required int attemptCount,
   }) async {
-    await (_db.update(_db.syncOutbox)
-      ..where((tbl) => tbl.operationId.equals(operationId))).write(
-      SyncOutboxCompanion(
+    await _updateOwnedIfNotSucceeded(
+      operationId: operationId,
+      ownerId: ownerId,
+      businessId: businessId,
+      companion: SyncOutboxCompanion(
         state: Value(OutboxState.permanentFailure.storageValue),
         attemptCount: Value(attemptCount),
         lastAttemptAt: Value(now.toUtc()),
@@ -270,15 +340,52 @@ class OutboxStore {
         lastErrorMessage: Value(SyncPolicy.safeMessage(error)),
       ),
     );
+    _inFlight.remove(operationId);
   }
 
-  Future<void> requestManualRetry(String operationId, DateTime now) async {
+  Future<void> markInterrupted({
+    required String operationId,
+    required String ownerId,
+    required String businessId,
+  }) async {
+    await _updateOwnedIfNotSucceeded(
+      operationId: operationId,
+      ownerId: ownerId,
+      businessId: businessId,
+      companion: SyncOutboxCompanion(
+        state: Value(OutboxState.pending.storageValue),
+        lastErrorCode: const Value('interrupted'),
+        lastErrorMessage: const Value(
+          'The signed-in account changed before this change was confirmed. It will be retried.',
+        ),
+      ),
+    );
+    _inFlight.remove(operationId);
+  }
+
+  Future<bool> requestManualRetry({
+    required String operationId,
+    required String ownerId,
+    required String businessId,
+    required DateTime now,
+  }) async {
+    if (operationId.isEmpty || ownerId.isEmpty || businessId.isEmpty) {
+      return false;
+    }
     final current = await findById(operationId);
     if (current == null || current.state == OutboxState.succeeded) {
-      return;
+      return false;
     }
-    await (_db.update(_db.syncOutbox)
-      ..where((tbl) => tbl.operationId.equals(operationId))).write(
+    if (!current.belongsTo(ownerId: ownerId, businessId: businessId)) {
+      return false;
+    }
+    final updated = await (_db.update(_db.syncOutbox)..where(
+      (tbl) =>
+          tbl.operationId.equals(operationId) &
+          tbl.ownerId.equals(ownerId) &
+          tbl.businessId.equals(businessId) &
+          tbl.state.isNotValue(OutboxState.succeeded.storageValue),
+    )).write(
       SyncOutboxCompanion(
         state: Value(OutboxState.pending.storageValue),
         nextAttemptAt: Value(now.toUtc()),
@@ -286,6 +393,25 @@ class OutboxStore {
         lastErrorMessage: const Value(null),
       ),
     );
+    return updated > 0;
+  }
+
+  Future<int> _updateOwnedIfNotSucceeded({
+    required String operationId,
+    required String ownerId,
+    required String businessId,
+    required SyncOutboxCompanion companion,
+  }) {
+    if (operationId.isEmpty || ownerId.isEmpty || businessId.isEmpty) {
+      return Future<int>.value(0);
+    }
+    return (_db.update(_db.syncOutbox)..where(
+      (tbl) =>
+          tbl.operationId.equals(operationId) &
+          tbl.ownerId.equals(ownerId) &
+          tbl.businessId.equals(businessId) &
+          tbl.state.isNotValue(OutboxState.succeeded.storageValue),
+    )).write(companion);
   }
 
   OutboxOperation _fromRow(SyncOutboxData row) {

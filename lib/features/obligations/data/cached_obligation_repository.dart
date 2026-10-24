@@ -1,3 +1,4 @@
+import '../../../core/finance/cash_outlook.dart';
 import '../../../core/logging/app_logger.dart';
 import '../../../core/persistence/obligation_cache.dart';
 import '../../../core/sync/outbox_models.dart';
@@ -127,6 +128,11 @@ class CachedObligationRepository implements ObligationRepository {
     } on AuthFailure catch (error) {
       if (_outbox == null || !error.isRetryable) {
         rethrow;
+      }
+      if (draft.status != CommitmentStatus.unpaid) {
+        throw const AuthFailure(
+          'Paid or cancelled commitments need a live connection. They are not queued offline.',
+        );
       }
       return _queueCreate(
         ownerId: ownerId,

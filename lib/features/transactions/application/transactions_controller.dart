@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/sync/outbox_models.dart';
 import '../../../core/sync/outbox_store.dart';
 import '../../../core/sync/pending_presentation.dart';
 import '../../authentication/application/session_controller.dart';
@@ -184,7 +185,22 @@ class TransactionsController extends StateNotifier<TransactionsViewState> {
       if (!mounted) {
         return;
       }
-      final merged = _uniqueById([...snapshot.items, ...page.items]);
+      final outbox = _outbox;
+      final operations =
+          outbox == null
+              ? const <OutboxOperation>[]
+              : await outbox.listOpen(
+                ownerId: ready.user.id,
+                businessId: ready.business.id,
+              );
+      if (!mounted) {
+        return;
+      }
+      final merged = mergeHistoryPages(
+        existing: snapshot.items,
+        page: page.items,
+        operations: operations,
+      );
       state = state.copyWith(
         loadingMore: false,
         snapshot: TransactionListSnapshot(

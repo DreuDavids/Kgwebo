@@ -210,9 +210,6 @@ class CachedProductRepository implements ProductRepository {
         businessId: businessId,
         productId: productId,
       );
-      if (cached.isEmpty) {
-        rethrow;
-      }
       AppLogger.info(
         'Using confirmed stock movement cache after a remote read failure.',
       );

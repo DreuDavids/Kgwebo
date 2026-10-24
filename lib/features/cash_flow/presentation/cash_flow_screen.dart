@@ -7,6 +7,7 @@ import '../../../app/routes.dart';
 import '../../../app/theme/kgwebo_colors.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/finance/business_calendar.dart';
+import '../../../core/finance/cash_path.dart';
 import '../../../core/money/money_formatter.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
@@ -202,7 +203,18 @@ class _EstimateCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final forecast = finance.forecast;
     if (forecast != null) {
-      return CashForecastCard(forecast: forecast);
+      return CashForecastCard(
+        forecast: forecast,
+        bills: [
+          for (final item in [...finance.overdue, ...finance.upcoming])
+            CashPathBill(
+              id: item.id,
+              title: item.title,
+              amountMinor: item.amountMinor,
+              dueOn: item.dueOn,
+            ),
+        ],
+      );
     }
     final textTheme = Theme.of(context).textTheme;
     return KgweboSoftCard(

@@ -25,4 +25,11 @@ Future<void> initializeKgweboSupabase(AppConfig config) async {
   _kgweboSupabaseInitialized = true;
 }
 
-SupabaseClient get kgweboSupabase => Supabase.instance.client;
+SupabaseClient get kgweboSupabase {
+  if (!_kgweboSupabaseInitialized) {
+    throw StateError(
+      'Supabase is not initialised. Offline and live writes cannot be sent.',
+    );
+  }
+  return Supabase.instance.client;
+}

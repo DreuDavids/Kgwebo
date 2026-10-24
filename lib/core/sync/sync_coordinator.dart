@@ -25,6 +25,24 @@ class SyncRunResult {
   final bool alreadyRunning;
 }
 
+class _SessionSnapshot {
+  const _SessionSnapshot({required this.ownerId, required this.businessId});
+
+  final String ownerId;
+  final String businessId;
+
+  bool matches(String? ownerId, String? businessId) {
+    return this.ownerId == ownerId && this.businessId == businessId;
+  }
+}
+
+class _QueuedRun {
+  const _QueuedRun({required this.ownerId, required this.businessId});
+
+  final String ownerId;
+  final String businessId;
+}
+
 class SyncCoordinator {
   SyncCoordinator({
     required OutboxStore outbox,
@@ -33,6 +51,7 @@ class SyncCoordinator {
     required TransactionCache transactionCache,
     required ObligationCache obligationCache,
     required String? Function() currentOwnerId,
+    required String? Function() currentBusinessId,
     DateTime Function()? clock,
     void Function()? onChange,
   }) : _outbox = outbox,
@@ -41,6 +60,7 @@ class SyncCoordinator {
        _transactionCache = transactionCache,
        _obligationCache = obligationCache,
        _currentOwnerId = currentOwnerId,
+       _currentBusinessId = currentBusinessId,
        _clock = clock ?? DateTime.now,
        _onChange = onChange;
 
@@ -50,84 +70,132 @@ class SyncCoordinator {
   final TransactionCache _transactionCache;
   final ObligationCache _obligationCache;
   final String? Function() _currentOwnerId;
+  final String? Function() _currentBusinessId;
   final DateTime Function() _clock;
   final void Function()? _onChange;
 
   bool _running = false;
-  bool _runAgain = false;
+  _QueuedRun? _queued;
 
   DateTime _now() => _clock().toUtc();
+
+  _SessionSnapshot? _liveSnapshot() {
+    final ownerId = _currentOwnerId();
+    final businessId = _currentBusinessId();
+    if (ownerId == null ||
+        ownerId.isEmpty ||
+        businessId == null ||
+        businessId.isEmpty) {
+      return null;
+    }
+    return _SessionSnapshot(ownerId: ownerId, businessId: businessId);
+  }
+
+  bool _isLive(_SessionSnapshot snapshot) {
+    final live = _liveSnapshot();
+    return live != null && snapshot.matches(live.ownerId, live.businessId);
+  }
 
   Future<SyncRunResult> process({
     required String ownerId,
     required String businessId,
   }) async {
-    final current = _currentOwnerId();
-    if (current == null) {
-      return const SyncRunResult(skipped: true);
-    }
-    if (current != ownerId) {
-      AppLogger.warning(
-        'Refusing to sync queued operations for a different owner.',
-      );
-      return const SyncRunResult(skipped: true);
-    }
-    if (ownerId.isEmpty || businessId.isEmpty) {
-      return const SyncRunResult(skipped: true);
-    }
+    final requested = _QueuedRun(ownerId: ownerId, businessId: businessId);
     if (_running) {
-      _runAgain = true;
+      _queued = requested;
       return const SyncRunResult(alreadyRunning: true);
     }
     _running = true;
+    late final SyncRunResult primary;
+    try {
+      primary = await _processSnapshot(requested);
+      while (_queued != null) {
+        final again = _queued!;
+        _queued = null;
+        await _processSnapshot(again);
+      }
+    } finally {
+      _running = false;
+    }
+    final leftover = _queued;
+    if (leftover != null) {
+      await process(ownerId: leftover.ownerId, businessId: leftover.businessId);
+    }
+    return primary;
+  }
+
+  Future<SyncRunResult> _processSnapshot(_QueuedRun requested) async {
+    final live = _liveSnapshot();
+    if (live == null) {
+      return const SyncRunResult(skipped: true);
+    }
+    if (!live.matches(requested.ownerId, requested.businessId)) {
+      AppLogger.warning(
+        'Refusing to sync queued operations for a different owner or business.',
+      );
+      return const SyncRunResult(skipped: true);
+    }
+    final snapshot = live;
     var processed = 0;
     var succeeded = 0;
     var retryable = 0;
     var permanent = 0;
-    try {
-      await _outbox.recoverInterrupted();
-      do {
-        _runAgain = false;
-        final due = await _outbox.listDue(
-          ownerId: ownerId,
-          businessId: businessId,
-          now: _now(),
+    await _outbox.recoverInterrupted(
+      ownerId: snapshot.ownerId,
+      businessId: snapshot.businessId,
+    );
+    final due = await _outbox.listDue(
+      ownerId: snapshot.ownerId,
+      businessId: snapshot.businessId,
+      now: _now(),
+    );
+    for (final operation in due) {
+      if (!_isLive(snapshot)) {
+        return SyncRunResult(
+          processed: processed,
+          succeeded: succeeded,
+          retryable: retryable,
+          permanent: permanent,
+          skipped: true,
         );
-        for (final operation in due) {
-          if (_currentOwnerId() != ownerId) {
-            return SyncRunResult(
-              processed: processed,
-              succeeded: succeeded,
-              retryable: retryable,
-              permanent: permanent,
-              skipped: true,
-            );
-          }
-          if (operation.dependsOnOperationId != null) {
-            final dependency = await _outbox.findById(
-              operation.dependsOnOperationId!,
-            );
-            if (dependency == null ||
-                dependency.state != OutboxState.succeeded) {
-              continue;
-            }
-          }
-          final outcome = await _dispatch(operation);
-          processed += 1;
-          switch (outcome) {
-            case _DispatchOutcome.succeeded:
-              succeeded += 1;
-            case _DispatchOutcome.retryable:
-              retryable += 1;
-            case _DispatchOutcome.permanent:
-              permanent += 1;
-          }
+      }
+      if (!operation.belongsTo(
+        ownerId: snapshot.ownerId,
+        businessId: snapshot.businessId,
+      )) {
+        continue;
+      }
+      if (operation.dependsOnOperationId != null) {
+        final dependency = await _outbox.findById(
+          operation.dependsOnOperationId!,
+        );
+        if (dependency == null || dependency.state != OutboxState.succeeded) {
+          continue;
         }
-      } while (_runAgain);
-    } finally {
-      _running = false;
+      }
+      final outcome = await _dispatch(operation: operation, snapshot: snapshot);
+      switch (outcome) {
+        case _DispatchOutcome.succeeded:
+          processed += 1;
+          succeeded += 1;
+        case _DispatchOutcome.retryable:
+          processed += 1;
+          retryable += 1;
+        case _DispatchOutcome.permanent:
+          processed += 1;
+          permanent += 1;
+        case _DispatchOutcome.aborted:
+          return SyncRunResult(
+            processed: processed,
+            succeeded: succeeded,
+            retryable: retryable,
+            permanent: permanent,
+            skipped: true,
+          );
+        case _DispatchOutcome.skippedClaim:
+          break;
+      }
     }
-    _onChange?.call();
     return SyncRunResult(
       processed: processed,
       succeeded: succeeded,
@@ -137,13 +205,44 @@ class SyncCoordinator {
   }
 
   Future<void> retry(String operationId) async {
-    await _outbox.requestManualRetry(operationId, _now());
+    final live = _liveSnapshot();
+    if (live == null) {
+      return;
+    }
+    await _outbox.requestManualRetry(
+      operationId: operationId,
+      ownerId: live.ownerId,
+      businessId: live.businessId,
+      now: _now(),
+    );
     _onChange?.call();
   }
 
-  Future<_DispatchOutcome> _dispatch(OutboxOperation operation) async {
-    await _outbox.markSyncing(operation.operationId, _now());
+  Future<_DispatchOutcome> _dispatch({
+    required OutboxOperation operation,
+    required _SessionSnapshot snapshot,
+  }) async {
+    if (!_isLive(snapshot)) {
+      return _DispatchOutcome.aborted;
+    }
+    final claimed = await _outbox.tryClaimForSync(
+      operationId: operation.operationId,
+      ownerId: snapshot.ownerId,
+      businessId: snapshot.businessId,
+      now: _now(),
+    );
+    if (!claimed) {
+      return _DispatchOutcome.skippedClaim;
+    }
     _onChange?.call();
+    if (!_isLive(snapshot)) {
+      await _outbox.markInterrupted(
+        operationId: operation.operationId,
+        ownerId: snapshot.ownerId,
+        businessId: snapshot.businessId,
+      );
+      return _DispatchOutcome.aborted;
+    }
     final attempts = operation.attemptCount + 1;
     try {
       switch (operation.operationType) {
@@ -156,12 +255,27 @@ class SyncCoordinator {
             'This queued change is not supported and was not sent.',
           );
       }
-      await _outbox.markSucceeded(operation.operationId, _now());
+      await _outbox.markSucceeded(
+        operationId: operation.operationId,
+        ownerId: snapshot.ownerId,
+        businessId: snapshot.businessId,
+        now: _now(),
+      );
       return _DispatchOutcome.succeeded;
     } catch (error) {
+      if (!_isLive(snapshot)) {
+        await _outbox.markInterrupted(
+          operationId: operation.operationId,
+          ownerId: snapshot.ownerId,
+          businessId: snapshot.businessId,
+        );
+        return _DispatchOutcome.aborted;
+      }
       if (SyncPolicy.isRetryable(error)) {
         await _outbox.markRetryable(
           operationId: operation.operationId,
+          ownerId: snapshot.ownerId,
+          businessId: snapshot.businessId,
           error: error,
           now: _now(),
           attemptCount: attempts,
@@ -170,6 +284,8 @@ class SyncCoordinator {
       }
       await _outbox.markPermanent(
         operationId: operation.operationId,
+        ownerId: snapshot.ownerId,
+        businessId: snapshot.businessId,
         error: error,
         now: _now(),
         attemptCount: attempts,
@@ -217,4 +333,4 @@ class SyncCoordinator {
   }
 }
 
-enum _DispatchOutcome { succeeded, retryable, permanent }
+enum _DispatchOutcome { succeeded, retryable, permanent, aborted, skippedClaim }

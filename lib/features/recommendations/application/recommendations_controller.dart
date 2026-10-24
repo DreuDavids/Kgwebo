@@ -7,6 +7,7 @@ import '../../../core/finance/financial_engine.dart';
 import '../../../core/finance/recommendation_lifecycle.dart';
 import '../../../core/finance/recommendation_rules.dart';
 import '../../../core/inventory/inventory_insights.dart';
+import '../../../core/sync/pending_presentation.dart';
 import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
@@ -216,28 +217,39 @@ class RecommendationsController
   }) {
     final now = DateTime.now().toUtc();
     final zone = BusinessZone.forCountry(session.business.countryCode);
+    final confirmedRecords = [
+      for (final item in records)
+        if (!item.pendingSync) item,
+    ];
+    final confirmedCommitments =
+        commitments == null
+            ? null
+            : [
+              for (final item in commitments)
+                if (!item.pendingSync) item,
+            ];
     final completed = FinancialEngine.summarize(
-      entries: [for (final item in records) item.toLedgerEntry()],
+      entries: confirmedLedgerEntries(confirmedRecords),
       openingCashMinor: session.business.openingBalanceMinor,
       currencyCode: session.business.currencyCode,
       period: BusinessCalendar.previousMonth(now, zone: zone),
       asOf: now,
     );
     final outlook =
-        commitments == null
+        confirmedCommitments == null
             ? null
             : CashOutlookEngine.summarize(
               currentCashMinor: completed.currentCashMinor,
               currencyCode: session.business.currencyCode,
               asOf: now,
               zone: zone,
-              commitments: commitments.map(
+              commitments: confirmedCommitments.map(
                 (item) => item.toScheduledCommitment(),
               ),
             );
     final cash = completed.currentCashMinor;
     final forecast =
-        commitments == null
+        confirmedCommitments == null
             ? null
             : CashForecastEngine.project(
               currentCashMinor: cash,
@@ -245,13 +257,13 @@ class RecommendationsController
               asOf: now,
               zone: zone,
               horizon: ForecastHorizon.days14,
-              commitments: commitments.map(
+              commitments: confirmedCommitments.map(
                 (item) => item.toScheduledCommitment(),
               ),
             );
     final overdueIds = [
-      if (commitments != null)
-        for (final item in commitments)
+      if (confirmedCommitments != null)
+        for (final item in confirmedCommitments)
           if (item.displayStatus(asOf: now, zone: zone) ==
               ObligationDisplayStatus.overdue)
             item.id,

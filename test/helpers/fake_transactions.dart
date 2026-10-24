@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:kgwebo/core/finance/business_calendar.dart';
 import 'package:kgwebo/core/finance/ledger_entry.dart';
 import 'package:kgwebo/core/money/money_parser.dart';
@@ -22,10 +24,23 @@ class FakeTransactionRepository implements TransactionRepository {
   AuthFailure? nextError;
   AuthFailure? failAfterCreate;
   Duration? createDelay;
+  Completer<void>? createGate;
+  bool allowAnyOwner = false;
   int createCalls = 0;
   int updateCalls = 0;
   int deleteCalls = 0;
   int listCalls = 0;
+  void Function(int count)? onCreateEntered;
+  Completer<void>? _enteredCreate;
+
+  Future<void> get enteredCreate =>
+      _enteredCreate?.future ?? Future<void>.value();
+
+  Completer<void> armCreateGate() {
+    createGate = Completer<void>();
+    _enteredCreate = Completer<void>();
+    return createGate!;
+  }
 
   @override
   Future<TransactionListSnapshot> list({
@@ -117,6 +132,15 @@ class FakeTransactionRepository implements TransactionRepository {
     required TransactionDraft draft,
   }) async {
     createCalls += 1;
+    onCreateEntered?.call(createCalls);
+    final entered = _enteredCreate;
+    if (entered != null && !entered.isCompleted) {
+      entered.complete();
+    }
+    final gate = createGate;
+    if (gate != null) {
+      await gate.future;
+    }
     if (createDelay != null) {
       await Future<void>.delayed(createDelay!);
     }
@@ -237,6 +261,9 @@ class FakeTransactionRepository implements TransactionRepository {
   }
 
   void _require(String ownerId, String businessId) {
+    if (allowAnyOwner) {
+      return;
+    }
     if (ownerId != this.ownerId || businessId != this.businessId) {
       throw const AuthFailure(
         'This transaction does not belong to the signed-in account.',
@@ -260,6 +287,7 @@ BusinessTransaction sampleSale({
   int amount = 50000,
   PaymentStatus status = PaymentStatus.paid,
   DateTime? occurredAt,
+  bool pendingSync = false,
 }) {
   return _sampleTransaction(
     id: id,
@@ -270,6 +298,7 @@ BusinessTransaction sampleSale({
     occurredAt: occurredAt,
     type: MoneyMovementType.sale,
     category: 'goods',
+    pendingSync: pendingSync,
   );
 }
 
@@ -302,6 +331,7 @@ BusinessTransaction _sampleTransaction({
   required MoneyMovementType type,
   required String category,
   DateTime? occurredAt,
+  bool pendingSync = false,
 }) {
   final occurred = occurredAt ?? DateTime.now().toUtc();
   return BusinessTransaction(
@@ -319,5 +349,6 @@ BusinessTransaction _sampleTransaction({
     paymentStatus: status,
     createdAt: occurred,
     updatedAt: occurred,
+    pendingSync: pendingSync,
   );
 }

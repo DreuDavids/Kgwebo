@@ -88,7 +88,7 @@ abstract final class SyncPolicy {
       }
       return error.isRetryable;
     }
-    return true;
+    return false;
   }
 
   static String safeMessage(Object error) {

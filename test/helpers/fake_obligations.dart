@@ -209,6 +209,7 @@ BusinessObligation sampleObligation({
   DateTime? dueOn,
   CommitmentStatus status = CommitmentStatus.unpaid,
   String title = 'Shop rent',
+  bool pendingSync = false,
 }) {
   final now = DateTime.now().toUtc();
   return BusinessObligation(
@@ -225,5 +226,6 @@ BusinessObligation sampleObligation({
     category: 'rent',
     createdAt: now,
     updatedAt: now,
+    pendingSync: pendingSync,
   );
 }

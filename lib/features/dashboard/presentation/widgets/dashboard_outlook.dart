@@ -6,6 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../../app/routes.dart';
 import '../../../../app/theme/kgwebo_colors.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
+import '../../../../core/finance/cash_path.dart';
 import '../../../../core/money/money_formatter.dart';
 import '../../../../shared/widgets/kgwebo_button.dart';
 import '../../../../shared/widgets/kgwebo_pill_row.dart';
@@ -68,7 +69,19 @@ class DashboardOutlook extends ConsumerWidget {
                   .selectHorizon(horizon),
         ),
         const SizedBox(height: KgweboSpacing.md),
-        CashForecastCard(forecast: forecast, compact: true),
+        CashForecastCard(
+          forecast: forecast,
+          compact: true,
+          bills: [
+            for (final item in open)
+              CashPathBill(
+                id: item.id,
+                title: item.title,
+                amountMinor: item.amountMinor,
+                dueOn: item.dueOn,
+              ),
+          ],
+        ),
         if (summary.unpaidExpensesMinor != 0) ...[
           const SizedBox(height: KgweboSpacing.sm),
           Text(

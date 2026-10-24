@@ -146,7 +146,14 @@ final syncCoordinatorProvider = Provider<SyncCoordinator?>((ref) {
     remoteObligations: SupabaseObligationRepository(kgweboSupabase),
     transactionCache: ref.watch(transactionCacheProvider),
     obligationCache: ref.watch(obligationCacheProvider),
-    currentOwnerId: () => kgweboSupabase.auth.currentUser?.id,
+    currentOwnerId: () {
+      final session = ref.read(appSessionProvider);
+      return session is AppSessionReady ? session.user.id : null;
+    },
+    currentBusinessId: () {
+      final session = ref.read(appSessionProvider);
+      return session is AppSessionReady ? session.business.id : null;
+    },
     onChange: () => bumpSyncTick(ref),
   );
 });

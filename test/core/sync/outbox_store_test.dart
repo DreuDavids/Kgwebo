@@ -153,8 +153,13 @@ void main() {
       payloadJson: payload().encode(),
       idempotencyKey: draft.idempotencyKey,
     );
-    await store.markSyncing('op-1', DateTime.utc(2026, 10, 21, 12));
-    await store.recoverInterrupted();
+    await store.markSyncing(
+      operationId: 'op-1',
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      now: DateTime.utc(2026, 10, 21, 12),
+    );
+    await store.recoverInterrupted(ownerId: 'user-1', businessId: 'biz-1');
     final open = await store.listOpen(ownerId: 'user-1', businessId: 'biz-1');
     expect(open.single.state, OutboxState.pending);
     expect(open.single.lastErrorCode, 'interrupted');
@@ -170,6 +175,8 @@ void main() {
     );
     await store.markRetryable(
       operationId: 'op-1',
+      ownerId: 'user-1',
+      businessId: 'biz-1',
       error: Exception('network'),
       now: DateTime.utc(2026, 10, 21, 12),
       attemptCount: SyncPolicy.maxAutomaticAttempts,
@@ -182,7 +189,12 @@ void main() {
     expect(due, isEmpty);
     final open = await store.listOpen(ownerId: 'user-1', businessId: 'biz-1');
     expect(open.single.state, OutboxState.retryableFailure);
-    await store.requestManualRetry('op-1', DateTime.utc(2026, 10, 22));
+    await store.requestManualRetry(
+      operationId: 'op-1',
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      now: DateTime.utc(2026, 10, 22),
+    );
     final afterRetry = await store.listDue(
       ownerId: 'user-1',
       businessId: 'biz-1',
@@ -190,5 +202,132 @@ void main() {
     );
     expect(afterRetry, hasLength(1));
     expect(afterRetry.single.state, OutboxState.pending);
+  });
+
+  test(
+    'late retryable or permanent failures do not reopen a succeeded operation',
+    () async {
+      await store.enqueue(
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+        operationType: OutboxOperationTypes.createTransactionV1,
+        payloadJson: payload().encode(),
+        idempotencyKey: draft.idempotencyKey,
+      );
+      await store.markSucceeded(
+        operationId: 'op-1',
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+        now: DateTime.utc(2026, 10, 21, 12),
+      );
+      await store.markSyncing(
+        operationId: 'op-1',
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+        now: DateTime.utc(2026, 10, 21, 12, 1),
+      );
+      await store.markRetryable(
+        operationId: 'op-1',
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+        error: Exception('timeout after commit'),
+        now: DateTime.utc(2026, 10, 21, 12, 2),
+        attemptCount: 1,
+      );
+      await store.markPermanent(
+        operationId: 'op-1',
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+        error: Exception('late mapping error'),
+        now: DateTime.utc(2026, 10, 21, 12, 3),
+        attemptCount: 2,
+      );
+      expect(
+        await store.listOpen(ownerId: 'user-1', businessId: 'biz-1'),
+        isEmpty,
+      );
+      expect(
+        await store.listDue(
+          ownerId: 'user-1',
+          businessId: 'biz-1',
+          now: DateTime.utc(2026, 10, 22),
+        ),
+        isEmpty,
+      );
+    },
+  );
+
+  test('manual retry is refused for a different owner', () async {
+    await store.enqueue(
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      operationType: OutboxOperationTypes.createTransactionV1,
+      payloadJson: payload().encode(),
+      idempotencyKey: draft.idempotencyKey,
+    );
+    await store.markRetryable(
+      operationId: 'op-1',
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      error: Exception('network'),
+      now: DateTime.utc(2026, 10, 21, 12),
+      attemptCount: SyncPolicy.maxAutomaticAttempts,
+    );
+    final retried = await store.requestManualRetry(
+      operationId: 'op-1',
+      ownerId: 'user-2',
+      businessId: 'biz-2',
+      now: DateTime.utc(2026, 10, 22),
+    );
+    expect(retried, isFalse);
+    final open = await store.listOpen(ownerId: 'user-1', businessId: 'biz-1');
+    expect(open.single.state, OutboxState.retryableFailure);
+    expect(open.single.nextAttemptAt, isNull);
+  });
+
+  test(
+    'recoverInterrupted does not reset another owner\'s syncing row',
+    () async {
+      await store.enqueue(
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+        operationType: OutboxOperationTypes.createTransactionV1,
+        payloadJson: payload().encode(),
+        idempotencyKey: draft.idempotencyKey,
+      );
+      await store.markSyncing(
+        operationId: 'op-1',
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+        now: DateTime.utc(2026, 10, 21, 12),
+      );
+      await store.recoverInterrupted(ownerId: 'user-2', businessId: 'biz-2');
+      final open = await store.listOpen(ownerId: 'user-1', businessId: 'biz-1');
+      expect(open.single.state, OutboxState.syncing);
+    },
+  );
+
+  test('tryClaimForSync allows only one in-flight claim', () async {
+    await store.enqueue(
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      operationType: OutboxOperationTypes.createTransactionV1,
+      payloadJson: payload().encode(),
+      idempotencyKey: draft.idempotencyKey,
+    );
+    final first = await store.tryClaimForSync(
+      operationId: 'op-1',
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      now: DateTime.utc(2026, 10, 21, 12),
+    );
+    final second = await store.tryClaimForSync(
+      operationId: 'op-1',
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      now: DateTime.utc(2026, 10, 21, 12, 1),
+    );
+    expect(first, isTrue);
+    expect(second, isFalse);
   });
 }

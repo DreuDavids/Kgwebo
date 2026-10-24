@@ -233,20 +233,29 @@ Verification executed 21 Oct 2026:
 - Drift schema **v6** `sync_outbox` with owner/business isolation, versioned payloads, stable idempotency keys, and bounded retry states.
 - Queued operations: simple transaction **creates** and new unpaid **commitment creates**, after a retryable network/timeout failure. Displayed as Pending sync; never confirmed ledger rows.
 - `SyncCoordinator` processes the current owner/business sequentially, recovers interrupted `syncing` rows, reuses idempotency keys, reconciles server copies that arrived without a client response, pauses after 8 automatic attempts, and quarantines permanent validation failures for review.
-- Online-only: product sales, stock movements, catalogue writes, edits/deletes, recommendation dismissals, business profile. Two-client oversell and two-user inventory/recommendation RLS were **not** re-run (one Auth user; sign-up requires email OTP). Inventory stays live until that proof exists.
+- Online-only: product sales, stock movements, catalogue writes, edits/deletes, recommendation dismissals, business profile. Stock stays live because `record_product_sale` is atomic and server-authoritative, not because isolation is unproven.
 - UI: text+icon sync labels, Settings → Pending changes, dashboard/history/cash-flow notices. Forecasts and cash use confirmed records only.
 - Tests: outbox persistence and restart, duplicate enqueue, coordinator ordering/timeout/idempotency/isolation, pending vs confirmed merge and engine exclusion (including unpaid pending sales and pending commitments), failure-resolution screen.
 - `syncCoordinatorProvider` stays null until `initializeKgweboSupabase` completes, so widget tests with a live-looking config never construct `Supabase.instance`.
 - `dart format --set-exit-if-changed .` — pass
 - `flutter analyze` — No issues found
-- `flutter test` — All tests passed (338)
-- `flutter build apk --debug --dart-define-from-file=.env` — `build\app\outputs\flutter-apk\app-debug.apk`
+- `flutter test` — All tests passed (355 after history-merge follow-up)
+- `flutter build apk --debug --dart-define-from-file=.env` — `e:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (122,791,753 bytes, 24 Oct 2026 09:37, includes `mergeHistoryPages`)
+
+### Closure audit (24 Oct 2026)
+
+- Code audit closed: succeeded outbox rows cannot be reopened; paid/cancelled commitments are not queued; malformed payloads become permanent; recommendations skip `pendingSync`; uninitialised Supabase client cannot submit writes.
+- Remote patch: `private.uuid_from_md5` (migration `20261024090000_uuid_from_md5.sql` / `uuid_from_md5`) so `record_product_sale` no longer casts `bit(128)` to uuid on Postgres 17.
+- Live security: two authenticated users cannot read or mutate each other’s products, sale items, stock movements or recommendations. Two clients buying the last unit: one 200, one 400, stock 0.
+- History pagination no longer unique-by-id only: `mergeHistoryPages` drops a pending display when the confirmed copy arrives on a later page.
+- Emulator QA: 12-item checklist recorded in `docs/TEST_PLAN.md` section 8b. Item 6 (timeout after commit on device) is **NOT TESTED**. Action-required queue state was **NOT TESTED** on device.
+- Phase 8 offline writes are **not** completely verified. Report PDF remains outstanding.
 
 ### Reports (not in this slice)
 
 - In-app report from the engine and PDF export/share remain the placeholder on Reports. They are not rebuilt here.
 
-**Exit:** Advertised offline behaviour has tests. Report PDF remains outstanding for the rest of Phase 8.
+**Exit:** Advertised offline behaviour has automated tests, emulator QA for the executed items, and live RLS/oversell evidence. Report PDF, on-device timeout-after-commit, and a physical handset pass remain outstanding. Recommendation: **ready for a stakeholder demo of offline writes; not ready for a wider beta.**
 
 ## Phase 9 — Quality and demo polish
 
@@ -263,7 +272,8 @@ Verification executed 21 Oct 2026:
 | Auth email templates        | Styled OTP HTML is in `supabase/templates/`. Paste confirmation.html and recovery.html into Auth → Email Templates. OTP length is 6. |
 | Leaked-password protection  | Supabase advisor warning. Enable HaveIBeenPwned checks in the Auth dashboard if desired.                                             |
 | Service-role key in the app | Not required. Client uses publishable/anon key only.                                                                                 |
-| Android device attached     | API 37 emulator `emulator-5554` is available. No physical handset. Full signed-in forecast QA remains a manual checklist.            |
+| Android device attached     | API 37 emulator `emulator-5554` used for Phase 8 QA on 24 Oct 2026 (compact 1080×2340). No physical handset.                         |
+| Phase 8 test accounts       | Throwaway Auth users / businesses Phase 8 Stall A and B remain on `hhwxajxjmyjntxykptvs` and should be deleted when unused.          |
 | Android NDK mismatch        | Debug APK built with a plugin NDK warning. `android/app/build.gradle.kts` now pins `ndkVersion` to `27.0.12077973` for later builds. |
 | Optional AI entry           | Deferred by spec if it threatens core reliability.                                                                                   |
 

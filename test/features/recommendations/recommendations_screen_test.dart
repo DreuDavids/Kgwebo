@@ -100,4 +100,61 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('An unpaid commitment is overdue'), findsNothing);
   });
+
+  testWidgets('pending overdue commitments do not generate recommendations', (
+    tester,
+  ) async {
+    await setSurface(tester, const Size(360, 800));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          memoryDatabaseOverride(),
+          appConfigProvider.overrideWithValue(
+            testConfig(anonKey: 'sb_publishable_test'),
+          ),
+          appSessionProvider.overrideWith(
+            (ref) => AppSessionReady(user: user, business: business),
+          ),
+          currentOwnerIdProvider.overrideWithValue(user.id),
+          authRepositoryProvider.overrideWith(
+            (ref) => FakeAuthRepository(user: user),
+          ),
+          onboardingRepositoryProvider.overrideWith(
+            (ref) => FakeOnboardingRepository(business: business),
+          ),
+          transactionRepositoryProvider.overrideWith(
+            (ref) =>
+                FakeTransactionRepository()
+                  ..items.add(
+                    sampleSale(id: 'pending-sale', pendingSync: true),
+                  ),
+          ),
+          obligationRepositoryProvider.overrideWith(
+            (ref) =>
+                FakeObligationRepository()
+                  ..items.add(
+                    sampleObligation(
+                      amount: 80000,
+                      dueOn: DateTime(2026, 1, 1),
+                      pendingSync: true,
+                    ),
+                  ),
+          ),
+          productRepositoryProvider.overrideWith(
+            (ref) => FakeProductRepository(),
+          ),
+          recommendationRepositoryProvider.overrideWith(
+            (ref) => FakeRecommendationRepository(),
+          ),
+        ],
+        child: MaterialApp(
+          theme: KgweboTheme.light(),
+          home: const RecommendationsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    expect(find.text('An unpaid commitment is overdue'), findsNothing);
+  });
 }

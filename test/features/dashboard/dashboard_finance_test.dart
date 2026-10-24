@@ -264,6 +264,44 @@ void main() {
     expect(find.textContaining('not a zero-bills result'), findsOneWidget);
   });
 
+  testWidgets('pending sale does not change recorded cash or sales', (
+    tester,
+  ) async {
+    await pumpDashboard(
+      tester,
+      repository:
+          FakeTransactionRepository()
+            ..items.add(sampleSale(id: 'pending-sale', pendingSync: true)),
+    );
+    expect(find.text('P 2,000.00'), findsWidgets);
+    expect(find.text('P 2,500.00'), findsNothing);
+    expect(find.text('P 500.00'), findsNothing);
+    expect(find.text('P 0.00'), findsWidgets);
+  });
+
+  testWidgets('pending commitment is excluded from forecast estimates', (
+    tester,
+  ) async {
+    final obligations =
+        FakeObligationRepository()
+          ..items.add(
+            sampleObligation(
+              amount: 80000,
+              dueOn: DateTime(2026, 10, 28),
+              pendingSync: true,
+            ),
+          );
+    await pumpDashboard(
+      tester,
+      repository: FakeTransactionRepository(),
+      obligations: obligations,
+    );
+    expect(find.text('P 2,000.00'), findsWidgets);
+    await selectDashboardTab(tester, 'Outlook');
+    expect(find.text('P 1,200.00'), findsNothing);
+    expect(find.text('Shop rent'), findsNothing);
+  });
+
   testWidgets('low stock is a restock notice and not treated as cash', (
     tester,
   ) async {

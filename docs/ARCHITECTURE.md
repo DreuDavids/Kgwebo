@@ -12,13 +12,13 @@ The architecture keeps financial rules out of widgets, persists every implemente
 
 ## 2. Installed environment
 
-| Item                       | Value                                                                                                                    |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| Flutter                    | 3.29.2 (Dart 3.7.2)                                                                                                      |
-| Application id             | `bw.kgwebo.kgwebo`                                                                                                       |
-| Android                    | `compileSdk` / `minSdk` / `targetSdk` from the installed Flutter toolchain                                               |
-| Connected devices at audit | Windows desktop, Chrome, Edge. Phase 7 verification used Android emulator `emulator-5554` (API 37). No physical handset. |
-| Doctor notes               | Some Android licenses not accepted; Flutter is on a user-managed channel at `C:\tools\flutter`                           |
+| Item                       | Value                                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Flutter                    | 3.29.2 (Dart 3.7.2)                                                                                                                  |
+| Application id             | `bw.kgwebo.kgwebo`                                                                                                                   |
+| Android                    | `compileSdk` / `minSdk` / `targetSdk` from the installed Flutter toolchain                                                           |
+| Connected devices at audit | Windows desktop, Chrome, Edge. Phase 7 and Phase 8 verification used Android emulator `emulator-5554` (API 37). No physical handset. |
+| Doctor notes               | Some Android licenses not accepted; Flutter is on a user-managed channel at `C:\tools\flutter`                                       |
 
 ## 3. Runtime modes
 
@@ -120,7 +120,7 @@ Phase 4 transaction writes are **online-only**. The client sends a stable `idemp
 
 Phase 5 obligation writes follow the same online-only and idempotency rules. Dashboard periods are `[startInclusive, endExclusive)` in the business zone (`BusinessZone.forCountry`, currently Africa/Gaborone for BW). Period totals come from `FinancialEngine`; cash is all-time recorded cash. Unpaid obligations never reduce that cash figure.
 
-Phase 6 product and stock writes are **online-only**. The UI states that stock changes are not queued offline. Confirmed catalogue and movement reads are cached per owner and business; a failed refresh keeps the last confirmed cache and labels it stale. Product sales use one RPC so a retry with the same idempotency key cannot double-count revenue or stock.
+Phase 6 product and stock writes are **online-only**. The UI states that stock changes are not queued offline. Confirmed catalogue and movement reads are cached per owner and business; a failed refresh keeps the last confirmed cache and labels it stale. Product sales use one RPC so a retry with the same idempotency key cannot double-count revenue or stock. Deterministic line and reversal keys are built with `private.uuid_from_md5` (Postgres 17 rejects `bit(128)::uuid`). Live two-user JWT isolation and two-client last-unit oversell passed on 24 Oct 2026.
 
 Phase 7 recommendation writes are **online-only**. Forecasts are computed from confirmed transactions and obligations; they are not a stored table. A failed recommendation refresh keeps the last confirmed status cache, labels it stale, and never presents an empty list as “no recommendations” when the load failed. Dashboard forecast horizon is UI state (default 14 days) and does not change recorded cash.
 
@@ -132,9 +132,9 @@ Supabase remains authoritative. Drift confirmed caches are still confirmed-read 
 2. `SyncCoordinator` runs on app resume (signed-in shell), after enqueue, and from Settings → Pending changes. Connectivity is not treated as proof that Supabase is reachable; success is a server confirmation. Interrupted `syncing` rows return to `pending` on the next run.
 3. Operations for the current owner and business are processed sequentially by `createdAt` then operation id. A dependency that is not succeeded is skipped. Retries reuse the same idempotency key. After a timeout where the server may have committed, the unique constraint plus fetch-on-conflict (or a later confirmed list) reconciles to one row.
 4. Transient failures stay `retryable_failure` with bounded automatic backoff (8 attempts, then paused until the user taps Retry). Validation and ownership failures become `permanent_failure` for review. Operations are never dropped silently.
-5. **Online-only:** product sales, stock movements, catalogue writes, transaction/commitment edits and deletes, recommendation dismissals, and business profile saves. Product sales stay online-only because stock is server-authoritative, `record_product_sale` is atomic, two-client oversell was not proven on the live project (one Auth user), and an optimistic sale would misrepresent stock.
+5. **Online-only:** product sales, stock movements, catalogue writes, transaction/commitment edits and deletes, recommendation dismissals, and business profile saves. Product sales stay online-only because stock is server-authoritative, `record_product_sale` is atomic, and an optimistic sale would misrepresent stock. Two-client last-unit oversell and two-user inventory/recommendation JWT isolation passed on 24 Oct 2026; that does not make inventory safe to queue offline.
 6. Sign-out retains owner-scoped outbox rows on disk. The coordinator refuses to submit another owner’s queue. Account B cannot list account A’s pending financial data. A deleted or inaccessible business surfaces as a permanent, reviewable failure rather than a silent overwrite.
-7. Forecasts, cash, recorded sales and recommendations use confirmed records only. Pending items can appear in history/commitment lists with an explicit status; they are excluded from `FinancialEngine` and `CashForecastEngine`.
+7. Forecasts, cash, recorded sales and recommendations use confirmed records only. Pending items can appear in history/commitment lists with an explicit status; they are excluded from `FinancialEngine` and `CashForecastEngine`. History pagination uses `mergeHistoryPages`: a later confirmed page drops the matching pending display so both cannot remain visible.
 
 ## 7. Money and accounting scope
 

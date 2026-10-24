@@ -105,6 +105,8 @@ void main() {
     );
     await store.markPermanent(
       operationId: 'op-fail',
+      ownerId: user.id,
+      businessId: business.id,
       error: const AuthFailure('The server rejected this sale.'),
       now: DateTime.utc(2026, 10, 21),
       attemptCount: 1,

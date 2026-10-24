@@ -67,11 +67,18 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         businessId: session.business.id,
         productId: widget.productId,
       );
-      final movements = await repository.listMovements(
-        ownerId: session.user.id,
-        businessId: session.business.id,
-        productId: widget.productId,
-      );
+      StockMovementListSnapshot? movements;
+      String? error;
+      try {
+        movements = await repository.listMovements(
+          ownerId: session.user.id,
+          businessId: session.business.id,
+          productId: widget.productId,
+        );
+        error = movements.refreshError;
+      } on AuthFailure catch (movementError) {
+        error = movementError.message;
+      }
       if (!mounted) {
         return;
       }
@@ -79,7 +86,7 @@ class _ProductDetailsScreenState extends ConsumerState<ProductDetailsScreen> {
         _product = product;
         _movements = movements;
         _loading = false;
-        _error = movements.refreshError;
+        _error = error;
       });
     } on AuthFailure catch (error) {
       if (!mounted) {

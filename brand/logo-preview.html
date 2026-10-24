@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Kgwebo logo concepts</title>
+    <style>
+      :root {
+        --ink: #111111;
+        --lime: #c6ff4a;
+        --canvas: #f4f5f7;
+        --well: #2a2a2a;
+      }
+      body {
+        margin: 0;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        background: var(--canvas);
+        color: var(--ink);
+      }
+      header {
+        padding: 32px 40px 8px;
+      }
+      h1 {
+        margin: 0;
+        font-size: 28px;
+        letter-spacing: -0.6px;
+      }
+      p {
+        color: #6b7280;
+      }
+      .pick {
+        display: inline-block;
+        background: var(--lime);
+        color: var(--ink);
+        font-weight: 700;
+        padding: 6px 12px;
+        border-radius: 999px;
+        font-size: 12px;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+        padding: 24px 40px 64px;
+      }
+      .card {
+        background: #fff;
+        border-radius: 24px;
+        padding: 20px;
+        box-shadow: 0 10px 24px rgba(0, 0, 0, 0.06);
+      }
+      .card h2 {
+        margin: 0 0 4px;
+        font-size: 18px;
+      }
+      .card .desc {
+        margin: 0 0 16px;
+        font-size: 13px;
+        color: #6b7280;
+      }
+      .pair {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+      .stage {
+        border-radius: 16px;
+        padding: 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 140px;
+      }
+      .light {
+        background: #f4f5f7;
+      }
+      .dark {
+        background: #111111;
+      }
+      .sizes {
+        display: flex;
+        gap: 10px;
+        align-items: flex-end;
+        margin-top: 14px;
+      }
+      .sizes div {
+        text-align: center;
+        font-size: 11px;
+        color: #6b7280;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="pick">Recommended: 1 · Well K</div>
+      <h1>Kgwebo logo concepts</h1>
+      <p>
+        Eight directions from the product spec: ink #111111, lime #C6FF4A,
+        extra-round, built for traders. Well K continues the in-app circular
+        mark and stays readable at 16px.
+      </p>
+    </header>
+    <main class="grid">
+      <article class="card">
+        <h2>1. Well K</h2>
+        <p class="desc">
+          Geometric. Black disc, extra-round lime K. Matches the existing nav
+          well.
+        </p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#111111" />
+              <path
+                d="M36 28v44M36 50l30-20M36 50l30 20"
+                stroke="#C6FF4A"
+                stroke-width="13"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#2A2A2A" />
+              <path
+                d="M36 28v44M36 50l30-20M36 50l30 20"
+                stroke="#C6FF4A"
+                stroke-width="13"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>2. Lime Well</h2>
+        <p class="desc">
+          Geometric. Lime disc, ink K. Louder on a home screen.
+        </p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#C6FF4A" />
+              <path
+                d="M36 28v44M36 50l30-20M36 50l30 20"
+                stroke="#111111"
+                stroke-width="13"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#C6FF4A" />
+              <path
+                d="M36 28v44M36 50l30-20M36 50l30 20"
+                stroke="#111111"
+                stroke-width="13"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>3. Soft Square</h2>
+        <p class="desc">
+          Geometric. Extra-round card, same K. Closer to Android’s squircle.
+        </p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="28" fill="#111111" />
+              <path
+                d="M36 28v44M36 50l30-20M36 50l30 20"
+                stroke="#C6FF4A"
+                stroke-width="13"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="28" fill="#2A2A2A" />
+              <path
+                d="M36 28v44M36 50l30-20M36 50l30 20"
+                stroke="#C6FF4A"
+                stroke-width="13"
+                stroke-linecap="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>4. Growth Arms</h2>
+        <p class="desc">
+          Abstract. The K’s arms without a stem — open, rising.
+        </p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#111111" />
+              <path
+                d="M32 72l20-44 16 28"
+                fill="none"
+                stroke="#C6FF4A"
+                stroke-width="13"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#2A2A2A" />
+              <path
+                d="M32 72l20-44 16 28"
+                fill="none"
+                stroke="#C6FF4A"
+                stroke-width="13"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>5. Cash Steps</h2>
+        <p class="desc">
+          Abstract. Three extra-round lime pills as a rising till.
+        </p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#111111" />
+              <rect
+                x="24"
+                y="62"
+                width="18"
+                height="16"
+                rx="8"
+                fill="#C6FF4A"
+              />
+              <rect
+                x="41"
+                y="46"
+                width="18"
+                height="32"
+                rx="8"
+                fill="#C6FF4A"
+              />
+              <rect
+                x="58"
+                y="28"
+                width="18"
+                height="50"
+                rx="8"
+                fill="#C6FF4A"
+              />
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="50" fill="#2A2A2A" />
+              <rect
+                x="24"
+                y="62"
+                width="18"
+                height="16"
+                rx="8"
+                fill="#C6FF4A"
+              />
+              <rect
+                x="41"
+                y="46"
+                width="18"
+                height="32"
+                rx="8"
+                fill="#C6FF4A"
+              />
+              <rect
+                x="58"
+                y="28"
+                width="18"
+                height="50"
+                rx="8"
+                fill="#C6FF4A"
+              />
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>6. Nested Cards</h2>
+        <p class="desc">
+          Abstract. White extra-round cards and a lime pill — the UI in mark
+          form.
+        </p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="28" fill="#111111" />
+              <rect
+                x="22"
+                y="28"
+                width="46"
+                height="46"
+                rx="14"
+                fill="#F4F5F7"
+              />
+              <rect
+                x="38"
+                y="38"
+                width="40"
+                height="40"
+                rx="14"
+                fill="#FFFFFF"
+              />
+              <rect
+                x="54"
+                y="62"
+                width="24"
+                height="12"
+                rx="6"
+                fill="#C6FF4A"
+              />
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 100 100" width="88" height="88">
+              <rect width="100" height="100" rx="28" fill="#2A2A2A" />
+              <rect
+                x="22"
+                y="28"
+                width="46"
+                height="46"
+                rx="14"
+                fill="#EEF0F3"
+              />
+              <rect
+                x="38"
+                y="38"
+                width="40"
+                height="40"
+                rx="14"
+                fill="#FFFFFF"
+              />
+              <rect
+                x="54"
+                y="62"
+                width="24"
+                height="12"
+                rx="6"
+                fill="#C6FF4A"
+              />
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>7. Wordmark K</h2>
+        <p class="desc">Text-heavy. A lime K as the first letter of Kgwebo.</p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 280 80" width="220" height="63">
+              <text
+                x="0"
+                y="56"
+                font-family="system-ui,sans-serif"
+                font-size="52"
+                font-weight="800"
+                fill="#C6FF4A"
+              >
+                K
+              </text>
+              <text
+                x="42"
+                y="56"
+                font-family="system-ui,sans-serif"
+                font-size="52"
+                font-weight="800"
+                fill="#111111"
+              >
+                gwebo
+              </text>
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 280 80" width="220" height="63">
+              <text
+                x="0"
+                y="56"
+                font-family="system-ui,sans-serif"
+                font-size="52"
+                font-weight="800"
+                fill="#C6FF4A"
+              >
+                K
+              </text>
+              <text
+                x="42"
+                y="56"
+                font-family="system-ui,sans-serif"
+                font-size="52"
+                font-weight="800"
+                fill="#FFFFFF"
+              >
+                gwebo
+              </text>
+            </svg>
+          </div>
+        </div>
+      </article>
+
+      <article class="card">
+        <h2>8. Full lockup</h2>
+        <p class="desc">
+          Text-heavy. Disc mark plus the word, as it appears in the app header.
+        </p>
+        <div class="pair">
+          <div class="stage light">
+            <svg viewBox="0 0 400 120" width="240" height="72">
+              <g transform="translate(10,10)">
+                <rect width="100" height="100" rx="50" fill="#111111" />
+                <path
+                  d="M36 28v44M36 50l30-20M36 50l30 20"
+                  stroke="#C6FF4A"
+                  stroke-width="13"
+                  stroke-linecap="round"
+                />
+              </g>
+              <text
+                x="130"
+                y="72"
+                font-family="system-ui,sans-serif"
+                font-size="44"
+                font-weight="800"
+                fill="#111111"
+              >
+                Kgwebo
+              </text>
+            </svg>
+          </div>
+          <div class="stage dark">
+            <svg viewBox="0 0 400 120" width="240" height="72">
+              <g transform="translate(10,10)">
+                <rect width="100" height="100" rx="50" fill="#2A2A2A" />
+                <path
+                  d="M36 28v44M36 50l30-20M36 50l30 20"
+                  stroke="#C6FF4A"
+                  stroke-width="13"
+                  stroke-linecap="round"
+                />
+              </g>
+              <text
+                x="130"
+                y="72"
+                font-family="system-ui,sans-serif"
+                font-size="44"
+                font-weight="800"
+                fill="#FFFFFF"
+              >
+                Kgwebo
+              </text>
+            </svg>
+          </div>
+        </div>
+      </article>
+    </main>
+  </body>
+</html>

@@ -77,6 +77,27 @@ List<BusinessObligation> mergePendingObligations({
   return merged;
 }
 
+/// Re-merges pending rows after a later history page arrives so a confirmed
+/// copy cannot sit next to its pending display id.
+List<BusinessTransaction> mergeHistoryPages({
+  required List<BusinessTransaction> existing,
+  required List<BusinessTransaction> page,
+  required List<OutboxOperation> operations,
+}) {
+  final seen = <String>{};
+  final combined = [
+    for (final item in [...existing, ...page])
+      if (seen.add(item.id)) item,
+  ];
+  return mergePendingTransactions(
+    confirmed: [
+      for (final item in combined)
+        if (!item.pendingSync) item,
+    ],
+    operations: operations,
+  );
+}
+
 List<LedgerEntry> confirmedLedgerEntries(
   Iterable<BusinessTransaction> transactions,
 ) {
