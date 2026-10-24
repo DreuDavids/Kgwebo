@@ -22,6 +22,7 @@ class SupabaseObligationRepository implements ObligationRepository {
   Future<ObligationListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ObligationListSnapshot cached)? onLocalCache,
   }) async {
     _requireOwner(ownerId);
     try {

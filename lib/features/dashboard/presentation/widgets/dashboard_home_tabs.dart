@@ -4,14 +4,22 @@ import '../../../../app/theme/kgwebo_colors.dart';
 import '../../../../app/theme/kgwebo_radii.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
 
-enum DashboardHomeTab { overview, records, outlook }
+enum DashboardHomeTab { cash, record, bills }
 
-extension DashboardHomeTabLabel on DashboardHomeTab {
+extension DashboardHomeTabCopy on DashboardHomeTab {
   String get label {
     return switch (this) {
-      DashboardHomeTab.overview => 'Overview',
-      DashboardHomeTab.records => 'Records',
-      DashboardHomeTab.outlook => 'Outlook',
+      DashboardHomeTab.cash => 'Cash',
+      DashboardHomeTab.record => 'Record',
+      DashboardHomeTab.bills => 'Bills',
+    };
+  }
+
+  String get job {
+    return switch (this) {
+      DashboardHomeTab.cash => 'See what you have, then add a sale.',
+      DashboardHomeTab.record => 'Add a sale or expense.',
+      DashboardHomeTab.bills => 'See bills you still need to pay.',
     };
   }
 }

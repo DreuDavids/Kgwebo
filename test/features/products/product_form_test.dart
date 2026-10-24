@@ -78,8 +78,8 @@ void main() {
 
   testWidgets('form validates empty name and price', (tester) async {
     await pumpForm(tester);
-    await tester.ensureVisible(find.text('Save product'));
-    await tester.tap(find.text('Save product'));
+    await tester.ensureVisible(find.text('Save stock'));
+    await tester.tap(find.text('Save stock'));
     await tester.pumpAndSettle();
     expect(
       find.text('Enter a product name, up to 120 characters.'),
@@ -95,8 +95,8 @@ void main() {
     final products = await pumpForm(tester);
     await tester.enterText(find.byType(TextField).at(0), 'Soap');
     await tester.enterText(find.byType(TextField).at(3), '8.00');
-    await tester.ensureVisible(find.text('Save product'));
-    await tester.tap(find.text('Save product'));
+    await tester.ensureVisible(find.text('Save stock'));
+    await tester.tap(find.text('Save stock'));
     await tester.pumpAndSettle();
     expect(products.createCalls, 1);
     expect(products.products.single.name, 'Soap');
@@ -138,7 +138,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(products.listCalls, greaterThan(0));
     expect(find.text('Loading products'), findsNothing);
-    expect(find.text('Stock overview'), findsOneWidget);
+    expect(find.text('Estimated inventory value'), findsOneWidget);
     final listScrollable = find.descendant(
       of: find.byType(RefreshIndicator),
       matching: find.byType(Scrollable),

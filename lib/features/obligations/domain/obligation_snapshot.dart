@@ -16,6 +16,13 @@ class ObligationListSnapshot {
     );
   }
 
+  factory ObligationListSnapshot.fromCache(List<BusinessObligation> items) {
+    return ObligationListSnapshot(
+      items: items,
+      origin: ObligationDataOrigin.localCache,
+    );
+  }
+
   factory ObligationListSnapshot.stale({
     required List<BusinessObligation> items,
     required String refreshError,

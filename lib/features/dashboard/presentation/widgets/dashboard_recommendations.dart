@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/routes.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
-import '../../../../shared/widgets/kgwebo_button.dart';
 import '../../../../shared/widgets/kgwebo_section_heading.dart';
 import '../../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../../recommendations/application/recommendations_controller.dart';
@@ -16,6 +13,7 @@ class DashboardRecommendations extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(recommendationsControllerProvider);
+
     if (state.isPreview) {
       return const SizedBox.shrink();
     }
@@ -24,7 +22,7 @@ class DashboardRecommendations extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const KgweboSectionHeading(
-            title: 'Recommendations',
+            title: 'What to do next',
             subtitle: 'Saved notices from your records.',
           ),
           const SizedBox(height: KgweboSpacing.sm),
@@ -40,13 +38,13 @@ class DashboardRecommendations extends ConsumerWidget {
     if (state.items.isEmpty) {
       return const SizedBox.shrink();
     }
+    final item = state.items.first;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const KgweboSectionHeading(
-          title: 'Recommendations',
-          subtitle:
-              'Only shown when your records meet the condition. These are not professional advice.',
+          title: 'What to do next',
+          subtitle: 'One next step from your records.',
         ),
         const SizedBox(height: KgweboSpacing.sm),
         if (state.isStale)
@@ -59,23 +57,15 @@ class DashboardRecommendations extends ConsumerWidget {
                   'Showing saved recommendation status from this device.',
             ),
           ),
-        for (final item in state.dashboardItems) ...[
-          RecommendationCard(
-            item: item,
-            compact: true,
-            onDismiss:
-                item.persisted == null
-                    ? null
-                    : () => ref
-                        .read(recommendationsControllerProvider.notifier)
-                        .dismiss(item),
-          ),
-          const SizedBox(height: KgweboSpacing.sm),
-        ],
-        KgweboButton(
-          label: 'All recommendations',
-          variant: KgweboButtonVariant.text,
-          onPressed: () => context.pushNamed(AppRoutes.recommendationsName),
+        RecommendationCard(
+          item: item,
+          compact: true,
+          onDismiss:
+              item.persisted == null
+                  ? null
+                  : () => ref
+                      .read(recommendationsControllerProvider.notifier)
+                      .dismiss(item),
         ),
       ],
     );

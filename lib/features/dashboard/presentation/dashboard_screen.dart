@@ -4,18 +4,17 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../shared/widgets/kgwebo_wash_scaffold.dart';
 import '../application/dashboard_finance_controller.dart';
+import 'widgets/dashboard_bills_teaser.dart';
 import 'widgets/dashboard_header.dart';
 import 'widgets/dashboard_hero.dart';
 import 'widgets/dashboard_home_tabs.dart';
-import 'widgets/dashboard_insights_list.dart';
 import 'widgets/dashboard_metrics.dart';
 import 'widgets/dashboard_notices.dart';
-import 'widgets/dashboard_outlook.dart';
 import 'widgets/dashboard_period_selector.dart';
 import 'widgets/dashboard_pinned_sliver.dart';
-import 'widgets/dashboard_quick_actions.dart';
 import 'widgets/dashboard_recent.dart';
 import 'widgets/dashboard_recommendations.dart';
+import 'widgets/dashboard_record_actions.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -25,12 +24,12 @@ class DashboardScreen extends ConsumerStatefulWidget {
 }
 
 class _DashboardScreenState extends ConsumerState<DashboardScreen> {
-  DashboardHomeTab _tab = DashboardHomeTab.overview;
+  DashboardHomeTab _tab = DashboardHomeTab.cash;
 
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
-    final isOverview = _tab == DashboardHomeTab.overview;
+    final isCash = _tab == DashboardHomeTab.cash;
 
     return KgweboWashScaffold(
       safeBottom: false,
@@ -57,23 +56,33 @@ class _DashboardScreenState extends ConsumerState<DashboardScreen> {
                 ),
               ),
             ),
-            const SliverToBoxAdapter(child: DashboardHeader()),
-            const SliverToBoxAdapter(child: DashboardNotices()),
-            if (isOverview)
-              const SliverToBoxAdapter(
-                child: Padding(
-                  padding: EdgeInsets.only(top: KgweboSpacing.md),
-                  child: DashboardPeriodSelector(),
+            SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.only(
+                  bottom: KgweboSpacing.xl + bottomInset,
+                ),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    DashboardHeader(tab: _tab),
+                    if (isCash) const DashboardNotices(),
+                    if (isCash)
+                      const Padding(
+                        padding: EdgeInsets.only(top: KgweboSpacing.md),
+                        child: DashboardPeriodSelector(),
+                      ),
+                    Padding(
+                      padding: EdgeInsets.fromLTRB(
+                        KgweboSpacing.md,
+                        isCash ? KgweboSpacing.lg : KgweboSpacing.md,
+                        KgweboSpacing.md,
+                        0,
+                      ),
+                      child: _DashboardTabBody(tab: _tab),
+                    ),
+                  ],
                 ),
               ),
-            SliverPadding(
-              padding: EdgeInsets.fromLTRB(
-                KgweboSpacing.md,
-                isOverview ? KgweboSpacing.lg : KgweboSpacing.md,
-                KgweboSpacing.md,
-                KgweboSpacing.xl + bottomInset,
-              ),
-              sliver: SliverToBoxAdapter(child: _DashboardTabBody(tab: _tab)),
             ),
           ],
         ),
@@ -90,27 +99,27 @@ class _DashboardTabBody extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return switch (tab) {
-      DashboardHomeTab.overview => const Column(
+      DashboardHomeTab.cash => const Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          DashboardRecordActions(),
+          SizedBox(height: KgweboSpacing.lg),
           DashboardHero(),
           SizedBox(height: KgweboSpacing.lg),
           DashboardMetrics(),
           SizedBox(height: KgweboSpacing.lg),
-          DashboardInsightsList(),
-          SizedBox(height: KgweboSpacing.lg),
           DashboardRecommendations(),
         ],
       ),
-      DashboardHomeTab.records => const Column(
+      DashboardHomeTab.record => const Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          DashboardQuickActions(),
+          DashboardRecordActions(),
           SizedBox(height: KgweboSpacing.lg),
           DashboardRecent(),
         ],
       ),
-      DashboardHomeTab.outlook => const DashboardOutlook(),
+      DashboardHomeTab.bills => const DashboardBillsTeaser(),
     };
   }
 }

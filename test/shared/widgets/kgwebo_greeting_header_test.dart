@@ -9,7 +9,10 @@ void main() {
       MaterialApp(
         theme: KgweboTheme.light(),
         home: const Scaffold(
-          body: KgweboGreetingHeader(businessName: 'Kgale stall'),
+          body: KgweboGreetingHeader(
+            businessName: 'Kgale stall',
+            subtitle: 'Record your first sale.',
+          ),
         ),
       ),
     );
@@ -26,7 +29,7 @@ void main() {
             .toList();
 
     expect(headlines, contains('Hello, Kgale stall'));
-    expect(find.text(KgweboGreetingHeader.tagline), findsOneWidget);
+    expect(find.text('Record your first sale.'), findsOneWidget);
     expect(find.text('Good morning'), findsNothing);
     expect(find.text('Good afternoon'), findsNothing);
     expect(find.text('Good evening'), findsNothing);

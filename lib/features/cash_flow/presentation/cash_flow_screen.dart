@@ -45,7 +45,7 @@ class CashFlowScreen extends ConsumerWidget {
     final now = DateTime.now().toUtc();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Cash Flow')),
+      appBar: AppBar(title: const Text('Bills')),
       body: SafeArea(
         child: KgweboFilledBody(
           child: RefreshIndicator(
@@ -65,9 +65,9 @@ class CashFlowScreen extends ConsumerWidget {
               ),
               children: [
                 const KgweboSectionHeading(
-                  title: 'Commitments and recorded cash',
+                  title: 'Bills and cash',
                   subtitle:
-                      'Unpaid bills are not expenses and do not reduce current cash until you record a paid expense.',
+                      'Unpaid bills do not reduce cash until you pay them.',
                 ),
                 const SizedBox(height: KgweboSpacing.sm),
                 const KgweboSyncNotice(),
@@ -75,14 +75,14 @@ class CashFlowScreen extends ConsumerWidget {
                   const KgweboStatusBanner(
                     tone: KgweboBannerTone.preview,
                     message:
-                        'Preview cannot save commitments. Sign in to record upcoming bills.',
+                        'Preview cannot save bills. Sign in to record money you still need to pay.',
                   )
                 else if (obligations.isStale)
                   KgweboStatusBanner(
                     tone: KgweboBannerTone.warning,
                     message:
                         obligations.error ??
-                        'Showing saved commitments from this device.',
+                        'Showing saved bills from this device.',
                   ),
                 const SizedBox(height: KgweboSpacing.md),
                 if (!obligations.isPreview && finance.forecast != null) ...[
@@ -98,7 +98,7 @@ class CashFlowScreen extends ConsumerWidget {
                 _EstimateCard(finance: finance),
                 const SizedBox(height: KgweboSpacing.lg),
                 KgweboButton(
-                  label: 'Add a commitment',
+                  label: 'Add a bill',
                   expanded: true,
                   onPressed:
                       obligations.isPreview
@@ -108,15 +108,13 @@ class CashFlowScreen extends ConsumerWidget {
                 ),
                 const SizedBox(height: KgweboSpacing.lg),
                 if (obligations.loading && obligations.items.isEmpty)
-                  const KgweboLoadingState(message: 'Loading commitments')
+                  const KgweboLoadingState(message: 'Loading bills')
                 else if (obligations.items.isEmpty)
                   KgweboEmptyState(
                     icon: Icons.event_outlined,
-                    title: 'No commitments yet',
-                    message:
-                        'Record rent, supplier payments or loan repayments. Kgwebo will not invent upcoming bills.',
-                    actionLabel:
-                        obligations.isPreview ? null : 'Add a commitment',
+                    title: 'No bills yet',
+                    message: 'Add a bill you still need to pay.',
+                    actionLabel: obligations.isPreview ? null : 'Add a bill',
                     onAction:
                         obligations.isPreview
                             ? null
@@ -128,7 +126,7 @@ class CashFlowScreen extends ConsumerWidget {
                   ..._grouped(context, ref, obligations.items, now, zone),
                 const SizedBox(height: KgweboSpacing.lg),
                 Text(
-                  'This outlook does not invent future sales and is not professional accounting, tax or investment advice.',
+                  'This view does not invent future sales.',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(
                     color: KgweboColors.inkMuted,
                     height: 1.45,
@@ -176,7 +174,7 @@ class CashFlowScreen extends ConsumerWidget {
       if (unpaid.isNotEmpty) ...[
         const KgweboSectionHeading(
           title: 'Upcoming',
-          subtitle: 'Saved commitments that have not been paid.',
+          subtitle: 'Saved bills that have not been paid.',
         ),
         const SizedBox(height: KgweboSpacing.sm),
         _ObligationGroup(items: unpaid, asOf: asOf, zone: zone, ref: ref),
@@ -222,6 +220,8 @@ class _EstimateCard extends StatelessWidget {
       child: Text(
         finance.isPreview
             ? 'Sign in to compare recorded cash with upcoming bills.'
+            : finance.loading
+            ? 'Recorded cash will appear here after totals load.'
             : finance.error != null
             ? 'Commitments could not be loaded. This is not a zero-bills result.'
             : 'Recorded cash will appear here after totals load.',

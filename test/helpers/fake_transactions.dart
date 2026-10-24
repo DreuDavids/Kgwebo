@@ -25,11 +25,13 @@ class FakeTransactionRepository implements TransactionRepository {
   AuthFailure? failAfterCreate;
   Duration? createDelay;
   Completer<void>? createGate;
+  Completer<void>? listAllGate;
   bool allowAnyOwner = false;
   int createCalls = 0;
   int updateCalls = 0;
   int deleteCalls = 0;
   int listCalls = 0;
+  int listAllCalls = 0;
   void Function(int count)? onCreateEntered;
   Completer<void>? _enteredCreate;
 
@@ -40,6 +42,11 @@ class FakeTransactionRepository implements TransactionRepository {
     createGate = Completer<void>();
     _enteredCreate = Completer<void>();
     return createGate!;
+  }
+
+  Completer<void> armListAllGate() {
+    listAllGate = Completer<void>();
+    return listAllGate!;
   }
 
   @override
@@ -95,16 +102,31 @@ class FakeTransactionRepository implements TransactionRepository {
   Future<TransactionListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(TransactionListSnapshot cached)? onLocalCache,
   }) async {
-    _throwIfNeeded();
+    listAllCalls += 1;
     _require(ownerId, businessId);
-    return TransactionListSnapshot.remote(
-      items
-          .where(
-            (item) => item.belongsTo(ownerId: ownerId, businessId: businessId),
-          )
-          .toList(),
-    );
+    final owned =
+        items
+            .where(
+              (item) =>
+                  item.belongsTo(ownerId: ownerId, businessId: businessId),
+            )
+            .toList();
+    if (owned.isNotEmpty) {
+      onLocalCache?.call(
+        TransactionListSnapshot(
+          items: owned,
+          origin: TransactionDataOrigin.localCache,
+        ),
+      );
+    }
+    final gate = listAllGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    _throwIfNeeded();
+    return TransactionListSnapshot.remote(owned);
   }
 
   @override

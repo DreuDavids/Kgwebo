@@ -285,7 +285,7 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEdit ? 'Edit commitment' : 'Add a commitment'),
+          title: Text(_isEdit ? 'Edit bill' : 'Add a bill'),
           actions: [
             TextButton(
               onPressed: _saving ? null : _cancel,
@@ -304,16 +304,15 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
     if (session is AppSessionPreview) {
       return const KgweboEmptyState(
         icon: Icons.event_outlined,
-        title: 'Preview cannot save commitments',
-        message:
-            'Sign in to record upcoming bills against your business. Preview does not queue writes.',
+        title: 'Preview cannot save bills',
+        message: 'Sign in to record bills you still need to pay.',
       );
     }
     if (session is! AppSessionReady) {
       return const KgweboEmptyState(
         icon: Icons.lock_outline,
         title: 'Sign in to continue',
-        message: 'Commitments are saved to your authorised business only.',
+        message: 'Bills are saved to your business only.',
       );
     }
     if (_loadingExisting) {
@@ -330,18 +329,12 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const KgweboStatusBanner(
-            tone: KgweboBannerTone.info,
-            message:
-                'A commitment is a planned payment. It does not reduce recorded cash or the operating result until you record an expense.',
-          ),
-          const SizedBox(height: KgweboSpacing.sm),
           KgweboStatusBanner(
             tone: KgweboBannerTone.info,
             message:
                 _isEdit
-                    ? 'Edits and status changes need a live connection. They are not queued offline.'
-                    : 'If the connection fails, a new commitment can wait on this device. It is not saved remotely until the server accepts it.',
+                    ? 'Edits need a live connection. Unpaid bills do not reduce cash until you pay them.'
+                    : 'Unpaid bills do not reduce cash until you pay them. If you are offline, this bill can wait on this device.',
           ),
           const SizedBox(height: KgweboSpacing.md),
           if (_error != null) ...[
@@ -438,7 +431,7 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
                 Text(
                   _status == CommitmentStatus.paid
                       ? 'Marking paid does not record an expense or change cash. Record an expense if money left the business.'
-                      : 'Unpaid commitments stay out of cash and out of the operating result.',
+                      : 'Unpaid bills stay out of cash until you pay them.',
                   style: Theme.of(
                     context,
                   ).textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
@@ -456,7 +449,7 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
           ),
           const SizedBox(height: KgweboSpacing.xl),
           KgweboButton(
-            label: _isEdit ? 'Save changes' : 'Save commitment',
+            label: _isEdit ? 'Save changes' : 'Save bill',
             expanded: true,
             isLoading: _saving,
             onPressed: _saving ? null : _save,

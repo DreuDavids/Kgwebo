@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kgwebo/core/finance/cash_outlook.dart';
 import 'package:kgwebo/core/persistence/kgwebo_database.dart';
@@ -6,6 +8,7 @@ import 'package:kgwebo/core/sync/outbox_store.dart';
 import 'package:kgwebo/features/authentication/domain/auth_failure.dart';
 import 'package:kgwebo/features/obligations/data/cached_obligation_repository.dart';
 import 'package:kgwebo/features/obligations/domain/obligation_draft.dart';
+import 'package:kgwebo/features/obligations/domain/obligation_snapshot.dart';
 
 import '../../helpers/fake_obligations.dart';
 
@@ -85,5 +88,28 @@ void main() {
       await outbox.listOpen(ownerId: 'user-1', businessId: 'biz-1'),
       isEmpty,
     );
+  });
+
+  test('emits confirmed cache before a pending remote read', () async {
+    await ObligationCache(database).upsertConfirmed(sampleObligation());
+    remote.items.add(sampleObligation());
+    remote.armListAllGate();
+    final seen = Completer<ObligationListSnapshot>();
+    final pending = repository.listAllConfirmed(
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      onLocalCache: (cached) {
+        if (!seen.isCompleted) {
+          seen.complete(cached);
+        }
+      },
+    );
+    final local = await seen.future.timeout(const Duration(seconds: 2));
+    expect(local.isStale, isTrue);
+    expect(local.refreshError, isNull);
+    expect(local.items.single.title, 'Shop rent');
+    remote.listAllGate!.complete();
+    final snapshot = await pending;
+    expect(snapshot.isStale, isFalse);
   });
 }

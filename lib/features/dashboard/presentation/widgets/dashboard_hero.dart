@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 
-import '../../../../app/routes.dart';
 import '../../../../core/money/money_formatter.dart';
 import '../../../../shared/widgets/kgwebo_hero_card.dart';
 import '../../application/dashboard_finance_controller.dart';
@@ -16,34 +14,15 @@ class DashboardHero extends ConsumerWidget {
     final summary = state.summary;
     final period =
         state.periodLabel.isEmpty ? 'this period' : state.periodLabel;
-    final actions = [
-      KgweboCircleAction(
-        icon: Icons.add_card_outlined,
-        label: 'Sale',
-        emphasized: true,
-        onTap: () => context.pushNamed(AppRoutes.recordSaleName),
-      ),
-      KgweboCircleAction(
-        icon: Icons.outbox_outlined,
-        label: 'Expense',
-        onTap: () => context.pushNamed(AppRoutes.recordExpenseName),
-      ),
-      KgweboCircleAction(
-        icon: Icons.receipt_long_outlined,
-        label: 'Activity',
-        onTap: () => context.goNamed(AppRoutes.transactionsName),
-      ),
-    ];
 
     if (state.loading && summary == null && !state.isPreview) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          KgweboHeroCard(
-            label: 'Your cash',
+          const KgweboHeroCard(
+            label: 'Cash on hand',
             value: '…',
             caption: 'Loading recorded cash. This is not a zero result.',
-            actions: actions,
           ),
           const SizedBox(height: 12),
           KgweboHighlightCard(
@@ -60,17 +39,16 @@ class DashboardHero extends ConsumerWidget {
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           KgweboHeroCard(
-            label: 'Your cash',
+            label: 'Cash on hand',
             value: '—',
             caption:
                 state.isPreview
                     ? 'Not live data. Sign in to use recorded cash.'
                     : '${state.error ?? 'Totals could not be loaded.'} This is not a zero result.',
-            actions: actions,
           ),
           const SizedBox(height: 12),
           KgweboHighlightCard(
-            label: 'Sales this period',
+            label: 'Sales · $period',
             value: '—',
             caption:
                 state.isPreview
@@ -85,14 +63,13 @@ class DashboardHero extends ConsumerWidget {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         KgweboHeroCard(
-          label: 'Your cash',
+          label: 'Cash on hand',
           value: MoneyFormatter.formatMinor(
             summary.currentCashMinor,
             currencyCode: summary.currencyCode,
           ),
           caption:
-              'Opening cash plus paid inflows minus paid outflows. Unpaid rows and upcoming bills are excluded.',
-          actions: actions,
+              'Opening cash plus money in, minus money out. Unpaid bills are not included.',
         ),
         const SizedBox(height: 12),
         KgweboHighlightCard(
@@ -101,8 +78,7 @@ class DashboardHero extends ConsumerWidget {
             summary.recordedSalesMinor,
             currencyCode: summary.currencyCode,
           ),
-          caption:
-              'Sales in $period. Unpaid sales are included here, not in cash.',
+          caption: 'Sales in $period. Unpaid sales are not cash yet.',
           sparkline: state.salesSparkline,
         ),
       ],

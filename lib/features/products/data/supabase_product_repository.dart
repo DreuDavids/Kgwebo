@@ -35,6 +35,7 @@ class SupabaseProductRepository implements ProductRepository {
   Future<ProductListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ProductListSnapshot cached)? onLocalCache,
   }) async {
     _requireOwner(ownerId);
     try {

@@ -251,6 +251,17 @@ Verification executed 21 Oct 2026:
 - Emulator QA: 12-item checklist recorded in `docs/TEST_PLAN.md` section 8b. Item 6 (timeout after commit on device) is **NOT TESTED**. Action-required queue state was **NOT TESTED** on device.
 - Phase 8 offline writes are **not** completely verified. Report PDF remains outstanding.
 
+### Offline reopen UX polish (24 Oct 2026)
+
+- Confirmed `listAllConfirmed` reads emit owner-scoped Drift cache through `onLocalCache` before waiting on Supabase. Dashboard finance and Cash Flow publish that cache immediately, label it stale until the remote snapshot succeeds, and keep it when refresh fails. Pending outbox rows stay out of cash, sales, operating results and forecasts.
+- Settings → Pending changes sits in a filled body with wrapping status/action controls so “Review pending changes” is not clipped on a compact 320×568 shell.
+- Tests: Completer-gated cache-first dashboard/Cash Flow cases, owner isolation while remote is pending, Settings layout at 320×568 and 1024×768.
+- This pass did **not** repeat physical-device QA or timeout-after-commit device testing. Report PDF was not implemented.
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (384)
+- `flutter build apk --debug --dart-define-from-file=.env` — `E:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (122,812,093 bytes, 24 Oct 2026 18:27)
+
 ### Reports (not in this slice)
 
 - In-app report from the engine and PDF export/share remain the placeholder on Reports. They are not rebuilt here.

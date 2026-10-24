@@ -21,6 +21,17 @@ class TransactionListSnapshot {
     );
   }
 
+  factory TransactionListSnapshot.fromCache(
+    List<BusinessTransaction> items, {
+    bool hasMore = false,
+  }) {
+    return TransactionListSnapshot(
+      items: items,
+      origin: TransactionDataOrigin.localCache,
+      hasMore: hasMore,
+    );
+  }
+
   factory TransactionListSnapshot.stale({
     required List<BusinessTransaction> items,
     required String refreshError,

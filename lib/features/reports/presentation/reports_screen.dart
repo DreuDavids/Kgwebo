@@ -12,12 +12,10 @@ class ReportsScreen extends StatelessWidget {
     return FeaturePlaceholderPage(
       title: 'Reports',
       icon: Icons.description_outlined,
-      headline: 'Reports will match the engine',
+      headline: 'Reports are coming',
       message:
-          'You will preview and export a business summary whose figures come from '
-          'the same calculations as the dashboard. PDF export is a later phase. '
-          'Nothing is generated in this build.',
-      actionLabel: 'Back to dashboard',
+          'They will use the same figures as Home. Nothing is generated in this build.',
+      actionLabel: 'Back to Home',
       onAction: () => context.goNamed(AppRoutes.dashboardName),
     );
   }

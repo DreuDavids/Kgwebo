@@ -6,6 +6,7 @@ abstract class ObligationRepository {
   Future<ObligationListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ObligationListSnapshot cached)? onLocalCache,
   });
 
   Future<BusinessObligation?> findById({

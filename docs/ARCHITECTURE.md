@@ -107,7 +107,7 @@ Atomic remote operations (product sale + line items + stock movement) use a Post
 
 **Supabase is authoritative** for confirmed remote business data. Drift is a confirmed-read cache.
 
-1. Load prefers a confirmed owner-scoped cache for an immediate display, then refreshes from Supabase.
+1. Load prefers a confirmed owner-scoped cache for an immediate display, then refreshes from Supabase. `listAllConfirmed` invokes `onLocalCache` with Drift rows, if any, before the network wait. The dashboard and Cash Flow show that cache immediately and do not treat it as current server-confirmed data.
 2. A successful remote read or write upserts the server representation into Drift (`syncStatus = confirmed`).
 3. A failed remote read keeps the last confirmed cache and marks it **stale**. It does not invent a business and does not treat a missing cache as “business does not exist” when the failure is retryable.
 4. **Edits require a successful remote update.** There is no pending-write queue in this phase. Save always attempts Supabase; the request result is the connectivity check. A failed save leaves the confirmed cache unchanged and keeps the form values for retry.

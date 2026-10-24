@@ -17,6 +17,13 @@ class ProductListSnapshot {
     );
   }
 
+  factory ProductListSnapshot.fromCache(List<CatalogProduct> items) {
+    return ProductListSnapshot(
+      items: items,
+      origin: InventoryDataOrigin.localCache,
+    );
+  }
+
   factory ProductListSnapshot.stale({
     required List<CatalogProduct> items,
     required String refreshError,

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kgwebo/core/finance/ledger_entry.dart';
 import 'package:kgwebo/core/persistence/kgwebo_database.dart';
@@ -8,6 +10,7 @@ import 'package:kgwebo/features/authentication/domain/auth_failure.dart';
 import 'package:kgwebo/features/transactions/data/cached_transaction_repository.dart';
 import 'package:kgwebo/features/transactions/domain/payment_method.dart';
 import 'package:kgwebo/features/transactions/domain/transaction_draft.dart';
+import 'package:kgwebo/features/transactions/domain/transaction_snapshot.dart';
 
 import '../../helpers/fake_transactions.dart';
 
@@ -136,6 +139,53 @@ void main() {
       await outbox.listOpen(ownerId: 'user-1', businessId: 'biz-1'),
       isEmpty,
     );
+  });
+
+  test('emits confirmed cache before a pending remote read', () async {
+    await TransactionCache(database).upsertConfirmed(sampleSale());
+    remote.items.add(sampleSale());
+    remote.armListAllGate();
+    final seen = Completer<TransactionListSnapshot>();
+    final pending = repository.listAllConfirmed(
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      onLocalCache: (cached) {
+        if (!seen.isCompleted) {
+          seen.complete(cached);
+        }
+      },
+    );
+    final local = await seen.future.timeout(const Duration(seconds: 2));
+    expect(local.isStale, isTrue);
+    expect(local.refreshError, isNull);
+    expect(local.items.single.id, 'tx-sale');
+    remote.listAllGate!.complete();
+    final snapshot = await pending;
+    expect(snapshot.isStale, isFalse);
+    expect(snapshot.items.single.id, 'tx-sale');
+  });
+
+  test('cache callback stays owner-scoped while remote is pending', () async {
+    await TransactionCache(database).upsertConfirmed(sampleSale());
+    await TransactionCache(database).upsertConfirmed(
+      sampleSale(id: 'tx-b', ownerId: 'user-b', businessId: 'biz-b'),
+    );
+    remote.allowAnyOwner = true;
+    remote.armListAllGate();
+    final seen = Completer<TransactionListSnapshot>();
+    final pending = repository.listAllConfirmed(
+      ownerId: 'user-1',
+      businessId: 'biz-1',
+      onLocalCache: (cached) {
+        if (!seen.isCompleted) {
+          seen.complete(cached);
+        }
+      },
+    );
+    final local = await seen.future.timeout(const Duration(seconds: 2));
+    expect(local.items.map((item) => item.id), ['tx-sale']);
+    remote.listAllGate!.complete();
+    await pending;
   });
 
   test('owner mismatch does not enqueue another account\'s write', () async {

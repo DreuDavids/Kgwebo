@@ -126,6 +126,7 @@ class SupabaseTransactionRepository implements TransactionRepository {
   Future<TransactionListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(TransactionListSnapshot cached)? onLocalCache,
   }) async {
     _requireOwner(ownerId);
     try {

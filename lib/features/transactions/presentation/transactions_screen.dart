@@ -60,10 +60,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: const Text('Money'),
         actions: [
           PopupMenuButton<String>(
-            tooltip: 'Record another movement',
+            tooltip: 'More money types',
             onSelected: (value) {
               switch (value) {
                 case 'refund':
@@ -84,11 +84,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   ),
                   PopupMenuItem(
                     value: 'contribution',
-                    child: Text('Owner contribution'),
+                    child: Text('Money you put in'),
                   ),
                   PopupMenuItem(
                     value: 'withdrawal',
-                    child: Text('Owner withdrawal'),
+                    child: Text('Money you took out'),
                   ),
                 ],
           ),
@@ -107,7 +107,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                 ),
                 child: KgweboTextField(
                   controller: _searchController,
-                  label: 'Search transactions',
+                  label: 'Search sales or expenses',
                   hint: 'Category or note',
                   prefixIcon: Icons.search,
                   textInputAction: TextInputAction.search,
@@ -162,9 +162,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     if (session is AppSessionPreview) {
       return const KgweboEmptyState(
         icon: Icons.receipt_long_outlined,
-        title: 'No live transaction history',
-        message:
-            'Preview mode does not mix sample rows with a real account. Sign in to record sales and expenses.',
+        title: 'No live money history',
+        message: 'Sign in to record sales and expenses.',
       );
     }
     if (state.loading && state.items.isEmpty) {
@@ -173,7 +172,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     if (state.error != null && state.items.isEmpty) {
       return KgweboEmptyState(
         icon: Icons.cloud_off_outlined,
-        title: 'Could not load transactions',
+        title: 'Could not load money',
         message: state.error!,
         actionLabel: 'Retry',
         onAction:
@@ -183,9 +182,9 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     if (state.items.isEmpty) {
       return KgweboEmptyState(
         icon: Icons.receipt_long_outlined,
-        title: 'No transactions yet',
+        title: 'No money recorded yet',
         message:
-            'Record a sale or an expense to start your history. Opening cash is not listed here because it is a starting balance, not a transaction.',
+            'Record a sale or an expense. Opening cash is a starting balance, so it is not listed here.',
         actionLabel: 'Record a sale',
         onAction: () => context.pushNamed(AppRoutes.recordSaleName),
       );

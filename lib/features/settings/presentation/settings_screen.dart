@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -22,9 +23,7 @@ class SettingsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
-      body: const SafeArea(
-        child: KgweboContentConstraint(child: _SettingsBody()),
-      ),
+      body: const SafeArea(child: KgweboFilledBody(child: _SettingsBody())),
     );
   }
 }
@@ -51,53 +50,55 @@ class _SettingsBody extends ConsumerWidget {
         ),
         const SizedBox(height: KgweboSpacing.xxs),
         Text(
-          'Account, session and environment. Working actions only.',
+          'Account, pending changes, and your business.',
           style: textTheme.bodyMedium?.copyWith(color: KgweboColors.inkMuted),
         ),
         const SizedBox(height: KgweboSpacing.lg),
-        const _AccountCard(),
-        const SizedBox(height: KgweboSpacing.md),
         const _PendingChangesCard(),
         const SizedBox(height: KgweboSpacing.md),
+        const _AccountCard(),
+        const SizedBox(height: KgweboSpacing.md),
         const _BusinessProfileCard(),
-        const SizedBox(height: KgweboSpacing.md),
-        _InfoCard(
-          title: 'Runtime',
-          rows: [
-            ('Environment', config.environment.name),
-            ('Mode', _modeLabel(config.runtimeMode)),
-            (
-              'Backend session',
-              config.connectsToBackend
-                  ? 'Supabase client initialised'
-                  : 'Not opened',
-            ),
-          ],
-        ),
-        const SizedBox(height: KgweboSpacing.md),
-        _InfoCard(
-          title: 'Configuration',
-          rows: [
-            (
-              'Supabase URL',
-              config.supabaseUrl == null ? 'Missing' : 'Present',
-            ),
-            (
-              'Publishable key',
-              config.hasSupabaseAnonKey ? 'Present' : 'Missing',
-            ),
-            (
-              'Ready for live backend',
-              config.isBackendConfigured ? 'Yes' : 'No',
-            ),
-          ],
-        ),
-        if (config.issues.isNotEmpty) ...[
+        if (kDebugMode) ...[
           const SizedBox(height: KgweboSpacing.md),
           _InfoCard(
-            title: 'What to fix',
-            rows: [for (final issue in config.issues) ('Issue', issue)],
+            title: 'Runtime',
+            rows: [
+              ('Environment', config.environment.name),
+              ('Mode', _modeLabel(config.runtimeMode)),
+              (
+                'Backend session',
+                config.connectsToBackend
+                    ? 'Supabase client initialised'
+                    : 'Not opened',
+              ),
+            ],
           ),
+          const SizedBox(height: KgweboSpacing.md),
+          _InfoCard(
+            title: 'Configuration',
+            rows: [
+              (
+                'Supabase URL',
+                config.supabaseUrl == null ? 'Missing' : 'Present',
+              ),
+              (
+                'Publishable key',
+                config.hasSupabaseAnonKey ? 'Present' : 'Missing',
+              ),
+              (
+                'Ready for live backend',
+                config.isBackendConfigured ? 'Yes' : 'No',
+              ),
+            ],
+          ),
+          if (config.issues.isNotEmpty) ...[
+            const SizedBox(height: KgweboSpacing.md),
+            _InfoCard(
+              title: 'What to fix',
+              rows: [for (final issue in config.issues) ('Issue', issue)],
+            ),
+          ],
         ],
       ],
     );
@@ -195,27 +196,44 @@ class _PendingChangesCard extends ConsumerWidget {
             : waiting > 0
             ? '$waiting waiting to sync'
             : 'Nothing waiting';
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _InfoCard(
-          title: 'Pending changes',
-          rows: [
-            ('Status', status),
-            (
-              'What this means',
-              'Queued sales and commitments stay on this device until the server accepts them. They are not confirmed cash.',
-            ),
-          ],
-        ),
-        const SizedBox(height: KgweboSpacing.sm),
-        KgweboButton(
-          label: 'Review pending changes',
-          expanded: true,
-          variant: KgweboButtonVariant.secondary,
-          onPressed: () => context.pushNamed(AppRoutes.syncQueueName),
-        ),
-      ],
+    final textTheme = Theme.of(context).textTheme;
+    return KgweboSoftCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Text(
+            'Pending changes',
+            style: textTheme.titleMedium?.copyWith(color: KgweboColors.ink),
+          ),
+          const SizedBox(height: KgweboSpacing.sm),
+          Wrap(
+            spacing: KgweboSpacing.sm,
+            runSpacing: KgweboSpacing.xs,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: [
+              Text(
+                'Status',
+                style: textTheme.labelMedium?.copyWith(
+                  color: KgweboColors.inkMuted,
+                ),
+              ),
+              Text(status, style: textTheme.bodyLarge),
+            ],
+          ),
+          const SizedBox(height: KgweboSpacing.sm),
+          Text(
+            'Queued sales and commitments stay on this device until the server accepts them. They are not confirmed cash.',
+            style: textTheme.bodyMedium?.copyWith(color: KgweboColors.inkMuted),
+          ),
+          const SizedBox(height: KgweboSpacing.md),
+          KgweboButton(
+            label: 'Review pending changes',
+            expanded: true,
+            variant: KgweboButtonVariant.secondary,
+            onPressed: () => context.pushNamed(AppRoutes.syncQueueName),
+          ),
+        ],
+      ),
     );
   }
 }

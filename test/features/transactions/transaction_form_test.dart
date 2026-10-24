@@ -131,14 +131,14 @@ void main() {
   testWidgets('expense form is labelled as an expense', (tester) async {
     await pumpForm(tester, type: MoneyMovementType.expense);
     expect(find.text('Record an expense'), findsOneWidget);
-    expect(find.textContaining('operating expense'), findsOneWidget);
+    expect(find.textContaining('this expense can wait'), findsOneWidget);
   });
 
   testWidgets('adding a product records one inventory sale', (tester) async {
     final products = FakeProductRepository(products: [sampleProduct()]);
     final transactions = await pumpForm(tester, products: products);
-    await tester.ensureVisible(find.text('Add product'));
-    await tester.tap(find.text('Add product'));
+    await tester.ensureVisible(find.text('What did you sell?'));
+    await tester.tap(find.text('What did you sell?'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tomatoes'));
     await tester.pumpAndSettle();

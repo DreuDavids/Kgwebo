@@ -85,8 +85,6 @@ void main() {
   testWidgets('preview dashboard does not show live totals', (tester) async {
     await pumpKgweboApp(tester);
     expect(find.textContaining('labelled preview'), findsOneWidget);
-    expect(find.text('Overview'), findsOneWidget);
-    await selectDashboardTab(tester, 'Records');
     expect(find.text('Record a sale'), findsOneWidget);
   });
 
@@ -176,12 +174,12 @@ void main() {
     );
     expect(find.text('P 2,000.00'), findsWidgets);
     expect(find.text('P 0.00'), findsWidgets);
-    await selectDashboardTab(tester, 'Outlook');
+    await selectDashboardTab(tester, 'Bills');
     await tester.ensureVisible(
       find.textContaining('Estimated cash after known commitments'),
     );
     expect(find.text('P 1,200.00'), findsWidgets);
-    expect(find.text('Shop rent'), findsOneWidget);
+    expect(find.text('Shop rent'), findsWidgets);
     expect(
       find.textContaining('Recorded cash P 2,000.00 is unchanged'),
       findsOneWidget,
@@ -207,10 +205,8 @@ void main() {
     );
     expect(find.text('P 2,000.00'), findsWidgets);
     expect(find.text('P 0.00'), findsWidgets);
-    await selectDashboardTab(tester, 'Outlook');
-    await tester.ensureVisible(
-      find.textContaining('Estimated cash after known commitments'),
-    );
+    await selectDashboardTab(tester, 'Bills');
+    await tester.ensureVisible(find.text('Bills coming due'));
     expect(find.text('P 1,200.00'), findsNothing);
     expect(find.text('Shop rent'), findsNothing);
   });
@@ -252,15 +248,12 @@ void main() {
     );
     expect(find.text('P 2,500.00'), findsWidgets);
     expect(find.textContaining('Check your connection'), findsOneWidget);
+    await selectDashboardTab(tester, 'Bills');
     expect(
       find.textContaining('Estimated cash after known commitments'),
       findsNothing,
     );
-    await selectDashboardTab(tester, 'Outlook');
-    expect(
-      find.textContaining('Estimated cash after known commitments'),
-      findsNothing,
-    );
+    await tester.ensureVisible(find.textContaining('not a zero-bills result'));
     expect(find.textContaining('not a zero-bills result'), findsOneWidget);
   });
 
@@ -297,7 +290,8 @@ void main() {
       obligations: obligations,
     );
     expect(find.text('P 2,000.00'), findsWidgets);
-    await selectDashboardTab(tester, 'Outlook');
+    await selectDashboardTab(tester, 'Bills');
+    await tester.ensureVisible(find.text('Bills coming due'));
     expect(find.text('P 1,200.00'), findsNothing);
     expect(find.text('Shop rent'), findsNothing);
   });
@@ -316,7 +310,9 @@ void main() {
     expect(find.textContaining('Inventory value is not cash'), findsOneWidget);
   });
 
-  testWidgets('home tabs split overview, records and outlook', (tester) async {
+  testWidgets('home tabs keep cash short and teach record and bills', (
+    tester,
+  ) async {
     final obligations =
         FakeObligationRepository()
           ..items.add(
@@ -328,22 +324,25 @@ void main() {
       obligations: obligations,
     );
 
-    expect(find.text('Your cash'), findsOneWidget);
-    expect(find.text('Record a sale'), findsNothing);
-    expect(
-      find.textContaining('Estimated cash after known commitments'),
-      findsNothing,
-    );
-
-    await selectDashboardTab(tester, 'Records');
+    expect(find.text('Cash'), findsOneWidget);
+    expect(find.text('Record'), findsOneWidget);
+    expect(find.text('Bills'), findsOneWidget);
+    expect(find.text('See what you have, then add a sale.'), findsOneWidget);
+    expect(find.text('Cash on hand'), findsOneWidget);
     expect(find.text('Record a sale'), findsOneWidget);
-    expect(find.text('Your cash'), findsNothing);
+    expect(find.text('Bills coming due'), findsNothing);
 
-    await selectDashboardTab(tester, 'Outlook');
+    await selectDashboardTab(tester, 'Record');
+    expect(find.text('Add a sale or expense.'), findsOneWidget);
+    expect(find.text('Recent money'), findsOneWidget);
+    expect(find.text('Record a sale'), findsOneWidget);
+
+    await selectDashboardTab(tester, 'Bills');
+    expect(find.text('See bills you still need to pay.'), findsOneWidget);
+    expect(find.text('Bills coming due'), findsOneWidget);
     expect(
       find.textContaining('Estimated cash after known commitments'),
       findsOneWidget,
     );
-    expect(find.text('Record a sale'), findsNothing);
   });
 }

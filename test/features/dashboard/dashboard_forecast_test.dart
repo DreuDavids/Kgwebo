@@ -7,6 +7,7 @@ import 'package:kgwebo/features/authentication/application/session_controller.da
 import 'package:kgwebo/features/authentication/domain/app_session.dart';
 import 'package:kgwebo/features/authentication/domain/auth_failure.dart';
 import 'package:kgwebo/features/authentication/domain/auth_user.dart';
+import 'package:kgwebo/features/cash_flow/presentation/cash_flow_screen.dart';
 import 'package:kgwebo/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:kgwebo/features/onboarding/domain/business_profile.dart';
 
@@ -38,6 +39,7 @@ void main() {
     WidgetTester tester, {
     FakeObligationRepository? obligations,
     FakeRecommendationRepository? recommendations,
+    Widget home = const DashboardScreen(),
   }) async {
     await setSurface(tester, const Size(360, 800));
     await tester.pumpWidget(
@@ -70,10 +72,7 @@ void main() {
             (ref) => recommendations ?? FakeRecommendationRepository(),
           ),
         ],
-        child: MaterialApp(
-          theme: KgweboTheme.light(),
-          home: const DashboardScreen(),
-        ),
+        child: MaterialApp(theme: KgweboTheme.light(), home: home),
       ),
     );
     await tester.pumpAndSettle();
@@ -87,9 +86,12 @@ void main() {
     final obligations =
         FakeObligationRepository()
           ..items.add(sampleObligation(amount: 80000, dueOn: dueBeyondSeven));
-    await pumpDashboard(tester, obligations: obligations);
-    await selectDashboardTab(tester, 'Outlook');
-    await tester.drag(find.byType(CustomScrollView), const Offset(0, 1200));
+    await pumpDashboard(
+      tester,
+      obligations: obligations,
+      home: const CashFlowScreen(),
+    );
+    await tester.drag(find.byType(ListView), const Offset(0, 400));
     await tester.pumpAndSettle();
     await tester.ensureVisible(find.text('7 days'));
     await tester.pumpAndSettle();

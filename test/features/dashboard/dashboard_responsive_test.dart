@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:kgwebo/app/routes.dart';
 import 'package:kgwebo/features/dashboard/presentation/dashboard_screen.dart';
+import 'package:kgwebo/features/more/presentation/more_screen.dart';
 import 'package:kgwebo/features/shell/compact_navigation.dart';
 import 'package:kgwebo/features/shell/rail_navigation.dart';
 import 'package:kgwebo/shared/widgets/kgwebo_brand_mark.dart';
@@ -38,14 +39,16 @@ void main() {
       expect(overflows, isEmpty, reason: overflows.join('\n'));
       expect(find.byType(ErrorWidget), findsNothing);
       expect(find.byType(DashboardScreen), findsOneWidget);
-      expect(find.text('Overview'), findsOneWidget);
-      expect(find.text('Records'), findsOneWidget);
-      expect(find.text('Outlook'), findsOneWidget);
+      expect(find.text('Cash'), findsOneWidget);
+      expect(find.text('Record'), findsOneWidget);
+      expect(find.text('Record a sale'), findsOneWidget);
+      expect(find.text('Cash on hand'), findsOneWidget);
 
-      await selectDashboardTab(tester, 'Outlook');
+      await selectDashboardTab(tester, 'Bills');
+      await tester.ensureVisible(find.text('Bills coming due'));
       expect(tester.takeException(), isNull);
       expect(overflows, isEmpty, reason: overflows.join('\n'));
-      expect(find.textContaining('Know whether cash covers'), findsOneWidget);
+      expect(find.text('Bills coming due'), findsOneWidget);
 
       final width = profile.$2.width;
       if (width < 600) {
@@ -56,7 +59,7 @@ void main() {
         expect(
           find.descendant(
             of: find.byType(CompactNavigation),
-            matching: find.text('Cash Flow'),
+            matching: find.text('Bills'),
           ),
           findsNothing,
         );
@@ -64,8 +67,8 @@ void main() {
         expect(find.byType(RailNavigation), findsOneWidget);
         expect(find.byType(NavigationRail), findsOneWidget);
         expect(find.byType(CompactNavigation), findsNothing);
-        expect(find.text('Dashboard'), findsWidgets);
-        expect(find.text('Cash Flow'), findsWidgets);
+        expect(find.text('Home'), findsWidgets);
+        expect(find.text('Bills'), findsWidgets);
         expect(find.text('Settings'), findsWidgets);
       }
     });
@@ -76,12 +79,18 @@ void main() {
 
     await tester.tap(find.text('More'));
     await tester.pumpAndSettle();
-    expect(find.text('Further destinations'), findsOneWidget);
+    expect(find.text('Everything else'), findsOneWidget);
+    expect(find.text('Money you still need to pay'), findsOneWidget);
 
-    await tester.tap(find.text('Cash Flow'));
+    await tester.tap(
+      find.descendant(
+        of: find.byType(MoreScreen),
+        matching: find.text('Bills'),
+      ),
+    );
     await tester.pumpAndSettle();
     expect(
-      find.textContaining('Commitments and recorded cash'),
+      find.textContaining('Unpaid bills do not reduce cash'),
       findsOneWidget,
     );
   });
@@ -111,12 +120,9 @@ void main() {
   ) async {
     await pumpKgweboApp(tester, size: const Size(320, 568));
 
-    await selectDashboardTab(tester, 'Records');
     await tester.ensureVisible(find.text('Record a sale'));
     expect(find.text('Record a sale'), findsOneWidget);
     expect(find.text('Record an expense'), findsOneWidget);
-    expect(find.text('Add a product'), findsOneWidget);
-    expect(find.text('View transactions'), findsOneWidget);
     expect(find.byType(CompactNavigation), findsOneWidget);
   });
 
@@ -131,7 +137,7 @@ void main() {
     await setSurface(tester, const Size(1024, 768));
     await tester.pumpAndSettle();
 
-    expect(find.text('Transactions'), findsWidgets);
+    expect(find.text('Money'), findsWidgets);
     expect(find.text('pending transport cost'), findsOneWidget);
     expect(find.byType(NavigationRail), findsOneWidget);
   });

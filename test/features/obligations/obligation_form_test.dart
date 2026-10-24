@@ -77,8 +77,8 @@ void main() {
   testWidgets('form validates empty amount', (tester) async {
     await pumpForm(tester);
     await tester.enterText(find.byType(TextField).first, 'Shop rent');
-    await tester.ensureVisible(find.text('Save commitment'));
-    await tester.tap(find.text('Save commitment'));
+    await tester.ensureVisible(find.text('Save bill'));
+    await tester.tap(find.text('Save bill'));
     await tester.pumpAndSettle();
     expect(
       find.text(
@@ -92,8 +92,8 @@ void main() {
     final repository = await pumpForm(tester);
     await tester.enterText(find.byType(TextField).first, 'Shop rent');
     await tester.enterText(find.byType(TextField).at(1), '800.00');
-    await tester.ensureVisible(find.text('Save commitment'));
-    await tester.tap(find.text('Save commitment'));
+    await tester.ensureVisible(find.text('Save bill'));
+    await tester.tap(find.text('Save bill'));
     await tester.pumpAndSettle();
     expect(repository.createCalls, 1);
     expect(repository.items.single.amountMinor, 80000);
@@ -109,9 +109,9 @@ void main() {
     await pumpForm(tester, repository: repository);
     await tester.enterText(find.byType(TextField).first, 'Shop rent');
     await tester.enterText(find.byType(TextField).at(1), '800.00');
-    await tester.ensureVisible(find.text('Save commitment'));
-    await tester.tap(find.text('Save commitment'));
-    await tester.tap(find.text('Save commitment'));
+    await tester.ensureVisible(find.text('Save bill'));
+    await tester.tap(find.text('Save bill'));
+    await tester.tap(find.text('Save bill'));
     await tester.pumpAndSettle();
     expect(repository.createCalls, 1);
     expect(repository.items, hasLength(1));
@@ -134,8 +134,8 @@ void main() {
     addTearDown(() => FlutterError.onError = original);
 
     await pumpForm(tester, size: const Size(320, 568));
-    expect(find.textContaining('commitment'), findsWidgets);
-    expect(find.text('Save commitment'), findsOneWidget);
+    expect(find.textContaining('bill'), findsWidgets);
+    expect(find.text('Save bill'), findsOneWidget);
     expect(overflows, isEmpty);
   });
 }

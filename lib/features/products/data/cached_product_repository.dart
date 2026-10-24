@@ -28,8 +28,16 @@ class CachedProductRepository implements ProductRepository {
   Future<ProductListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ProductListSnapshot cached)? onLocalCache,
   }) async {
     _requireOwner(ownerId);
+    final cached = await _cache.listProducts(
+      ownerId: ownerId,
+      businessId: businessId,
+    );
+    if (cached.isNotEmpty) {
+      onLocalCache?.call(ProductListSnapshot.fromCache(cached));
+    }
     try {
       final remote = await _remote.listAllConfirmed(
         ownerId: ownerId,
@@ -45,10 +53,6 @@ class CachedProductRepository implements ProductRepository {
       if (!error.isRetryable) {
         rethrow;
       }
-      final cached = await _cache.listProducts(
-        ownerId: ownerId,
-        businessId: businessId,
-      );
       if (cached.isEmpty) {
         rethrow;
       }

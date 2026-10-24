@@ -35,25 +35,17 @@ extension AppDestinationX on AppDestination {
   };
 
   String get label => switch (this) {
-    AppDestination.dashboard => 'Dashboard',
-    AppDestination.transactions => 'Transactions',
-    AppDestination.products => 'Products',
-    AppDestination.cashFlow => 'Cash Flow',
+    AppDestination.dashboard => 'Home',
+    AppDestination.transactions => 'Money',
+    AppDestination.products => 'Stock',
+    AppDestination.cashFlow => 'Bills',
     AppDestination.reports => 'Reports',
     AppDestination.settings => 'Settings',
     AppDestination.more => 'More',
   };
 
-  /// Short compact-bar label. Semantics still use [label].
-  String get compactLabel => switch (this) {
-    AppDestination.dashboard => 'Home',
-    AppDestination.transactions => 'Activity',
-    AppDestination.products => 'Products',
-    AppDestination.more => 'More',
-    AppDestination.cashFlow ||
-    AppDestination.reports ||
-    AppDestination.settings => label,
-  };
+  /// Compact bar uses the same words as the rail so labels never split.
+  String get compactLabel => label;
 
   IconData get icon => switch (this) {
     AppDestination.dashboard => Icons.dashboard_outlined,

@@ -13,6 +13,7 @@ class KgweboPillRow extends StatelessWidget {
     this.subtitle,
     this.trailingLabel,
     this.trailingFilled = false,
+    this.showChevron = false,
     this.onTap,
   });
 
@@ -21,6 +22,7 @@ class KgweboPillRow extends StatelessWidget {
   final String? subtitle;
   final String? trailingLabel;
   final bool trailingFilled;
+  final bool showChevron;
   final VoidCallback? onTap;
 
   @override
@@ -73,6 +75,9 @@ class KgweboPillRow extends StatelessWidget {
           if (trailingLabel != null) ...[
             const SizedBox(width: KgweboSpacing.sm),
             _TrailingChip(label: trailingLabel!, filled: trailingFilled),
+          ] else if (showChevron) ...[
+            const SizedBox(width: KgweboSpacing.sm),
+            const Icon(Icons.chevron_right, color: KgweboColors.inkMuted),
           ],
         ],
       ),

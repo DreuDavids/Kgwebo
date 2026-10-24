@@ -35,6 +35,7 @@ class PreviewTransactionRepository implements TransactionRepository {
   Future<TransactionListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(TransactionListSnapshot cached)? onLocalCache,
   }) async {
     return const TransactionListSnapshot(
       items: [],

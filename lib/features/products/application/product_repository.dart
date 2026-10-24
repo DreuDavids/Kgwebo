@@ -24,6 +24,7 @@ abstract class ProductRepository {
   Future<ProductListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ProductListSnapshot cached)? onLocalCache,
   });
 
   Future<CatalogProduct?> findById({

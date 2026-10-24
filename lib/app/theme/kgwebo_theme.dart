@@ -132,6 +132,7 @@ abstract final class KgweboTheme {
       chipTheme: ChipThemeData(
         backgroundColor: KgweboColors.surfaceMuted,
         selectedColor: KgweboColors.lime,
+        showCheckmark: false,
         labelStyle: textTheme.labelMedium?.copyWith(color: KgweboColors.ink),
         shape: pill,
         side: BorderSide.none,

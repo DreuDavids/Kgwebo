@@ -44,8 +44,8 @@ String titleForType(MoneyMovementType type) {
     MoneyMovementType.sale => 'Record a sale',
     MoneyMovementType.expense => 'Record an expense',
     MoneyMovementType.refund => 'Record a refund',
-    MoneyMovementType.ownerContribution => 'Record an owner contribution',
-    MoneyMovementType.ownerWithdrawal => 'Record an owner withdrawal',
+    MoneyMovementType.ownerContribution => 'Money you put in',
+    MoneyMovementType.ownerWithdrawal => 'Money you took out',
   };
 }
 
@@ -54,7 +54,7 @@ String editTitleForType(MoneyMovementType type) {
     MoneyMovementType.sale => 'Edit sale',
     MoneyMovementType.expense => 'Edit expense',
     MoneyMovementType.refund => 'Edit refund',
-    MoneyMovementType.ownerContribution => 'Edit owner contribution',
-    MoneyMovementType.ownerWithdrawal => 'Edit owner withdrawal',
+    MoneyMovementType.ownerContribution => 'Edit money you put in',
+    MoneyMovementType.ownerWithdrawal => 'Edit money you took out',
   };
 }

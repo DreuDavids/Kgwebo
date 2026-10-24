@@ -114,8 +114,17 @@ class CachedTransactionRepository implements TransactionRepository {
   Future<TransactionListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(TransactionListSnapshot cached)? onLocalCache,
   }) async {
     _requireOwner(ownerId);
+    final cached = await _cache.listConfirmed(
+      ownerId: ownerId,
+      businessId: businessId,
+      query: const TransactionQuery(limit: 5000),
+    );
+    if (cached.isNotEmpty) {
+      onLocalCache?.call(TransactionListSnapshot.fromCache(cached));
+    }
     try {
       final remote = await _remote.listAllConfirmed(
         ownerId: ownerId,
@@ -140,11 +149,6 @@ class CachedTransactionRepository implements TransactionRepository {
       if (!error.isRetryable) {
         rethrow;
       }
-      final cached = await _cache.listConfirmed(
-        ownerId: ownerId,
-        businessId: businessId,
-        query: const TransactionQuery(limit: 5000),
-      );
       if (cached.isEmpty) {
         rethrow;
       }

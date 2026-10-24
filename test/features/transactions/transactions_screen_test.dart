@@ -74,8 +74,11 @@ void main() {
     tester,
   ) async {
     await pumpHistory(tester, repository: FakeTransactionRepository());
-    expect(find.text('No transactions yet'), findsOneWidget);
-    expect(find.textContaining('Opening cash is not listed'), findsOneWidget);
+    expect(find.text('No money recorded yet'), findsOneWidget);
+    expect(
+      find.textContaining('Opening cash is a starting balance'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('populated history shows formatted sale amounts', (tester) async {
@@ -91,7 +94,7 @@ void main() {
     await tester.enterText(find.byType(TextField).first, 'not-a-match');
     await tester.pump(const Duration(milliseconds: 400));
     await tester.pumpAndSettle();
-    expect(find.text('No transactions yet'), findsOneWidget);
+    expect(find.text('No money recorded yet'), findsOneWidget);
   });
 
   testWidgets('delete confirmation is required', (tester) async {

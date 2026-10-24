@@ -16,37 +16,33 @@ class DashboardRecent extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final state = ref.watch(dashboardFinanceControllerProvider);
-    if (state.isPreview || state.loading) {
+    if (state.isPreview) {
+      return const KgweboEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: 'Nothing recorded yet',
+        message: 'Sign in to add sales and expenses.',
+      );
+    }
+    if (state.loading) {
       return const SizedBox.shrink();
     }
     if (state.recent.isEmpty) {
-      return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const KgweboSectionHeading(
-            title: 'Recent transactions',
-            subtitle: 'Nothing recorded yet.',
-          ),
-          KgweboEmptyState(
-            icon: Icons.receipt_long_outlined,
-            title: 'Start with a sale or expense',
-            message:
-                'A zero here means you have not saved transactions, not that the business made no money outside Kgwebo.',
-            actionLabel: 'Record a sale',
-            onAction: () => context.pushNamed(AppRoutes.recordSaleName),
-          ),
-        ],
+      return const KgweboEmptyState(
+        icon: Icons.receipt_long_outlined,
+        title: 'No money recorded yet',
+        message:
+            'Add a sale or expense above. Opening cash is not listed here.',
       );
     }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const KgweboSectionHeading(
-          title: 'Recent transactions',
-          subtitle: 'Latest confirmed records.',
+          title: 'Recent money',
+          subtitle: 'Latest confirmed records. Tap one to open it.',
         ),
         const SizedBox(height: KgweboSpacing.sm),
-        for (final transaction in state.recent) ...[
+        for (final transaction in state.recent.take(3)) ...[
           TransactionListItem(
             transaction: transaction,
             onTap:
@@ -58,7 +54,7 @@ class DashboardRecent extends ConsumerWidget {
           const SizedBox(height: KgweboSpacing.sm),
         ],
         KgweboButton(
-          label: 'View all transactions',
+          label: 'See all',
           variant: KgweboButtonVariant.text,
           onPressed: () => context.goNamed(AppRoutes.transactionsName),
         ),

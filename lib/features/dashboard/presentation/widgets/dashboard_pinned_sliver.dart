@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import '../../../../app/theme/kgwebo_colors.dart';
 import '../../../../app/theme/kgwebo_elevation.dart';
 
-/// Fixed-height pinned sliver used for the home brand bar and tab bar.
+/// Fixed-height pinned sliver used for the home brand bar and tabs.
 class DashboardPinnedSliverDelegate extends SliverPersistentHeaderDelegate {
   DashboardPinnedSliverDelegate({
     required this.height,

@@ -15,8 +15,9 @@ import '../../../core/money/money_formatter.dart';
 import '../../../core/money/money_parser.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
-import '../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../../shared/widgets/kgwebo_empty_state.dart';
+import '../../../shared/widgets/kgwebo_section_heading.dart';
+import '../../../shared/widgets/kgwebo_soft_card.dart';
 import '../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../../shared/widgets/kgwebo_text_field.dart';
 import '../../authentication/application/session_controller.dart';
@@ -30,7 +31,6 @@ import '../application/transaction_validators.dart';
 import '../domain/payment_method.dart';
 import '../domain/transaction_categories.dart';
 import '../domain/transaction_draft.dart';
-import 'widgets/transaction_type_style.dart';
 
 class TransactionFormScreen extends ConsumerStatefulWidget {
   const TransactionFormScreen({
@@ -214,7 +214,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
           padding: const EdgeInsets.all(KgweboSpacing.md),
           children: [
             Text(
-              'Add a product',
+              'What did you sell?',
               style: Theme.of(context).textTheme.titleMedium,
             ),
             const SizedBox(height: KgweboSpacing.sm),
@@ -417,7 +417,6 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
   @override
   Widget build(BuildContext context) {
     final session = ref.watch(appSessionProvider);
-    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
     return PopScope(
       canPop: _allowPop || !_hydrated || !_isDirty,
       onPopInvokedWithResult: (didPop, result) async {
@@ -443,27 +442,24 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
             ),
           ],
         ),
-        body: SafeArea(
-          child: KgweboFilledBody(child: _buildBody(session, bottomInset)),
-        ),
+        body: SafeArea(child: KgweboFilledBody(child: _buildBody(session))),
       ),
     );
   }
 
-  Widget _buildBody(AppSession session, double bottomInset) {
+  Widget _buildBody(AppSession session) {
     if (session is AppSessionPreview) {
       return const KgweboEmptyState(
         icon: Icons.receipt_long_outlined,
-        title: 'Preview cannot save transactions',
-        message:
-            'Sign in to record sales and expenses against your business. Demo figures are never mixed with live records.',
+        title: 'Preview cannot save money',
+        message: 'Sign in to record sales and expenses for your business.',
       );
     }
     if (session is! AppSessionReady) {
       return const KgweboEmptyState(
         icon: Icons.lock_outline,
         title: 'Sign in to continue',
-        message: 'Transactions are saved to your authorised business only.',
+        message: 'Sales and expenses are saved to your business only.',
       );
     }
     if (_loadingExisting) {
@@ -471,233 +467,270 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     }
 
     final categories = TransactionCategories.forType(widget.type);
-    return SingleChildScrollView(
-      padding: EdgeInsets.fromLTRB(
-        KgweboSpacing.md,
-        KgweboSpacing.md,
-        KgweboSpacing.md,
-        KgweboSpacing.xl + bottomInset,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          KgweboStatusBanner(
-            tone: KgweboBannerTone.info,
-            message: _typeHelp(widget.type),
-          ),
-          const SizedBox(height: KgweboSpacing.sm),
-          KgweboStatusBanner(
-            tone: KgweboBannerTone.info,
-            message:
-                _isProductSale
-                    ? 'Product sales need a live connection. Stock is not queued offline.'
-                    : _isEdit
-                    ? 'Edits need a live connection. They are not queued offline.'
-                    : 'If the connection fails, this save can wait on this device as Pending sync. It is not confirmed cash until the server accepts it.',
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          if (_error != null) ...[
-            KgweboStatusBanner(
-              tone: KgweboBannerTone.warning,
-              message: _error!,
+    final ready = session;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            padding: EdgeInsets.fromLTRB(
+              KgweboSpacing.md,
+              KgweboSpacing.md,
+              KgweboSpacing.md,
+              KgweboSpacing.md,
             ),
-            const SizedBox(height: KgweboSpacing.md),
-          ],
-          KgweboSoftCard(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                KgweboTextField(
-                  controller: _amount,
-                  label: 'Amount in ${session.business.currencyCode}',
-                  hint: '0.00',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
-                  textInputAction: TextInputAction.next,
-                  errorText: _errors.amount,
-                  enabled: !_saving && !_isProductSale,
-                  inputFormatters: [
-                    FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
-                  ],
+                KgweboStatusBanner(
+                  tone: KgweboBannerTone.info,
+                  message: _formHelp(),
                 ),
-                if (widget.type == MoneyMovementType.sale) ...[
-                  const SizedBox(height: KgweboSpacing.md),
-                  Text(
-                    _hasExistingLines
-                        ? 'This sale has product lines. Edit payment details only, or delete it to reverse stock.'
-                        : 'Optional: add stocked products. Amount comes from line totals. Stock decreases once when saved.',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: KgweboColors.inkMuted,
-                    ),
+                if (_error != null) ...[
+                  const SizedBox(height: KgweboSpacing.sm),
+                  KgweboStatusBanner(
+                    tone: KgweboBannerTone.warning,
+                    message: _error!,
                   ),
-                  if (!_isEdit) ...[
-                    const SizedBox(height: KgweboSpacing.sm),
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: TextButton.icon(
-                        onPressed:
-                            _saving || _catalog.isEmpty
-                                ? null
-                                : _addProductLine,
-                        icon: const Icon(Icons.add),
-                        label: const Text('Add product'),
-                      ),
-                    ),
-                    for (var index = 0; index < _lines.length; index++)
-                      Padding(
-                        padding: const EdgeInsets.only(top: KgweboSpacing.sm),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                '${_lines[index].productName} × ${_lines[index].quantityText}',
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            IconButton(
-                              tooltip: 'Remove ${_lines[index].productName}',
-                              onPressed:
-                                  _saving
-                                      ? null
-                                      : () => setState(() {
-                                        _lines.removeAt(index);
-                                        if (_lines.isEmpty) {
-                                          _amount.clear();
-                                        } else {
-                                          _syncAmountFromLines();
-                                        }
-                                      }),
-                              icon: const Icon(Icons.close),
-                            ),
-                          ],
-                        ),
-                      ),
-                  ],
                 ],
                 const SizedBox(height: KgweboSpacing.md),
-                DropdownButtonFormField<String>(
-                  isExpanded: true,
-                  value: _category,
-                  decoration: InputDecoration(
-                    labelText: 'Category',
-                    errorText: _errors.category,
-                  ),
-                  items: [
-                    for (final category in categories)
-                      DropdownMenuItem(
-                        value: category.code,
-                        child: Text(category.label),
+                KgweboSoftCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      KgweboTextField(
+                        controller: _amount,
+                        label: 'Amount in ${ready.business.currencyCode}',
+                        hint: '0.00',
+                        keyboardType: const TextInputType.numberWithOptions(
+                          decimal: true,
+                        ),
+                        textInputAction: TextInputAction.next,
+                        errorText: _errors.amount,
+                        enabled: !_saving && !_isProductSale,
+                        inputFormatters: [
+                          FilteringTextInputFormatter.allow(RegExp(r'[0-9.,]')),
+                        ],
                       ),
-                  ],
-                  onChanged:
-                      _saving
-                          ? null
-                          : (value) =>
-                              setState(() => _category = value ?? _category),
-                ),
-                const SizedBox(height: KgweboSpacing.md),
-                InputDecorator(
-                  decoration: const InputDecoration(labelText: 'Date'),
-                  child: InkWell(
-                    onTap: _saving ? null : _pickDate,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      child: Text(DateFormat.yMMMEd().format(_occurredOn)),
-                    ),
+                      if (widget.type == MoneyMovementType.sale) ...[
+                        const SizedBox(height: KgweboSpacing.md),
+                        Text(
+                          _hasExistingLines
+                              ? 'This sale already has stock lines. Edit payment only, or delete it to reverse stock.'
+                              : 'Optional. Amount comes from what you sold.',
+                          style: Theme.of(context).textTheme.bodySmall
+                              ?.copyWith(color: KgweboColors.inkMuted),
+                        ),
+                        if (!_isEdit) ...[
+                          const SizedBox(height: KgweboSpacing.sm),
+                          Align(
+                            alignment: Alignment.centerLeft,
+                            child: TextButton.icon(
+                              onPressed:
+                                  _saving || _catalog.isEmpty
+                                      ? null
+                                      : _addProductLine,
+                              icon: const Icon(Icons.add),
+                              label: const Text('What did you sell?'),
+                            ),
+                          ),
+                          for (var index = 0; index < _lines.length; index++)
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: KgweboSpacing.sm,
+                              ),
+                              child: Row(
+                                children: [
+                                  Expanded(
+                                    child: Text(
+                                      '${_lines[index].productName} × ${_lines[index].quantityText}',
+                                      maxLines: 2,
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  IconButton(
+                                    tooltip:
+                                        'Remove ${_lines[index].productName}',
+                                    onPressed:
+                                        _saving
+                                            ? null
+                                            : () => setState(() {
+                                              _lines.removeAt(index);
+                                              if (_lines.isEmpty) {
+                                                _amount.clear();
+                                              } else {
+                                                _syncAmountFromLines();
+                                              }
+                                            }),
+                                    icon: const Icon(Icons.close),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                      ],
+                    ],
                   ),
                 ),
-                const SizedBox(height: KgweboSpacing.md),
-                DropdownButtonFormField<PaymentMethod>(
-                  isExpanded: true,
-                  value: _paymentMethod,
-                  decoration: const InputDecoration(
-                    labelText: 'Payment method',
-                  ),
-                  items: [
-                    for (final method in PaymentMethod.values)
-                      DropdownMenuItem(
-                        value: method,
-                        child: Text(method.label),
+                const SizedBox(height: KgweboSpacing.lg),
+                const KgweboSectionHeading(title: 'Details'),
+                const SizedBox(height: KgweboSpacing.sm),
+                KgweboSoftCard(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      DropdownButtonFormField<String>(
+                        isExpanded: true,
+                        value: _category,
+                        decoration: InputDecoration(
+                          labelText: 'Category',
+                          errorText: _errors.category,
+                        ),
+                        items: [
+                          for (final category in categories)
+                            DropdownMenuItem(
+                              value: category.code,
+                              child: Text(category.label),
+                            ),
+                        ],
+                        onChanged:
+                            _saving
+                                ? null
+                                : (value) => setState(
+                                  () => _category = value ?? _category,
+                                ),
                       ),
-                  ],
-                  onChanged:
-                      _saving
-                          ? null
-                          : (value) => setState(
-                            () => _paymentMethod = value ?? _paymentMethod,
+                      const SizedBox(height: KgweboSpacing.md),
+                      InputDecorator(
+                        decoration: const InputDecoration(labelText: 'Date'),
+                        child: InkWell(
+                          onTap: _saving ? null : _pickDate,
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(vertical: 8),
+                            child: Text(
+                              DateFormat.yMMMEd().format(_occurredOn),
+                            ),
                           ),
-                ),
-                const SizedBox(height: KgweboSpacing.md),
-                DropdownButtonFormField<PaymentStatus>(
-                  isExpanded: true,
-                  value: _paymentStatus,
-                  decoration: const InputDecoration(
-                    labelText: 'Payment status',
+                        ),
+                      ),
+                      const SizedBox(height: KgweboSpacing.md),
+                      DropdownButtonFormField<PaymentMethod>(
+                        isExpanded: true,
+                        value: _paymentMethod,
+                        decoration: const InputDecoration(
+                          labelText: 'Payment method',
+                        ),
+                        items: [
+                          for (final method in PaymentMethod.values)
+                            DropdownMenuItem(
+                              value: method,
+                              child: Text(method.label),
+                            ),
+                        ],
+                        onChanged:
+                            _saving
+                                ? null
+                                : (value) => setState(
+                                  () =>
+                                      _paymentMethod = value ?? _paymentMethod,
+                                ),
+                      ),
+                      const SizedBox(height: KgweboSpacing.md),
+                      DropdownButtonFormField<PaymentStatus>(
+                        isExpanded: true,
+                        value: _paymentStatus,
+                        decoration: const InputDecoration(
+                          labelText: 'Paid or unpaid',
+                        ),
+                        items: const [
+                          DropdownMenuItem(
+                            value: PaymentStatus.paid,
+                            child: Text('Paid'),
+                          ),
+                          DropdownMenuItem(
+                            value: PaymentStatus.unpaid,
+                            child: Text('Unpaid'),
+                          ),
+                        ],
+                        onChanged:
+                            _saving
+                                ? null
+                                : (value) => setState(
+                                  () =>
+                                      _paymentStatus = value ?? _paymentStatus,
+                                ),
+                      ),
+                      const SizedBox(height: KgweboSpacing.xs),
+                      Text(
+                        _paymentHelp(widget.type, _paymentStatus),
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: KgweboColors.inkMuted,
+                        ),
+                      ),
+                      const SizedBox(height: KgweboSpacing.md),
+                      KgweboTextField(
+                        controller: _description,
+                        label: 'Note (optional)',
+                        textCapitalization: TextCapitalization.sentences,
+                        enabled: !_saving,
+                        errorText: _errors.description,
+                      ),
+                    ],
                   ),
-                  items: const [
-                    DropdownMenuItem(
-                      value: PaymentStatus.paid,
-                      child: Text('Paid'),
-                    ),
-                    DropdownMenuItem(
-                      value: PaymentStatus.unpaid,
-                      child: Text('Unpaid'),
-                    ),
-                  ],
-                  onChanged:
-                      _saving
-                          ? null
-                          : (value) => setState(
-                            () => _paymentStatus = value ?? _paymentStatus,
-                          ),
-                ),
-                const SizedBox(height: KgweboSpacing.xs),
-                Text(
-                  _paymentHelp(widget.type, _paymentStatus),
-                  style: Theme.of(
-                    context,
-                  ).textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
-                ),
-                const SizedBox(height: KgweboSpacing.md),
-                KgweboTextField(
-                  controller: _description,
-                  label: 'Note (optional)',
-                  textCapitalization: TextCapitalization.sentences,
-                  enabled: !_saving,
-                  errorText: _errors.description,
                 ),
               ],
             ),
           ),
-          const SizedBox(height: KgweboSpacing.xl),
-          KgweboButton(
-            label:
-                _isEdit
-                    ? 'Save changes'
-                    : 'Save ${TransactionTypeStyle.label(widget.type).toLowerCase()}',
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(
+            KgweboSpacing.md,
+            KgweboSpacing.sm,
+            KgweboSpacing.md,
+            KgweboSpacing.md,
+          ),
+          child: KgweboButton(
+            label: _saveLabel(),
             expanded: true,
             isLoading: _saving,
             onPressed: _saving ? null : _save,
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  String _typeHelp(MoneyMovementType type) {
-    return switch (type) {
+  String _formHelp() {
+    if (_isProductSale) {
+      return 'Product sales need a live connection.';
+    }
+    if (_isEdit) {
+      return 'Edits need a live connection.';
+    }
+    return switch (widget.type) {
       MoneyMovementType.sale =>
-        'This is a recorded sale. It is not automatically cash received unless you mark it paid.',
+        'If you are offline, this sale can wait on this device until it syncs.',
       MoneyMovementType.expense =>
-        'This is an operating expense. Unpaid bills stay in the period total but do not reduce current cash.',
+        'If you are offline, this expense can wait on this device until it syncs.',
       MoneyMovementType.refund =>
-        'A customer refund reduces recorded sales. Paid refunds also reduce current cash.',
+        'A refund reduces sales. Paid refunds also reduce cash.',
       MoneyMovementType.ownerContribution =>
-        'Owner money put into the business increases cash. It is not a sale.',
+        'Money you put in increases cash. It is not a sale.',
       MoneyMovementType.ownerWithdrawal =>
-        'Owner money taken out of the business reduces cash. It is not an operating expense.',
+        'Money you took out reduces cash. It is not an expense.',
+    };
+  }
+
+  String _saveLabel() {
+    if (_isEdit) {
+      return 'Save changes';
+    }
+    return switch (widget.type) {
+      MoneyMovementType.sale => 'Save sale',
+      MoneyMovementType.expense => 'Save expense',
+      MoneyMovementType.refund => 'Save refund',
+      MoneyMovementType.ownerContribution => 'Save',
+      MoneyMovementType.ownerWithdrawal => 'Save',
     };
   }
 

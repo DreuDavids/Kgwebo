@@ -26,7 +26,10 @@ class KgweboBrandMark extends StatelessWidget {
             width: 40,
             height: 40,
             child: CustomPaint(
-              painter: _KgweboKMarkPainter(discColor: discColor),
+              painter: _KgweboKMarkPainter(
+                discColor: discColor,
+                kColor: KgweboColors.lime,
+              ),
             ),
           ),
         ),

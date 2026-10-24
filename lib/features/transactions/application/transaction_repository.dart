@@ -19,9 +19,14 @@ abstract class TransactionRepository {
 
   /// Confirmed rows used for cash and period totals. Capped; never mixed
   /// across owners or businesses.
+  ///
+  /// [onLocalCache] is invoked with owner-scoped Drift rows, if any, before
+  /// the method waits on the network. It must not be treated as current
+  /// server-confirmed data.
   Future<TransactionListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(TransactionListSnapshot cached)? onLocalCache,
   });
 
   Future<BusinessTransaction?> findById({

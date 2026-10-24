@@ -40,6 +40,7 @@ void main() {
     expect(theme.inputDecorationTheme.fillColor, KgweboColors.surfaceMuted);
     expect(theme.navigationRailTheme.backgroundColor, KgweboColors.canvas);
     expect(theme.cardTheme.elevation, 0);
+    expect(theme.chipTheme.showCheckmark, isFalse);
     expect(theme.progressIndicatorTheme.color, KgweboColors.ink);
   });
 }

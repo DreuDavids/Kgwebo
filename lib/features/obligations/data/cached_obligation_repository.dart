@@ -35,8 +35,16 @@ class CachedObligationRepository implements ObligationRepository {
   Future<ObligationListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ObligationListSnapshot cached)? onLocalCache,
   }) async {
     _requireOwner(ownerId);
+    final cached = await _cache.listConfirmed(
+      ownerId: ownerId,
+      businessId: businessId,
+    );
+    if (cached.isNotEmpty) {
+      onLocalCache?.call(ObligationListSnapshot.fromCache(cached));
+    }
     try {
       final remote = await _remote.listAllConfirmed(
         ownerId: ownerId,
@@ -57,10 +65,6 @@ class CachedObligationRepository implements ObligationRepository {
       if (!error.isRetryable) {
         rethrow;
       }
-      final cached = await _cache.listConfirmed(
-        ownerId: ownerId,
-        businessId: businessId,
-      );
       if (cached.isEmpty) {
         rethrow;
       }

@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../app/routes.dart';
 import '../../../app/theme/kgwebo_colors.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_pill_row.dart';
 import '../../../shared/widgets/kgwebo_soft_card.dart';
-import '../../shell/app_destinations.dart';
 
 class MoreScreen extends StatelessWidget {
   const MoreScreen({super.key});
@@ -27,13 +27,12 @@ class MoreScreen extends StatelessWidget {
             ),
             children: [
               Text(
-                'Further destinations',
+                'Everything else',
                 style: textTheme.titleMedium?.copyWith(color: KgweboColors.ink),
               ),
               const SizedBox(height: KgweboSpacing.xs),
               Text(
-                'Cash flow, reports and settings stay one tap away on small screens '
-                'so the bottom bar remains usable.',
+                'Bills, reports, your business, and account settings.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: KgweboColors.inkMuted,
                 ),
@@ -43,13 +42,36 @@ class MoreScreen extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(vertical: KgweboSpacing.xs),
                 child: Column(
                   children: [
-                    for (final destination in AppDestinationX.moreDestinations)
-                      KgweboPillRow(
-                        icon: destination.icon,
-                        title: destination.label,
-                        trailingLabel: 'Go',
-                        onTap: () => context.goNamed(destination.routeName),
-                      ),
+                    KgweboPillRow(
+                      icon: Icons.event_outlined,
+                      title: 'Bills',
+                      subtitle: 'Money you still need to pay',
+                      showChevron: true,
+                      onTap: () => context.goNamed(AppRoutes.cashFlowName),
+                    ),
+                    KgweboPillRow(
+                      icon: Icons.description_outlined,
+                      title: 'Reports',
+                      subtitle: 'A summary of the same figures as Home',
+                      showChevron: true,
+                      onTap: () => context.goNamed(AppRoutes.reportsName),
+                    ),
+                    KgweboPillRow(
+                      icon: Icons.storefront_outlined,
+                      title: 'Business',
+                      subtitle: 'Your profile',
+                      showChevron: true,
+                      onTap:
+                          () =>
+                              context.pushNamed(AppRoutes.businessProfileName),
+                    ),
+                    KgweboPillRow(
+                      icon: Icons.settings_outlined,
+                      title: 'Settings',
+                      subtitle: 'Account',
+                      showChevron: true,
+                      onTap: () => context.goNamed(AppRoutes.settingsName),
+                    ),
                   ],
                 ),
               ),

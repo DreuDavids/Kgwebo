@@ -12,10 +12,7 @@ void main() {
     await pumpKgweboApp(tester);
     expect(find.byType(DashboardScreen), findsOneWidget);
     expect(find.text('Kgwebo'), findsWidgets);
-    expect(
-      find.text('Your business. Clearer decisions. Stronger growth.'),
-      findsOneWidget,
-    );
+    expect(find.text('Record a sale'), findsOneWidget);
   });
 
   testWidgets('each named destination can be opened', (tester) async {
@@ -28,9 +25,9 @@ void main() {
     }
 
     await open(AppRoutes.dashboard, 'Kgwebo');
-    await open(AppRoutes.transactions, 'Transactions');
-    await open(AppRoutes.products, 'Products');
-    await open(AppRoutes.cashFlow, 'Cash Flow');
+    await open(AppRoutes.transactions, 'Money');
+    await open(AppRoutes.products, 'Stock');
+    await open(AppRoutes.cashFlow, 'Bills');
     await open(AppRoutes.reports, 'Reports');
     await open(AppRoutes.settings, 'Settings');
     await open(AppRoutes.more, 'More');

@@ -44,7 +44,7 @@ void main() {
       expect(overflows, isEmpty, reason: overflows.join('\n'));
       expect(find.byType(WelcomeScreen), findsOneWidget);
       expect(find.text('I already have an account'), findsOneWidget);
-      expect(find.text('Continue'), findsOneWidget);
+      expect(find.text('Create an account'), findsOneWidget);
     });
 
     testWidgets('sign-in remains scrollable at ${profile.$1}', (tester) async {
@@ -106,7 +106,7 @@ void main() {
     expect(overflows, isEmpty, reason: overflows.join('\n'));
     expect(find.byType(OnboardingScreen), findsOneWidget);
     expect(find.byType(SingleChildScrollView), findsWidgets);
-    await tester.ensureVisible(find.text('Save and continue'));
-    expect(find.text('Save and continue'), findsOneWidget);
+    await tester.ensureVisible(find.text('Continue'));
+    expect(find.text('Continue'), findsOneWidget);
   });
 }

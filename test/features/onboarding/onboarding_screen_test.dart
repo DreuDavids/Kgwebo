@@ -41,8 +41,8 @@ void main() {
       ),
     );
 
-    await tester.ensureVisible(find.text('Save and continue'));
-    await tester.tap(find.text('Save and continue'));
+    await tester.ensureVisible(find.text('Continue'));
+    await tester.tap(find.text('Continue'));
     await tester.pump();
 
     expect(find.text('Enter your business name.'), findsOneWidget);

@@ -81,7 +81,7 @@ class DashboardNotices extends ConsumerWidget {
         KgweboStatusBanner(
           tone: KgweboBannerTone.warning,
           message:
-              '$restockCount product${restockCount == 1 ? '' : 's'} need restocking. Open Products to review stock. Inventory value is not cash.',
+              '$restockCount product${restockCount == 1 ? '' : 's'} need restocking. Open Stock to review. Inventory value is not cash.',
         ),
     ];
 

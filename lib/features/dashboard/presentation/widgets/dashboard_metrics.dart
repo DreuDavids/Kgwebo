@@ -37,20 +37,20 @@ class DashboardMetrics extends ConsumerWidget {
         children: [
           KgweboSectionHeading(
             title: 'What you will track',
-            subtitle: 'Local preview has no saved transactions.',
+            subtitle: 'Local preview has no saved money.',
           ),
           SizedBox(height: 12),
           KgweboResponsiveGrid(
             children: [
               KgweboMetricCard(
-                label: 'Expenses this period',
+                label: 'Spent',
                 value: '—',
                 caption: 'Preview is not a business ledger.',
                 icon: Icons.south_west,
                 isPreview: true,
               ),
               KgweboMetricCard(
-                label: 'Net operating result',
+                label: 'After costs',
                 value: '—',
                 caption: 'Not profit. Preview has no records.',
                 icon: Icons.insights_outlined,
@@ -66,18 +66,18 @@ class DashboardMetrics extends ConsumerWidget {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          KgweboSectionHeading(title: 'Recorded figures', subtitle: period),
+          KgweboSectionHeading(title: 'This period', subtitle: period),
           const SizedBox(height: 12),
-          KgweboResponsiveGrid(
+          const KgweboResponsiveGrid(
             children: [
               KgweboMetricCard(
-                label: 'Expenses this period',
+                label: 'Spent',
                 value: '—',
                 caption: 'Could not load recorded expenses.',
                 icon: Icons.south_west,
               ),
               KgweboMetricCard(
-                label: 'Net operating result',
+                label: 'After costs',
                 value: '—',
                 caption: 'Could not load the period result.',
                 icon: Icons.insights_outlined,
@@ -92,45 +92,30 @@ class DashboardMetrics extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        KgweboSectionHeading(
-          title: 'Recorded figures',
-          subtitle:
-              'Period: $period. Cash is all-time recorded cash, not this period only.',
-        ),
+        KgweboSectionHeading(title: 'This period', subtitle: period),
         const SizedBox(height: 12),
         KgweboResponsiveGrid(
           children: [
             KgweboMetricCard(
-              label: 'Recorded expenses',
+              label: 'Spent',
               value: MoneyFormatter.formatMinor(
                 summary.recordedOperatingExpensesMinor,
                 currencyCode: currency,
               ),
               caption:
-                  'Operating costs in $period. Owner withdrawals are not included.',
+                  'Operating costs in $period. Money you took out is not included.',
               icon: Icons.south_west,
             ),
             KgweboMetricCard(
-              label: 'Net recorded operating result',
+              label: 'After costs',
               value: MoneyFormatter.formatMinor(
                 summary.netRecordedOperatingResultMinor,
                 currencyCode: currency,
               ),
               caption:
-                  'Sales minus refunds minus operating expenses for $period. Not audited profit and not cash on hand.',
+                  'Sales minus refunds minus costs for $period. Not cash on hand.',
               icon: Icons.insights_outlined,
             ),
-            if (summary.recordedRefundsMinor != 0)
-              KgweboMetricCard(
-                label: 'Recorded refunds',
-                value: MoneyFormatter.formatMinor(
-                  summary.recordedRefundsMinor,
-                  currencyCode: currency,
-                ),
-                caption:
-                    'Customer refunds in $period. They reduce the operating result.',
-                icon: Icons.replay,
-              ),
           ],
         ),
       ],

@@ -52,10 +52,10 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Products'),
+        title: const Text('Stock'),
         actions: [
           IconButton(
-            tooltip: 'Add product',
+            tooltip: 'Add stock',
             onPressed: () => context.pushNamed(AppRoutes.productNewName),
             icon: const Icon(Icons.add),
           ),
@@ -98,6 +98,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                         key: ValueKey('product-filter-${filter.name}'),
                         label: Text(_filterLabel(filter)),
                         selected: state.filter == filter,
+                        showCheckmark: false,
                         onSelected: (_) {
                           ref
                               .read(productsControllerProvider.notifier)
@@ -127,8 +128,7 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
       return const KgweboEmptyState(
         icon: Icons.inventory_2_outlined,
         title: 'Preview cannot save stock',
-        message:
-            'Sign in to catalogue products and record stock movements. Writes are online-only in this phase.',
+        message: 'Sign in to add what you sell.',
       );
     }
     if (state.loading && state.snapshot == null) {
@@ -168,20 +168,28 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 'Stock writes need a connection. They are not queued offline.',
           ),
           const SizedBox(height: KgweboSpacing.sm),
-          InventoryOverview(insights: state.insights, currencyCode: currency),
+          InventoryOverview(
+            insights: state.insights,
+            currencyCode: currency,
+            selectedFilter: state.filter,
+            onFilterSelected:
+                (filter) => ref
+                    .read(productsControllerProvider.notifier)
+                    .applyFilter(filter),
+          ),
           const SizedBox(height: KgweboSpacing.sm),
           if (state.items.isEmpty)
             KgweboEmptyState(
               icon: Icons.inventory_2_outlined,
               title:
                   state.snapshot?.items.isEmpty ?? true
-                      ? 'No products yet'
-                      : 'No products match this filter',
+                      ? 'No stock yet'
+                      : 'No stock matches this filter',
               message:
                   state.snapshot?.items.isEmpty ?? true
-                      ? 'Add the goods you sell so you can track remaining stock and estimated value.'
+                      ? 'Add what you sell.'
                       : 'Try another search or filter.',
-              actionLabel: 'Add product',
+              actionLabel: 'Add stock',
               onAction: () => context.pushNamed(AppRoutes.productNewName),
             )
           else

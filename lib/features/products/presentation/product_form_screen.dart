@@ -277,7 +277,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
       },
       child: Scaffold(
         appBar: AppBar(
-          title: Text(_isEdit ? 'Edit product' : 'Add a product'),
+          title: Text(_isEdit ? 'Edit stock' : 'Add stock'),
           actions: [
             TextButton(
               onPressed: _saving ? null : _cancel,
@@ -296,16 +296,15 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
     if (session is AppSessionPreview) {
       return const KgweboEmptyState(
         icon: Icons.inventory_2_outlined,
-        title: 'Preview cannot save products',
-        message:
-            'Sign in to catalogue products against your business. Writes are online-only in this phase.',
+        title: 'Preview cannot save stock',
+        message: 'Sign in to add what you sell.',
       );
     }
     if (session is! AppSessionReady) {
       return const KgweboEmptyState(
         icon: Icons.lock_outline,
         title: 'Sign in to continue',
-        message: 'Products are saved to your authorised business only.',
+        message: 'Stock is saved to your business only.',
       );
     }
     if (_loadingExisting) {
@@ -325,7 +324,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           const KgweboStatusBanner(
             tone: KgweboBannerTone.info,
             message:
-                'Current prices can change later. Past sales keep the price and cost that were recorded at the time.',
+                'Prices you set now can change later. Old sales keep the price they were sold at.',
           ),
           const SizedBox(height: KgweboSpacing.md),
           if (_error != null) ...[
@@ -461,7 +460,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
           ),
           const SizedBox(height: KgweboSpacing.lg),
           KgweboButton(
-            label: _isEdit ? 'Save product' : 'Save product',
+            label: _isEdit ? 'Save changes' : 'Save stock',
             expanded: true,
             isLoading: _saving,
             onPressed: _saving ? null : _save,

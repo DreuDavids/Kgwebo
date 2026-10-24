@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:kgwebo/core/finance/cash_outlook.dart';
 import 'package:kgwebo/core/money/money_parser.dart';
 import 'package:kgwebo/features/authentication/domain/auth_failure.dart';
@@ -17,28 +19,58 @@ class FakeObligationRepository implements ObligationRepository {
   final String businessId;
   final List<BusinessObligation> items = [];
   AuthFailure? nextError;
+  AuthFailure? listAllError;
   AuthFailure? failAfterCreate;
   Duration? createDelay;
+  Completer<void>? listAllGate;
+  bool allowAnyOwner = false;
   int createCalls = 0;
   int updateCalls = 0;
   int deleteCalls = 0;
   int listCalls = 0;
+  int listAllCalls = 0;
+
+  Completer<void> armListAllGate() {
+    listAllGate = Completer<void>();
+    return listAllGate!;
+  }
 
   @override
   Future<ObligationListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ObligationListSnapshot cached)? onLocalCache,
   }) async {
     listCalls += 1;
-    _throwIfNeeded();
+    listAllCalls += 1;
     _require(ownerId, businessId);
-    return ObligationListSnapshot.remote(
-      items
-          .where(
-            (item) => item.belongsTo(ownerId: ownerId, businessId: businessId),
-          )
-          .toList(),
-    );
+    final owned =
+        items
+            .where(
+              (item) =>
+                  item.belongsTo(ownerId: ownerId, businessId: businessId),
+            )
+            .toList();
+    if (owned.isNotEmpty) {
+      onLocalCache?.call(
+        ObligationListSnapshot(
+          items: owned,
+          origin: ObligationDataOrigin.localCache,
+        ),
+      );
+    }
+    final gate = listAllGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    final listError = listAllError ?? nextError;
+    if (listAllError == null) {
+      nextError = null;
+    }
+    if (listError != null) {
+      throw listError;
+    }
+    return ObligationListSnapshot.remote(owned);
   }
 
   @override
@@ -185,6 +217,9 @@ class FakeObligationRepository implements ObligationRepository {
   }
 
   void _require(String ownerId, String businessId) {
+    if (allowAnyOwner) {
+      return;
+    }
     if (ownerId != this.ownerId || businessId != this.businessId) {
       throw const AuthFailure(
         'This commitment does not belong to the signed-in account.',

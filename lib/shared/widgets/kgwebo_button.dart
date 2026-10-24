@@ -67,6 +67,10 @@ class KgweboButton extends StatelessWidget {
         Flexible(
           child: Text(
             label,
+            textAlign: TextAlign.center,
+            softWrap: true,
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
             style: textTheme.labelLarge?.copyWith(color: colors.foreground),
           ),
         ),

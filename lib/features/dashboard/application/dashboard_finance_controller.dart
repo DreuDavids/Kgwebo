@@ -18,6 +18,7 @@ import '../../authentication/domain/auth_failure.dart';
 import '../../obligations/application/obligation_repository.dart';
 import '../../obligations/application/obligation_tick.dart';
 import '../../obligations/domain/business_obligation.dart';
+import '../../obligations/domain/obligation_snapshot.dart';
 import '../../products/application/product_repository.dart';
 import '../../products/application/product_tick.dart';
 import '../../products/domain/catalog_product.dart';
@@ -214,81 +215,170 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
       loading: true,
       periodKind: selection.kind,
       periodLabel: selection.label,
-      isStale: session.isStale,
       clearError: true,
     );
 
-    try {
-      final snapshot = await _transactions.listAllConfirmed(
-        ownerId: session.user.id,
-        businessId: session.business.id,
-      );
-      var commitments = _commitments;
-      var outlookKnown = commitments != null;
-      var obligationError = snapshot.refreshError;
-      var obligationStale = snapshot.isStale;
+    String? txError;
+    final txFuture = () async {
       try {
-        final obligationSnapshot = await _obligations.listAllConfirmed(
+        return await _transactions.listAllConfirmed(
           ownerId: session.user.id,
           businessId: session.business.id,
+          onLocalCache: (cached) {
+            if (!mounted || cached.items.isEmpty) {
+              return;
+            }
+            _records = cached.items;
+            _publish(
+              session: session,
+              records: cached.items,
+              commitments: _commitments,
+              isStale: true,
+              error: null,
+              hitRecordCap: cached.hasMore || cached.items.length >= 5000,
+            );
+          },
         );
-        commitments = obligationSnapshot.items;
-        outlookKnown = true;
-        obligationStale = obligationSnapshot.isStale;
-        obligationError =
-            snapshot.refreshError ?? obligationSnapshot.refreshError;
       } on AuthFailure catch (error) {
-        obligationStale = true;
-        obligationError = snapshot.refreshError ?? error.message;
+        txError = error.message;
+        return null;
       }
+    }();
+    final obligationFuture = () async {
       try {
-        final productSnapshot = await _products.listAllConfirmed(
+        return await _obligations.listAllConfirmed(
           ownerId: session.user.id,
           businessId: session.business.id,
+          onLocalCache: (cached) {
+            if (!mounted || cached.items.isEmpty) {
+              return;
+            }
+            _commitments = cached.items;
+            final records = _records;
+            if (records == null) {
+              return;
+            }
+            _publish(
+              session: session,
+              records: records,
+              commitments: cached.items,
+              isStale: true,
+              error: null,
+              hitRecordCap: state.hitRecordCap,
+            );
+          },
         );
-        _productsCached = productSnapshot.items;
-      } on AuthFailure {
-        // Forecast still uses recorded cash and commitments.
+      } on AuthFailure catch (error) {
+        return error;
       }
-      if (!mounted) {
+    }();
+    final productFuture = () async {
+      try {
+        return await _products.listAllConfirmed(
+          ownerId: session.user.id,
+          businessId: session.business.id,
+          onLocalCache: (cached) {
+            if (!mounted || cached.items.isEmpty) {
+              return;
+            }
+            _productsCached = cached.items;
+            final records = _records;
+            if (records == null) {
+              return;
+            }
+            _publish(
+              session: session,
+              records: records,
+              commitments: _commitments,
+              isStale: true,
+              error: null,
+              hitRecordCap: state.hitRecordCap,
+            );
+          },
+        );
+      } on AuthFailure {
+        return null;
+      }
+    }();
+
+    final snapshot = await txFuture;
+    if (!mounted) {
+      return;
+    }
+    if (snapshot != null) {
+      _records = snapshot.items;
+      _publish(
+        session: session,
+        records: snapshot.items,
+        commitments: _commitments,
+        isStale: session.isStale || snapshot.isStale,
+        error: snapshot.refreshError,
+        hitRecordCap: snapshot.hasMore || snapshot.items.length >= 5000,
+      );
+    }
+
+    var commitments = _commitments;
+    var outlookKnown = commitments != null;
+    var obligationStale = snapshot?.isStale ?? false;
+    var obligationError = snapshot?.refreshError ?? txError;
+    final obligationResult = await obligationFuture;
+    if (!mounted) {
+      return;
+    }
+    if (obligationResult is ObligationListSnapshot) {
+      commitments = obligationResult.items;
+      outlookKnown = true;
+      obligationStale = obligationResult.isStale;
+      obligationError =
+          snapshot?.refreshError ?? obligationResult.refreshError ?? txError;
+    } else if (obligationResult is AuthFailure) {
+      obligationStale = true;
+      obligationError = snapshot?.refreshError ?? obligationResult.message;
+    }
+    final productSnapshot = await productFuture;
+    if (productSnapshot != null) {
+      _productsCached = productSnapshot.items;
+    }
+    if (!mounted) {
+      return;
+    }
+
+    try {
+      final records = snapshot?.items ?? _records;
+      if (records == null) {
+        state = DashboardFinanceState(
+          isStale: true,
+          periodKind: selection.kind,
+          periodLabel: selection.label,
+          error: txError ?? obligationError,
+        );
         return;
       }
-      _records = snapshot.items;
+      _records = records;
       if (outlookKnown) {
         _commitments = commitments ?? const <BusinessObligation>[];
       }
       _publish(
         session: session,
-        records: snapshot.items,
+        records: records,
         commitments: outlookKnown ? commitments : null,
-        isStale: session.isStale || snapshot.isStale || obligationStale,
+        isStale:
+            session.isStale || (snapshot?.isStale ?? true) || obligationStale,
         error: obligationError,
-        hitRecordCap: snapshot.hasMore || snapshot.items.length >= 5000,
-      );
-    } on AuthFailure catch (error) {
-      if (!mounted) {
-        return;
-      }
-      final records = _records;
-      if (records != null) {
-        _publish(
-          session: session,
-          records: records,
-          commitments: _commitments,
-          isStale: true,
-          error: error.message,
-          hitRecordCap: state.hitRecordCap,
-        );
-        return;
-      }
-      state = DashboardFinanceState(
-        isStale: true,
-        periodKind: selection.kind,
-        periodLabel: selection.label,
-        error: error.message,
+        hitRecordCap:
+            snapshot != null &&
+            (snapshot.hasMore || snapshot.items.length >= 5000),
       );
     } on FinanceException catch (error) {
       if (!mounted) {
+        return;
+      }
+      if (_records != null) {
+        state = state.copyWith(
+          loading: false,
+          isStale: true,
+          error: error.message,
+        );
         return;
       }
       state = DashboardFinanceState(

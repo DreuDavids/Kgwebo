@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../core/sync/outbox_models.dart';
 import '../../../core/sync/outbox_store.dart';
 import '../../../core/sync/pending_presentation.dart';
 import '../../authentication/application/session_controller.dart';
@@ -92,31 +93,53 @@ class ObligationsController extends StateNotifier<ObligationsViewState> {
       state = const ObligationsViewState();
       return;
     }
-    state = state.copyWith(loading: true, clearError: true);
+    final pending =
+        _outbox == null
+            ? const <OutboxOperation>[]
+            : await _outbox.listOpen(
+              ownerId: session.user.id,
+              businessId: session.business.id,
+            );
+    if (!mounted) {
+      return;
+    }
+    if (pending.isNotEmpty && state.items.isEmpty) {
+      state = ObligationsViewState(
+        items: mergePendingObligations(
+          confirmed: const [],
+          operations: pending,
+        ),
+        loading: true,
+      );
+    } else {
+      state = state.copyWith(loading: true, clearError: true);
+    }
     try {
       final snapshot = await _repository.listAllConfirmed(
         ownerId: session.user.id,
         businessId: session.business.id,
+        onLocalCache: (cached) {
+          if (!mounted) {
+            return;
+          }
+          final items = mergePendingObligations(
+            confirmed: cached.items,
+            operations: pending,
+          );
+          if (items.isEmpty) {
+            return;
+          }
+          state = ObligationsViewState(items: items, isStale: true);
+        },
       );
       if (!mounted) {
         return;
       }
-      var items = snapshot.items;
-      if (_outbox != null) {
-        final pending = await _outbox.listOpen(
-          ownerId: session.user.id,
-          businessId: session.business.id,
-        );
-        items = mergePendingObligations(
+      state = ObligationsViewState(
+        items: mergePendingObligations(
           confirmed: snapshot.items,
           operations: pending,
-        );
-      }
-      if (!mounted) {
-        return;
-      }
-      state = ObligationsViewState(
-        items: items,
+        ),
         isStale: snapshot.isStale,
         error: snapshot.refreshError,
       );
@@ -132,23 +155,17 @@ class ObligationsController extends StateNotifier<ObligationsViewState> {
         );
         return;
       }
-      if (_outbox != null && error.isRetryable) {
-        final pending = await _outbox.listOpen(
-          ownerId: session.user.id,
-          businessId: session.business.id,
+      final items = mergePendingObligations(
+        confirmed: const [],
+        operations: pending,
+      );
+      if (items.isNotEmpty) {
+        state = ObligationsViewState(
+          items: items,
+          isStale: true,
+          error: error.message,
         );
-        final items = mergePendingObligations(
-          confirmed: const [],
-          operations: pending,
-        );
-        if (items.isNotEmpty) {
-          state = ObligationsViewState(
-            items: items,
-            isStale: true,
-            error: error.message,
-          );
-          return;
-        }
+        return;
       }
       state = ObligationsViewState(isStale: true, error: error.message);
     }

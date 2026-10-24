@@ -15,7 +15,7 @@ class KgweboGreetingHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final textTheme = Theme.of(context).textTheme;
-    final resolvedSubtitle = subtitle ?? tagline;
+    final resolvedSubtitle = subtitle;
     final name = businessName?.trim();
 
     return Column(
@@ -41,11 +41,15 @@ class KgweboGreetingHeader extends StatelessWidget {
             ],
           ),
         ),
-        const SizedBox(height: KgweboSpacing.sm),
-        Text(
-          resolvedSubtitle,
-          style: textTheme.titleMedium?.copyWith(color: KgweboColors.inkMuted),
-        ),
+        if (resolvedSubtitle != null && resolvedSubtitle.isNotEmpty) ...[
+          const SizedBox(height: KgweboSpacing.sm),
+          Text(
+            resolvedSubtitle,
+            style: textTheme.titleMedium?.copyWith(
+              color: KgweboColors.inkMuted,
+            ),
+          ),
+        ],
       ],
     );
   }

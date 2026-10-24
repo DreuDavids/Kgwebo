@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:kgwebo/core/finance/ledger_entry.dart';
 import 'package:kgwebo/core/inventory/inventory_costing.dart';
 import 'package:kgwebo/core/inventory/quantity_formatter.dart';
@@ -64,26 +66,49 @@ class FakeProductRepository implements ProductRepository {
   final List<BusinessTransaction> sales = [];
   AuthFailure? nextError;
   AuthFailure? failReads;
+  Completer<void>? listAllGate;
+  bool allowAnyOwner = false;
   int createCalls = 0;
   int movementCalls = 0;
   int saleCalls = 0;
   int listCalls = 0;
+  int listAllCalls = 0;
+
+  Completer<void> armListAllGate() {
+    listAllGate = Completer<void>();
+    return listAllGate!;
+  }
 
   @override
   Future<ProductListSnapshot> listAllConfirmed({
     required String ownerId,
     required String businessId,
+    void Function(ProductListSnapshot cached)? onLocalCache,
   }) async {
     listCalls += 1;
-    _throwIfNeeded(failReads ?? nextError);
+    listAllCalls += 1;
     _require(ownerId, businessId);
-    return ProductListSnapshot.remote(
-      products
-          .where(
-            (item) => item.belongsTo(ownerId: ownerId, businessId: businessId),
-          )
-          .toList(),
-    );
+    final owned =
+        products
+            .where(
+              (item) =>
+                  item.belongsTo(ownerId: ownerId, businessId: businessId),
+            )
+            .toList();
+    if (owned.isNotEmpty) {
+      onLocalCache?.call(
+        ProductListSnapshot(
+          items: owned,
+          origin: InventoryDataOrigin.localCache,
+        ),
+      );
+    }
+    final gate = listAllGate;
+    if (gate != null) {
+      await gate.future;
+    }
+    _throwIfNeeded(failReads ?? nextError);
+    return ProductListSnapshot.remote(owned);
   }
 
   @override
@@ -578,6 +603,9 @@ class FakeProductRepository implements ProductRepository {
   }
 
   void _require(String ownerId, String businessId) {
+    if (allowAnyOwner) {
+      return;
+    }
     if (ownerId != this.ownerId || businessId != this.businessId) {
       throw const AuthFailure(
         'This business does not belong to the signed-in account.',
