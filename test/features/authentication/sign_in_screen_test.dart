@@ -9,7 +9,9 @@ import 'package:kgwebo/features/authentication/domain/auth_user.dart';
 import 'package:kgwebo/features/authentication/presentation/confirm_email_screen.dart';
 import 'package:kgwebo/features/authentication/presentation/forgot_password_screen.dart';
 import 'package:kgwebo/features/authentication/presentation/sign_in_screen.dart';
+import 'package:kgwebo/features/authentication/presentation/welcome_screen.dart';
 import 'package:kgwebo/shared/widgets/kgwebo_button.dart';
+import 'package:kgwebo/shared/widgets/kgwebo_illustration.dart';
 import 'package:kgwebo/features/authentication/presentation/sign_up_screen.dart';
 
 import '../../helpers/fake_auth.dart';
@@ -196,5 +198,42 @@ void main() {
 
     expect(auth.verifySignupOtpCalls, 1);
     expect(auth.lastOtpToken, '123456');
+  });
+
+  testWidgets('sign-in fills leftover canvas with a scene illustration', (
+    tester,
+  ) async {
+    await setSurface(tester, const Size(360, 800));
+    await tester.pumpWidget(_harness(child: const SignInScreen()));
+
+    expect(find.byType(KgweboIllustration), findsOneWidget);
+    expect(
+      tester.widget<KgweboIllustration>(find.byType(KgweboIllustration)).asset,
+      KgweboIllustrationAssets.authScene,
+    );
+  });
+
+  testWidgets('sign-in hides the scene on a short landscape screen', (
+    tester,
+  ) async {
+    await setSurface(tester, const Size(800, 360));
+    await tester.pumpWidget(_harness(child: const SignInScreen()));
+
+    expect(find.byType(KgweboIllustration), findsNothing);
+    expect(find.text('Sign in'), findsWidgets);
+  });
+
+  testWidgets('welcome fills leftover canvas with a hero illustration', (
+    tester,
+  ) async {
+    await setSurface(tester, const Size(360, 800));
+    await tester.pumpWidget(_harness(child: const WelcomeScreen()));
+
+    expect(find.byType(KgweboIllustration), findsOneWidget);
+    expect(
+      tester.widget<KgweboIllustration>(find.byType(KgweboIllustration)).asset,
+      KgweboIllustrationAssets.welcomeHero,
+    );
+    expect(find.text('See your business clearly.'), findsOneWidget);
   });
 }

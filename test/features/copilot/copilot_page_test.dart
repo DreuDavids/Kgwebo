@@ -75,7 +75,8 @@ void main() {
     expect(find.byType(CopilotPage), findsOneWidget);
     expect(find.byKey(const Key('copilot-fallback-sale')), findsNothing);
     expect(find.byKey(const Key('copilot-fallback-expense')), findsNothing);
-    expect(find.byKey(const Key('copilot-mic')), findsNothing);
+    expect(find.byKey(const Key('copilot-mic')), findsOneWidget);
+    expect(find.byKey(const Key('copilot-chip-cash')), findsOneWidget);
     expect(
       find.textContaining('Nothing is saved until you confirm.'),
       findsOneWidget,
@@ -353,6 +354,8 @@ class _SlowLlm implements CopilotLlmClient {
     required String userText,
     required VerifiedFinancialSnapshot? snapshot,
     required List<String> recommendationTitles,
+    required String currencyCode,
+    Map<String, Object?>? bookDigest,
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 400));
     return const CopilotLlmDraft(intent: 'chat', reply: 'Hello from Ask.');

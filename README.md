@@ -4,7 +4,7 @@ Your business. Clearer decisions. Stronger growth.
 
 Kgwebo is a Flutter Android companion for informal traders and small retailers in Botswana. This repository currently includes authentication, business profiles, sales and expenses, inventory, cash-flow forecasts, deterministic recommendations, owner-scoped offline writes for amount-only transactions and unpaid bills, and cash-basis Reports with PDF export/share.
 
-Ask is a dedicated copilot tab: talk or type to explain recorded cash, show charts, walk through recommendations, and draft sales or expenses. It never invents totals, never converts ZAR into pula, and never saves money until you confirm. Gemini Flash runs behind the `kgwebo-copilot` Edge Function; the Gemini key is not in the app.
+Ask is a dedicated copilot tab: talk or type to explain recorded cash, show charts, walk through recommendations, and draft sales or expenses. It never invents totals, never converts named foreign amounts into the business currency, and never saves money until you confirm. LiteLLM runs behind the `kgwebo-copilot` Edge Function; the model key is not in the app.
 
 ## Requirements
 

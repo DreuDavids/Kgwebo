@@ -57,6 +57,9 @@ abstract final class CopilotHandsFree {
     return text == 'confirm' ||
         text == 'save' ||
         text == 'save it' ||
+        text == 'yes' ||
+        text == 'ee' ||
+        text == 'ok' ||
         text.contains('confirm') ||
         text.contains('save it');
   }

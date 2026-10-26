@@ -69,6 +69,59 @@ void main() {
     expect(drafts.single.hasForeignCurrency, isFalse);
   });
 
+  test('sells two fat cakes at 10 each as 20 in the book currency', () {
+    final drafts = extractHeuristicDrafts('I sold two fat cakes at 10 each');
+
+    expect(drafts.single.type, MoneyMovementType.sale);
+    expect(drafts.single.item, 'fat cakes');
+    expect(drafts.single.amountMinor, 2000);
+    expect(drafts.single.categoryCode, 'goods');
+  });
+
+  test('records airtime 50 as a utilities expense', () {
+    final drafts = extractHeuristicDrafts('I bought airtime 50');
+
+    expect(drafts.single.type, MoneyMovementType.expense);
+    expect(drafts.single.item, 'airtime');
+    expect(drafts.single.amountMinor, 5000);
+    expect(drafts.single.categoryCode, 'utilities');
+  });
+
+  test('treats on credit as unpaid', () {
+    final drafts = extractHeuristicDrafts(
+      'I sold two shirts for P300 on credit',
+    );
+
+    expect(drafts.single.paymentStatus, PaymentStatus.unpaid);
+  });
+
+  test('dates a purchase to yesterday in Gaborone', () {
+    final drafts = extractHeuristicDrafts(
+      'I spent P80 on transport yesterday',
+      now: DateTime.utc(2026, 10, 21, 10),
+    );
+
+    expect(drafts.single.occurredOn, DateTime.utc(2026, 10, 19, 22));
+  });
+
+  test('reads a mixed Setswana sale', () {
+    final drafts = extractHeuristicDrafts(
+      'Ke rekisitse dihempe di le 2 ka P150 each',
+    );
+
+    expect(drafts.single.type, MoneyMovementType.sale);
+    expect(drafts.single.item, 'shirts');
+    expect(drafts.single.amountMinor, 30000);
+  });
+
+  test('drafts an owner withdrawal', () {
+    final drafts = extractHeuristicDrafts('I took 200 for myself');
+
+    expect(drafts.single.type, MoneyMovementType.ownerWithdrawal);
+    expect(drafts.single.amountMinor, 20000);
+    expect(drafts.single.categoryCode, 'owner_withdrawal');
+  });
+
   test('does not treat named pula as rand when the profile is ZAR', () {
     final drafts = extractHeuristicDrafts(
       'I bought two domains at 50 pula each',

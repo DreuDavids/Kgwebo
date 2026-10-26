@@ -54,4 +54,4 @@ Grounded in the repository on 26 October 2026. A limitation listed here is not a
 - Offline product sales and stock writes.
 - In-app account deletion and raw personal-data export.
 
-Ask is shipped (Phase 10). It drafts sales and expenses for confirmation only, does not invent totals, and does not convert named foreign amounts into pula. It is not professional advice.
+Ask is shipped (Phase 10). It drafts sales and expenses for confirmation only, does not invent totals, and does not convert named foreign amounts into the business currency. Cloud Ask needs a signed-in JWT and is limited to 40 calls per 10 minutes per user. Conversation memory is in-session only. The mic needs `RECORD_AUDIO`; spoken replies are short and skip recorded totals. It is not professional advice.

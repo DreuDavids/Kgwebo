@@ -15,3 +15,11 @@ Set these on the Kgwebo Supabase project (`hhwxajxjmyjntxykptvs`) as Edge Functi
 Without `LITELLM_API_KEY`, Ask still answers from recorded Kgwebo totals and the on-phone extractor; cloud suggestions stay offline.
 
 Do not put this key in `.env`, dart-defines, the chat, or the Android APK.
+
+## Cloud gate
+
+`kgwebo-copilot` requires a signed-in JWT (`verify_jwt` plus `/auth/v1/user`). It rate-limits at 40 calls per 10 minutes per user via `public.kgwebo_touch_copilot_rate` (service-role only) writing `private.copilot_rate_windows`. Draft intents omit the cash snapshot so the model cannot restate or invent balances while extracting a sale or expense.
+
+## On the phone
+
+Ask uses the signed-in business currency, not a hardcoded pula. Session follow-ups stay in memory (`CopilotSession`). Bills, stock, recent transactions, and owner withdrawals are answered from recorded Kgwebo data. The mic uses on-device speech-to-text (`RECORD_AUDIO`). TTS speaks only short non-totals replies. First-run chips cover cash, recording an expense, and what to watch. After one confirmed save, Help me / Open the page is skipped.

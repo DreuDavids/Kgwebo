@@ -46,9 +46,33 @@ def key(name: str) -> None:
 
 
 def type_text(text: str) -> None:
-    escaped = text.replace(" ", "%s").replace("'", "\\'")
-    adb("shell", "input", "text", escaped)
+    parts = re.split(r"([@ ])", text)
+    for part in parts:
+        if part == " ":
+            adb("shell", "input", "keyevent", "62")
+        elif part == "@":
+            adb("shell", "input", "keyevent", "KEYCODE_AT")
+        elif part:
+            adb("shell", "input", "text", part)
     print(f"type {text!r}")
+
+
+def type_keys(text: str) -> None:
+    """Type via keyevents so Flutter IME fields receive characters."""
+    for ch in text:
+        if ch == " ":
+            adb("shell", "input", "keyevent", "KEYCODE_SPACE")
+        elif ch == "@":
+            adb("shell", "input", "keyevent", "KEYCODE_AT")
+        elif ch == ".":
+            adb("shell", "input", "keyevent", "KEYCODE_PERIOD")
+        elif ch.isdigit():
+            adb("shell", "input", "keyevent", f"KEYCODE_{ch}")
+        elif ch.isalpha():
+            adb("shell", "input", "keyevent", f"KEYCODE_{ch.upper()}")
+        else:
+            continue
+    print(f"keys {text!r}")
 
 
 def dump_ui() -> list[tuple[str, int, int, int, int]]:
@@ -100,6 +124,8 @@ def main() -> None:
     k.add_argument("name")
     ty = sub.add_parser("type")
     ty.add_argument("text")
+    tk = sub.add_parser("keys")
+    tk.add_argument("text")
     sub.add_parser("ui")
     tl = sub.add_parser("tap-label")
     tl.add_argument("needle")
@@ -116,6 +142,8 @@ def main() -> None:
         key(args.name)
     elif args.cmd == "type":
         type_text(args.text)
+    elif args.cmd == "keys":
+        type_keys(args.text)
     elif args.cmd == "ui":
         dump_ui()
     elif args.cmd == "tap-label":

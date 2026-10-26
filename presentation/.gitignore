@@ -1,0 +1,10 @@
+.venv/
+demo/raw/
+*.apk
+assets/preview/
+assets/framed/
+assets/screenshots/_current.png
+assets/screenshots/_signin.png
+assets/screenshots/_filled.png
+assets/screenshots/_ask_typed.png
+assets/screenshots/_ui.xml

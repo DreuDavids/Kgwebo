@@ -41,6 +41,8 @@ void main() {
     final turn = await orchestrator.handle('How much cash do I have?');
 
     expect(llm.completeCalls, 1);
+    expect(llm.lastSnapshot, isNotNull);
+    expect(llm.lastCurrencyCode, 'BWP');
     expect(turn.source, CopilotSource.verifiedRecords);
     expect(
       turn.reply,
@@ -161,6 +163,31 @@ void main() {
       expect(turn.drafts.single.item, 'domains');
       expect(turn.drafts.single.amountMinor, 10000);
       expect(turn.drafts.single.paymentStatus, PaymentStatus.paid);
+    },
+  );
+
+  test(
+    'drafts omit the cash snapshot and still send the book currency',
+    () async {
+      final llm = ScriptedCopilotLlmClient(null);
+      const zar = VerifiedFinancialSnapshot(
+        currencyCode: 'ZAR',
+        recordedCashMinor: 255000,
+        recordedSalesMinor: 50000,
+        recordedExpensesMinor: 10000,
+        netOperatingResultMinor: 40000,
+        periodLabel: 'October 2026',
+        source: 'FinancialEngine',
+      );
+      final orchestrator = CopilotOrchestrator(
+        llm: llm,
+        finances: const _SnapshotPort(zar),
+      );
+
+      await orchestrator.handle('I bought 2 domains at 50 each');
+
+      expect(llm.lastSnapshot, isNull);
+      expect(llm.lastCurrencyCode, 'ZAR');
     },
   );
 

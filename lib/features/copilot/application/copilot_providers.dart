@@ -6,6 +6,7 @@ import '../../recommendations/application/recommendations_controller.dart';
 import '../data/dashboard_financial_read_port.dart';
 import '../data/device_copilot_voice.dart';
 import '../data/gemini_edge_client.dart';
+import 'copilot_book.dart';
 import 'copilot_commit.dart';
 import 'copilot_llm_client.dart';
 import 'copilot_orchestrator.dart';
@@ -29,9 +30,11 @@ final financialReadPortProvider = Provider<FinancialReadPort>((ref) {
 });
 
 final copilotOrchestratorProvider = Provider<CopilotOrchestrator>((ref) {
+  final finances = ref.watch(financialReadPortProvider);
   return CopilotOrchestrator(
     llm: ref.watch(copilotLlmClientProvider),
-    finances: ref.watch(financialReadPortProvider),
+    finances: finances,
+    book: finances is CopilotBookPort ? finances as CopilotBookPort : null,
     recommendations: ref.watch(recommendationsControllerProvider).items,
   );
 });

@@ -1,3 +1,4 @@
+import '../../../core/finance/business_calendar.dart';
 import '../../../core/finance/ledger_entry.dart';
 import '../../../core/money/currency_names.dart';
 import '../../../core/money/money_parser.dart';
@@ -24,9 +25,23 @@ final _qtyPattern = RegExp(
 );
 
 final _qtyBeforeNoun = RegExp(
-  r'\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|a|an)\s+[a-z]{3,}\b',
+  r'\b(\d+|one|two|three|four|five|six|seven|eight|nine|ten|a|an)\s+([a-z]{3,})\b',
   caseSensitive: false,
 );
+
+const _qtyNounSkip = {
+  'for',
+  'the',
+  'and',
+  'from',
+  'with',
+  'myself',
+  'home',
+  'pula',
+  'rand',
+  'each',
+  'this',
+};
 
 final _prefixAmount = RegExp(
   r'\b(p|pula|zar|r|nad|usd)\s*(\d+(?:\.\d{1,2})?)\b',
@@ -59,6 +74,7 @@ final _bareNumber = RegExp(r'\b(\d+(?:\.\d{1,2})?)\b');
 List<ExtractedDraft> extractHeuristicDrafts(
   String raw, {
   String currencyCode = 'BWP',
+  DateTime? now,
 }) {
   final text = raw.trim();
   if (text.isEmpty) {
@@ -67,7 +83,11 @@ List<ExtractedDraft> extractHeuristicDrafts(
   final chunks = _splitEvents(text);
   final drafts = <ExtractedDraft>[];
   for (final chunk in chunks) {
-    final draft = _extractOne(chunk, currencyCode);
+    final draft = _extractOne(
+      chunk,
+      currencyCode,
+      now ?? DateTime.now().toUtc(),
+    );
     if (draft != null) {
       drafts.add(draft);
     }
@@ -94,7 +114,7 @@ List<String> _splitEvents(String text) {
   return [text];
 }
 
-ExtractedDraft? _extractOne(String chunk, String currencyCode) {
+ExtractedDraft? _extractOne(String chunk, String currencyCode, DateTime now) {
   final lower = chunk.toLowerCase();
   final type = _typeOf(lower);
   if (type == null) {
@@ -104,9 +124,10 @@ ExtractedDraft? _extractOne(String chunk, String currencyCode) {
   final each = lower.contains('each');
   final money = _firstAmount(lower);
   final qty = _quantityOf(_quantityToken(lower, money));
-  final item = _guessItem(lower, type);
+  final item = _guessItem(lower, type) ?? (money == null ? null : 'other');
   final category = _guessCategory(type, lower, item);
   final payment = _guessPayment(lower, type);
+  final occurredOn = _guessOccurredOn(lower, now);
 
   if (money == null) {
     return ExtractedDraft(
@@ -115,6 +136,7 @@ ExtractedDraft? _extractOne(String chunk, String currencyCode) {
       quantity: qty,
       categoryCode: category,
       paymentStatus: payment,
+      occurredOn: occurredOn,
       businessCurrencyCode: currencyCode,
     );
   }
@@ -135,6 +157,7 @@ ExtractedDraft? _extractOne(String chunk, String currencyCode) {
     item: item,
     categoryCode: category,
     paymentStatus: payment,
+    occurredOn: occurredOn,
     detectedCurrencyCode: named ?? currencyCode,
     businessCurrencyCode: currencyCode,
     note:
@@ -203,9 +226,12 @@ _MoneyHit? _firstAmount(String lower) {
     }
   }
   final qtyHit = _qtyBeforeNoun.firstMatch(lower);
+  final qtyNoun = qtyHit?.group(2)?.toLowerCase();
+  final qtyIsItem =
+      qtyHit != null && qtyNoun != null && !_qtyNounSkip.contains(qtyNoun);
   final numbers = _bareNumber.allMatches(lower).toList();
   for (final hit in numbers.reversed) {
-    if (qtyHit != null && hit.start == qtyHit.start) {
+    if (qtyIsItem && hit.start == qtyHit.start) {
       continue;
     }
     final minor = tryParseMinorUnits(hit.group(1)!);
@@ -226,20 +252,30 @@ String? _quantityToken(String lower, _MoneyHit? money) {
         .replaceAll(_atPrice, ' ')
         .replaceAll(_verbAmount, ' ');
   }
-  return _qtyBeforeNoun.firstMatch(text)?.group(1) ??
-      _qtyPattern.firstMatch(text)?.group(1);
+  final beforeNoun = _qtyBeforeNoun.firstMatch(text);
+  final noun = beforeNoun?.group(2)?.toLowerCase();
+  if (beforeNoun != null && noun != null && !_qtyNounSkip.contains(noun)) {
+    return beforeNoun.group(1);
+  }
+  return _qtyPattern.firstMatch(text)?.group(1);
 }
 
 MoneyMovementType? _typeOf(String lower) {
+  if (RegExp(r'\b(took|drawn|drawing|withdraw|ke tsere)\b').hasMatch(lower)) {
+    return MoneyMovementType.ownerWithdrawal;
+  }
   if (lower.contains('sold') ||
       lower.contains('sale') ||
-      lower.contains('received')) {
+      lower.contains('received') ||
+      lower.contains('rekisitse')) {
     return MoneyMovementType.sale;
   }
   if (lower.contains('bought') ||
       lower.contains('spent') ||
       lower.contains('paid') ||
-      lower.contains('expense')) {
+      lower.contains('expense') ||
+      lower.contains('rekile') ||
+      lower.contains('airtime')) {
     return MoneyMovementType.expense;
   }
   return null;
@@ -258,15 +294,20 @@ int? _quantityOf(String? raw) {
 
 PaymentStatus? _guessPayment(String lower, MoneyMovementType type) {
   if (RegExp(
-    r'\b(unpaid|not (yet )?paid|on credit|will pay|still owe)\b',
+    r'\b(unpaid|not (yet )?paid|on credit|ka mokgele|will pay|still owe)\b',
   ).hasMatch(lower)) {
     return PaymentStatus.unpaid;
   }
-  if (RegExp(r'\b(bought|spent|paid|already paid)\b').hasMatch(lower)) {
+  if (RegExp(
+    r'\b(bought|spent|paid|already paid|rekile|rekisitse)\b',
+  ).hasMatch(lower)) {
     return PaymentStatus.paid;
   }
   if (type == MoneyMovementType.sale &&
       RegExp(r'\b(sold|received|got paid)\b').hasMatch(lower)) {
+    return PaymentStatus.paid;
+  }
+  if (type == MoneyMovementType.ownerWithdrawal) {
     return PaymentStatus.paid;
   }
   return null;
@@ -276,28 +317,40 @@ String? _guessItem(String lower, MoneyMovementType type) {
   if (type == MoneyMovementType.expense && lower.contains('transport')) {
     return 'transport';
   }
+  if (lower.contains('airtime')) {
+    return 'airtime';
+  }
   if (lower.contains('domain')) {
     return 'domains';
   }
-  if (lower.contains('shirt')) {
+  if (lower.contains('shirt') || lower.contains('dihempe')) {
     return 'shirts';
   }
+  if (lower.contains('fat cake')) {
+    return 'fat cakes';
+  }
   final bought = RegExp(
-    r'\b(?:bought|spent|paid|sold)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|a|an)\s+([a-z]{3,})',
+    r'\b(?:bought|spent|paid|sold|rekile|rekisitse)\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten|a|an)\s+([a-z]{3,})',
     caseSensitive: false,
   ).firstMatch(lower);
   final noun = bought?.group(1);
   if (noun != null &&
-      !{'pula', 'pulas', 'rand', 'rands', 'each', 'for'}.contains(noun)) {
+      !{'pula', 'pulas', 'rand', 'rands', 'each', 'for', 'ka'}.contains(noun)) {
     return noun;
   }
   return null;
 }
 
 String? _guessCategory(MoneyMovementType type, String lower, String? item) {
+  if (type == MoneyMovementType.ownerWithdrawal) {
+    return 'owner_withdrawal';
+  }
   if (type == MoneyMovementType.expense) {
     if (lower.contains('transport') || item == 'transport') {
       return 'transport';
+    }
+    if (lower.contains('airtime') || lower.contains('utilit')) {
+      return 'utilities';
     }
     if (lower.contains('domain') || lower.contains('fee')) {
       return 'fees';
@@ -308,10 +361,31 @@ String? _guessCategory(MoneyMovementType type, String lower, String? item) {
     return 'other_expense';
   }
   if (type == MoneyMovementType.sale) {
-    if (lower.contains('shirt') || lower.contains('good')) {
+    if (lower.contains('shirt') ||
+        lower.contains('good') ||
+        lower.contains('fat cake')) {
       return 'goods';
     }
     return 'other_sale';
+  }
+  return null;
+}
+
+DateTime? _guessOccurredOn(String lower, DateTime now) {
+  final wall = BusinessCalendar.gaboroneWallTime(now);
+  if (lower.contains('yesterday') || lower.contains('maabane')) {
+    return BusinessCalendar.utcFromGaborone(
+      year: wall.year,
+      month: wall.month,
+      day: wall.day - 1,
+    );
+  }
+  if (lower.contains('today') || lower.contains('kajeno')) {
+    return BusinessCalendar.utcFromGaborone(
+      year: wall.year,
+      month: wall.month,
+      day: wall.day,
+    );
   }
   return null;
 }

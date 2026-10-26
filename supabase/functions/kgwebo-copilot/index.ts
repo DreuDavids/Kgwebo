@@ -7,24 +7,33 @@ const BASE_URL =
 function systemPrompt(currencyCode: string): string {
   return `You are Ask inside Kgwebo, a business bookkeeping app.
 The signed-in business records money in ${currencyCode}. Unnamed amounts are ${currencyCode}. Never convert a different named currency into ${currencyCode}.
-Reply in the user's language.
+Reply in the user's language, including Setswana mixed with English.
 Return JSON only with this shape:
-{"language":"en","intent":"finances"|"howto"|"drafts"|"recommendations"|"navigate"|"chat","reply":"string","chart":"totals"|"cash_path"|null,"navigate":"recordSale"|"recordExpense"|"transactions"|"products"|"cashFlow"|"recommendations"|"reports"|"dashboard"|"settings"|"businessProfile"|null,"transactions":[{"type":"sale"|"expense","amount_pula":"12.50"|null,"item":string|null,"quantity":integer|null,"category":string|null,"note":string|null,"payment_status":"paid"|"unpaid"|null,"currency":"${currencyCode}"|"ZAR"|"BWP"|null}]}
+{"language":"en","intent":"finances"|"howto"|"drafts"|"recommendations"|"navigate"|"chat","reply":"string","chart":"totals"|"cash_path"|null,"navigate":"recordSale"|"recordExpense"|"transactions"|"products"|"cashFlow"|"recommendations"|"reports"|"dashboard"|"settings"|"businessProfile"|null,"transactions":[{"type":"sale"|"expense"|"owner_withdrawal","amount_pula":"12.50"|null,"item":string|null,"quantity":integer|null,"category":string|null,"note":string|null,"payment_status":"paid"|"unpaid"|null,"currency":"${currencyCode}"|"ZAR"|"BWP"|null}]}
 Rules:
-- The snapshot figures are the only allowed money facts. Do not add, subtract, forecast sales, or invent a balance.
+- Snapshot and book figures are the only allowed money facts. Do not add, subtract, forecast, or invent a balance.
 - If the user asks about cash, sales, expenses or profit, set intent to finances, copy snapshot amounts into reply without changing them, and set chart to totals.
-- If the user describes a sale or expense, set intent to drafts and fill transactions from the message. Multiply quantity by a unit price when they say "each". Infer payment_status "paid" from bought, spent, or paid.
+- If there is no snapshot, do not invent cash. The phone already answers cash, bills and stock from Kgwebo records.
+- If the user describes a sale, expense, or owner withdrawal, set intent to drafts and fill transactions from the message. Multiply quantity by a unit price when they say "each". Infer payment_status paid from bought, spent, paid, rekile, or rekisitse. Infer unpaid from on credit or ka mokgele.
 - amount_pula is the amount in ${currencyCode} (the field name is historical). Use null and set currency when the user named a different currency.
 - Do not ask for facts the user already gave. If they asked you to record it, draft it.
-- Never invent dates or product ids. Use null for unknown fields.
+- Never invent dates or product ids. You may repeat a product name from book.products. Use null for unknown fields.
 - Recommendations must only restate titles provided by the app. Do not invent advice.
-- category may only be goods, services, other_sale, stock, rent, transport, utilities, wages, fees, other_expense.
+- category may only be goods, services, other_sale, stock, rent, transport, utilities, wages, fees, other_expense, owner_withdrawal.
 - Do not write SQL. Do not claim a transaction was saved.`;
 }
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { status: 204 });
+  }
+  const userId = await requireUser(req);
+  if (userId instanceof Response) {
+    return userId;
+  }
+  const allowed = await allowRate(userId);
+  if (!allowed) {
+    return json({ error: "Ask is busy. Try again in a few minutes." }, 429);
   }
   const apiKey = Deno.env.get("LITELLM_API_KEY");
   if (!apiKey) {
@@ -48,18 +57,18 @@ Deno.serve(async (req) => {
     snapshot && typeof snapshot === "object"
       ? (snapshot as Record<string, unknown>)
       : null;
-  const currencyCode =
-    typeof snapshotRecord?.currencyCode === "string" &&
-    snapshotRecord.currencyCode.trim().length === 3
-      ? snapshotRecord.currencyCode.trim().toUpperCase()
-      : "BWP";
+  const currencyCode = namedCurrency(
+    payload.currencyCode ?? snapshotRecord?.currencyCode,
+  );
   const titles = Array.isArray(payload.recommendationTitles)
     ? payload.recommendationTitles
     : [];
 
   const userBlock = JSON.stringify({
     message,
+    currencyCode,
     snapshot,
+    book: payload.book ?? null,
     recommendationTitles: titles,
   });
 
@@ -188,6 +197,66 @@ function isolateJson(raw: string): string {
 
 function sanitize(raw: string, apiKey: string): string {
   return raw.replaceAll(apiKey, "[redacted]").slice(0, 400);
+}
+
+async function requireUser(req: Request): Promise<string | Response> {
+  const auth = req.headers.get("Authorization") ?? "";
+  if (!auth.toLowerCase().startsWith("bearer ")) {
+    return json({ error: "Sign in to use Ask." }, 401);
+  }
+  const url = Deno.env.get("SUPABASE_URL");
+  const anon = Deno.env.get("SUPABASE_ANON_KEY");
+  if (!url || !anon) {
+    return json({ error: "Ask is not configured." }, 503);
+  }
+  const res = await fetch(`${url.replace(/\/$/, "")}/auth/v1/user`, {
+    headers: { Authorization: auth, apikey: anon },
+  });
+  if (!res.ok) {
+    return json({ error: "Sign in to use Ask." }, 401);
+  }
+  const body = (await res.json()) as { id?: unknown };
+  if (typeof body.id !== "string" || body.id.length === 0) {
+    return json({ error: "Sign in to use Ask." }, 401);
+  }
+  return body.id;
+}
+
+async function allowRate(userId: string): Promise<boolean> {
+  const url = Deno.env.get("SUPABASE_URL");
+  const service = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  if (!url || !service) {
+    return true;
+  }
+  const res = await fetch(
+    `${url.replace(/\/$/, "")}/rest/v1/rpc/kgwebo_touch_copilot_rate`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${service}`,
+        apikey: service,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        p_user_id: userId,
+        p_limit: 40,
+        p_window_seconds: 600,
+      }),
+    },
+  );
+  if (!res.ok) {
+    return true;
+  }
+  const allowed = await res.json();
+  return allowed === true;
+}
+
+function namedCurrency(value: unknown): string {
+  if (typeof value !== "string") {
+    return "BWP";
+  }
+  const code = value.trim().toUpperCase();
+  return /^[A-Z]{3}$/.test(code) ? code : "BWP";
 }
 
 function json(value: unknown, status: number): Response {

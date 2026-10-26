@@ -41,6 +41,13 @@ class CopilotTurn {
   final String? warning;
   final CopilotOffer offer;
 
+  bool get shouldSpeak {
+    if (source == CopilotSource.verifiedRecords) {
+      return false;
+    }
+    return reply.trim().length <= 180;
+  }
+
   CopilotTurn copyWith({
     String? reply,
     CopilotSource? source,

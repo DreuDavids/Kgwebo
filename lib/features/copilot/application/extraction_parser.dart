@@ -130,6 +130,9 @@ MoneyMovementType? _parseType(Object? raw) {
   return switch (raw.trim().toLowerCase()) {
     'sale' => MoneyMovementType.sale,
     'expense' => MoneyMovementType.expense,
+    'owner_withdrawal' || 'withdrawal' => MoneyMovementType.ownerWithdrawal,
+    'owner_contribution' ||
+    'contribution' => MoneyMovementType.ownerContribution,
     _ => null,
   };
 }

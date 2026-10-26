@@ -26,6 +26,7 @@ import '../application/copilot_hands_free.dart';
 import '../application/copilot_providers.dart';
 import '../application/copilot_voice.dart';
 import '../application/financial_read_port.dart';
+import '../domain/copilot_session.dart';
 import '../domain/copilot_turn.dart';
 import '../domain/extracted_draft.dart';
 import 'widgets/copilot_thinking.dart';
@@ -53,7 +54,9 @@ class _CopilotPageState extends ConsumerState<CopilotPage> {
   ];
   bool _working = false;
   bool _writing = false;
+  bool _listening = false;
   CopilotOffer _pendingOffer = CopilotOffer.none;
+  CopilotSession _askSession = const CopilotSession();
 
   @override
   void initState() {
@@ -137,6 +140,40 @@ class _CopilotPageState extends ConsumerState<CopilotPage> {
                         ),
                         const SizedBox(height: KgweboSpacing.sm),
                       ],
+                      if (_messages.length == 1 && !_working)
+                        Wrap(
+                          spacing: KgweboSpacing.sm,
+                          runSpacing: KgweboSpacing.sm,
+                          children: [
+                            KgweboButton(
+                              key: const Key('copilot-chip-cash'),
+                              label: 'How much cash do I have?',
+                              variant: KgweboButtonVariant.secondary,
+                              onPressed:
+                                  () => unawaited(
+                                    _sendText('How much cash do I have?'),
+                                  ),
+                            ),
+                            KgweboButton(
+                              key: const Key('copilot-chip-expense'),
+                              label: 'Record an expense',
+                              variant: KgweboButtonVariant.secondary,
+                              onPressed:
+                                  () => unawaited(
+                                    _sendText('I want to record an expense'),
+                                  ),
+                            ),
+                            KgweboButton(
+                              key: const Key('copilot-chip-watch'),
+                              label: 'What should I watch?',
+                              variant: KgweboButtonVariant.secondary,
+                              onPressed:
+                                  () => unawaited(
+                                    _sendText('What should I watch?'),
+                                  ),
+                            ),
+                          ],
+                        ),
                       if (_working)
                         CopilotThinking(
                           key: const Key('copilot-thinking'),
@@ -167,12 +204,30 @@ class _CopilotPageState extends ConsumerState<CopilotPage> {
                       onSubmitted: (_) => _send(),
                     ),
                     const SizedBox(height: KgweboSpacing.sm),
-                    KgweboButton(
-                      key: const Key('copilot-send'),
-                      label: 'Send',
-                      expanded: true,
-                      isLoading: _working,
-                      onPressed: _working ? null : _send,
+                    Row(
+                      children: [
+                        KgweboButton(
+                          key: const Key('copilot-mic'),
+                          label: _listening ? 'Listening' : 'Mic',
+                          variant: KgweboButtonVariant.secondary,
+                          icon: Icons.mic_none,
+                          onPressed:
+                              _working || _listening
+                                  ? null
+                                  : () => unawaited(_listen()),
+                        ),
+                        const SizedBox(width: KgweboSpacing.sm),
+                        Expanded(
+                          child: KgweboButton(
+                            key: const Key('copilot-send'),
+                            label: 'Send',
+                            expanded: true,
+                            isLoading: _working,
+                            onPressed:
+                                _working ? null : () => unawaited(_send()),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -195,6 +250,26 @@ class _CopilotPageState extends ConsumerState<CopilotPage> {
         curve: Curves.easeOut,
       );
     });
+  }
+
+  Future<void> _sendText(String question) async {
+    _controller.text = question;
+    await _send();
+  }
+
+  Future<void> _listen() async {
+    setState(() => _listening = true);
+    try {
+      final heard = await _voice.listenOnce();
+      if (!mounted || heard == null) {
+        return;
+      }
+      _controller.text = heard;
+    } finally {
+      if (mounted) {
+        setState(() => _listening = false);
+      }
+    }
   }
 
   Future<void> _send() async {
@@ -249,11 +324,18 @@ class _CopilotPageState extends ConsumerState<CopilotPage> {
           }
         }
       }
-      final turn = await ref.read(copilotOrchestratorProvider).handle(question);
+      final turn = await ref
+          .read(copilotOrchestratorProvider)
+          .handle(question, session: _askSession);
       if (!mounted) {
         return;
       }
       _pendingOffer = turn.offer;
+      _askSession = _askSession.copyWith(
+        lastUserText: question,
+        lastDrafts:
+            turn.drafts.isNotEmpty ? turn.drafts : _askSession.lastDrafts,
+      );
       await _appendAssistant(turn);
       if (!mounted) {
         return;
@@ -287,7 +369,9 @@ class _CopilotPageState extends ConsumerState<CopilotPage> {
       _messages.add(_ChatItem.assistant(turn, animate: animate));
     });
     _scrollToEnd();
-    unawaited(_voice.speak(turn.reply));
+    if (turn.shouldSpeak) {
+      unawaited(_voice.speak(turn.reply, languageCode: turn.languageCode));
+    }
   }
 
   String _bookCurrencyCode() {
@@ -413,6 +497,10 @@ class _CopilotPageState extends ConsumerState<CopilotPage> {
         return;
       }
       final drafts = [...turn.drafts]..removeAt(draftIndex);
+      _askSession = _askSession.copyWith(
+        hasConfirmedOnce: true,
+        lastDrafts: drafts,
+      );
       setState(() {
         _messages[messageIndex] = _ChatItem.assistant(
           turn.copyWith(
@@ -754,9 +842,14 @@ class _DraftCardState extends State<_DraftCard> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              widget.draft.type == MoneyMovementType.sale
-                  ? 'Suggested sale'
-                  : 'Suggested expense',
+              switch (widget.draft.type) {
+                MoneyMovementType.sale => 'Suggested sale',
+                MoneyMovementType.ownerWithdrawal =>
+                  'Suggested owner withdrawal',
+                MoneyMovementType.ownerContribution =>
+                  'Suggested owner contribution',
+                _ => 'Suggested expense',
+              },
               style: Theme.of(
                 context,
               ).textTheme.titleMedium?.copyWith(color: KgweboColors.ink),

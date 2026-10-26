@@ -13,6 +13,8 @@ class GeminiEdgeCopilotClient implements CopilotLlmClient {
     required String userText,
     required VerifiedFinancialSnapshot? snapshot,
     required List<String> recommendationTitles,
+    required String currencyCode,
+    Map<String, Object?>? bookDigest,
   }) async {
     if (!kgweboSupabaseIsInitialized) {
       return null;
@@ -22,6 +24,7 @@ class GeminiEdgeCopilotClient implements CopilotLlmClient {
         'kgwebo-copilot',
         body: {
           'message': userText,
+          'currencyCode': currencyCode,
           'recommendationTitles': recommendationTitles,
           'snapshot':
               snapshot == null
@@ -35,6 +38,7 @@ class GeminiEdgeCopilotClient implements CopilotLlmClient {
                     'periodLabel': snapshot.periodLabel,
                     'source': snapshot.source,
                   },
+          if (bookDigest != null) 'book': bookDigest,
         },
       );
       final data = response.data;

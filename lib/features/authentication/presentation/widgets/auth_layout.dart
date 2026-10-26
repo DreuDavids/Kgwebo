@@ -6,6 +6,7 @@ import '../../../../app/theme/kgwebo_radii.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
 import '../../../../core/responsive/responsive_layout.dart';
 import '../../../../shared/widgets/kgwebo_brand_mark.dart';
+import '../../../../shared/widgets/kgwebo_illustration.dart';
 
 class AuthLayout extends StatelessWidget {
   const AuthLayout({
@@ -15,6 +16,7 @@ class AuthLayout extends StatelessWidget {
     this.subtitle,
     this.footer,
     this.showMark = true,
+    this.showIllustration = true,
   });
 
   final String title;
@@ -22,6 +24,9 @@ class AuthLayout extends StatelessWidget {
   final Widget child;
   final Widget? footer;
   final bool showMark;
+  final bool showIllustration;
+
+  static const double _illustrationMinHeight = 620;
 
   @override
   Widget build(BuildContext context) {
@@ -34,59 +39,82 @@ class AuthLayout extends StatelessWidget {
         child: KgweboContentConstraint(
           child: LayoutBuilder(
             builder: (context, constraints) {
-              return SingleChildScrollView(
-                padding: EdgeInsets.fromLTRB(
-                  KgweboSpacing.md,
-                  KgweboSpacing.lg,
-                  KgweboSpacing.md,
-                  KgweboSpacing.xl + bottom,
-                ),
-                child: ConstrainedBox(
-                  constraints: BoxConstraints(
-                    minHeight: constraints.maxHeight - KgweboSpacing.lg,
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (showMark) ...[
-                        const KgweboBrandMark(),
-                        const SizedBox(height: KgweboSpacing.lg),
-                      ],
-                      Text(
-                        title,
-                        style: textTheme.displayMedium?.copyWith(
-                          color: KgweboColors.ink,
-                        ),
-                      ),
-                      if (subtitle != null) ...[
-                        const SizedBox(height: KgweboSpacing.sm),
-                        Text(
-                          subtitle!,
-                          style: textTheme.bodyLarge?.copyWith(
-                            color: KgweboColors.inkMuted,
-                            height: 1.5,
+              final illustrationVisible =
+                  showIllustration &&
+                  bottom < 48 &&
+                  constraints.maxHeight >= _illustrationMinHeight;
+              return CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
+                      KgweboSpacing.md,
+                      KgweboSpacing.lg,
+                      KgweboSpacing.md,
+                      illustrationVisible ? KgweboSpacing.sm : KgweboSpacing.xl,
+                    ),
+                    sliver: SliverToBoxAdapter(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          if (showMark) ...[
+                            const KgweboBrandMark(),
+                            const SizedBox(height: KgweboSpacing.lg),
+                          ],
+                          Text(
+                            title,
+                            style: textTheme.displayMedium?.copyWith(
+                              color: KgweboColors.ink,
+                            ),
                           ),
+                          if (subtitle != null) ...[
+                            const SizedBox(height: KgweboSpacing.sm),
+                            Text(
+                              subtitle!,
+                              style: textTheme.bodyLarge?.copyWith(
+                                color: KgweboColors.inkMuted,
+                                height: 1.5,
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: KgweboSpacing.xl),
+                          DecoratedBox(
+                            decoration: const BoxDecoration(
+                              color: KgweboColors.surface,
+                              borderRadius: KgweboRadii.borderXl,
+                              boxShadow: KgweboElevation.soft,
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.all(KgweboSpacing.lg),
+                              child: child,
+                            ),
+                          ),
+                          if (footer != null) ...[
+                            const SizedBox(height: KgweboSpacing.lg),
+                            footer!,
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (illustrationVisible)
+                    const SliverFillRemaining(
+                      child: Padding(
+                        padding: EdgeInsets.fromLTRB(
+                          KgweboSpacing.md,
+                          KgweboSpacing.xs,
+                          KgweboSpacing.md,
+                          KgweboSpacing.md,
                         ),
-                      ],
-                      const SizedBox(height: KgweboSpacing.xl),
-                      DecoratedBox(
-                        decoration: const BoxDecoration(
-                          color: KgweboColors.surface,
-                          borderRadius: KgweboRadii.borderXl,
-                          boxShadow: KgweboElevation.soft,
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(KgweboSpacing.lg),
-                          child: child,
+                        child: KgweboIllustration(
+                          asset: KgweboIllustrationAssets.authScene,
+                          maxHeight: 240,
+                          alignment: Alignment.bottomCenter,
                         ),
                       ),
-                      if (footer != null) ...[
-                        const SizedBox(height: KgweboSpacing.lg),
-                        footer!,
-                      ],
-                    ],
-                  ),
-                ),
+                    )
+                  else
+                    SliverPadding(padding: EdgeInsets.only(bottom: bottom)),
+                ],
               );
             },
           ),

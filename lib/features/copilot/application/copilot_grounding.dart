@@ -4,9 +4,12 @@ import '../../../core/money/minor_units.dart';
 import '../../../core/money/money_formatter.dart';
 import '../../../core/money/money_parser.dart';
 import '../../recommendations/domain/visible_recommendation.dart';
+import '../domain/copilot_session.dart';
 import '../domain/copilot_turn.dart';
 import '../domain/extracted_draft.dart';
+import 'copilot_book.dart';
 import 'copilot_hands_free.dart';
+import 'copilot_intent.dart';
 import 'extraction_parser.dart';
 import 'financial_read_port.dart';
 import 'help_corpus.dart';
@@ -20,6 +23,8 @@ final _moneyToken = RegExp(
 CopilotTurn groundCopilotTurn({
   required String userText,
   required VerifiedFinancialSnapshot? snapshot,
+  CopilotBook? book,
+  CopilotSession? session,
   CopilotLlmDraft? llm,
   List<VisibleRecommendation> recommendations = const [],
   List<ExtractedDraft> localDrafts = const [],
@@ -27,22 +32,61 @@ CopilotTurn groundCopilotTurn({
 }) {
   final currencyCode = snapshot?.currencyCode ?? 'BWP';
   final spoken = CurrencyNames.spoken(currencyCode);
+  final resolvedBook = book ?? CopilotBook(snapshot: snapshot);
   final intent = (llm?.intent ?? _localIntent(userText)).toLowerCase();
-  final drafts = _mergeDrafts(
+  var drafts = _mergeDrafts(
     llm?.transactionsJson,
     localDrafts,
     userText,
     currencyCode,
   );
+  drafts = [for (final draft in drafts) _matchStock(draft, resolvedBook)];
   final offer = CopilotHandsFree.offerFor(userText);
+  final kind = classifyCopilotIntent(userText, currencyCode: currencyCode);
 
   if (offer != CopilotOffer.none &&
       !CopilotHandsFree.wantsOpenForm(userText) &&
       drafts.every((draft) => draft.amountMinor == null)) {
+    if (session?.hasConfirmedOnce == true) {
+      return CopilotTurn(
+        source: CopilotSource.appGuidance,
+        reply: CopilotHandsFree.helpPrompt(offer, currencyCode: currencyCode),
+        languageCode: llm?.languageCode,
+        offline: offline,
+      );
+    }
     return CopilotTurn(
       source: CopilotSource.appGuidance,
       reply: CopilotHandsFree.prompt(offer),
       offer: offer,
+      languageCode: llm?.languageCode,
+      offline: offline,
+    );
+  }
+
+  if (kind == CopilotIntentKind.bills) {
+    return CopilotTurn(
+      source: CopilotSource.verifiedRecords,
+      snapshot: snapshot,
+      reply: billsReply(resolvedBook),
+      languageCode: llm?.languageCode,
+      offline: offline,
+    );
+  }
+  if (kind == CopilotIntentKind.stock) {
+    return CopilotTurn(
+      source: CopilotSource.verifiedRecords,
+      snapshot: snapshot,
+      reply: stockReply(resolvedBook),
+      languageCode: llm?.languageCode,
+      offline: offline,
+    );
+  }
+  if (kind == CopilotIntentKind.recent) {
+    return CopilotTurn(
+      source: CopilotSource.verifiedRecords,
+      snapshot: snapshot,
+      reply: recentReply(resolvedBook),
       languageCode: llm?.languageCode,
       offline: offline,
     );
@@ -170,6 +214,14 @@ CopilotTurn groundCopilotTurn({
     languageCode: llm?.languageCode,
     offline: offline,
   );
+}
+
+ExtractedDraft _matchStock(ExtractedDraft draft, CopilotBook book) {
+  final matched = book.matchProductName(draft.item);
+  if (matched == null || draft.note != null) {
+    return draft;
+  }
+  return draft.copyWith(note: 'Matches stock: $matched');
 }
 
 List<ExtractedDraft> _mergeDrafts(

@@ -4,6 +4,7 @@
          grant them with the app; without them the backend cannot be reached. -->
     <uses-permission android:name="android.permission.INTERNET"/>
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.RECORD_AUDIO"/>
     <application
         android:label="Kgwebo"
         android:name="${applicationName}"
@@ -56,6 +57,9 @@
         </intent>
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService"/>
         </intent>
         <!-- Android 11+ package visibility: let url_launcher / auth find a
              browser for HTTPS callbacks. -->

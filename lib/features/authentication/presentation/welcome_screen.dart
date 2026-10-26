@@ -6,6 +6,7 @@ import '../../../app/theme/kgwebo_colors.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../shared/widgets/kgwebo_brand_mark.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
+import '../../../shared/widgets/kgwebo_illustration.dart';
 import '../../../shared/widgets/kgwebo_wash_scaffold.dart';
 
 class WelcomeScreen extends StatelessWidget {
@@ -23,55 +24,89 @@ class WelcomeScreen extends StatelessWidget {
 
     return KgweboWashScaffold(
       header: const KgweboBrandMark(),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(
-          KgweboSpacing.lg,
-          KgweboSpacing.md,
-          KgweboSpacing.lg,
-          KgweboSpacing.md,
-        ),
-        children: [
-          Text(
-            'See your business clearly.',
-            style: textTheme.displayMedium?.copyWith(color: KgweboColors.ink),
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          Text(
-            'Your business. Clearer decisions. Stronger growth.',
-            style: textTheme.titleMedium?.copyWith(
-              color: KgweboColors.inkMuted,
-            ),
-          ),
-          const SizedBox(height: KgweboSpacing.lg),
-          for (final bullet in _bullets) ...[
-            Padding(
-              padding: const EdgeInsets.only(bottom: KgweboSpacing.sm),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.only(top: 6),
-                    child: Icon(
-                      Icons.check_circle,
-                      size: 18,
-                      color: KgweboColors.ink,
-                    ),
-                  ),
-                  const SizedBox(width: KgweboSpacing.sm),
-                  Expanded(
-                    child: Text(
-                      bullet,
-                      style: textTheme.bodyLarge?.copyWith(
-                        color: KgweboColors.ink,
-                        height: 1.45,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          final showIllustration = constraints.maxHeight >= 420;
+          return CustomScrollView(
+            slivers: [
+              SliverPadding(
+                padding: const EdgeInsets.fromLTRB(
+                  KgweboSpacing.lg,
+                  KgweboSpacing.md,
+                  KgweboSpacing.lg,
+                  KgweboSpacing.md,
+                ),
+                sliver: SliverToBoxAdapter(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Text(
+                        'See your business clearly.',
+                        style: textTheme.displayMedium?.copyWith(
+                          color: KgweboColors.ink,
+                        ),
                       ),
+                      const SizedBox(height: KgweboSpacing.md),
+                      Text(
+                        'Your business. Clearer decisions. Stronger growth.',
+                        style: textTheme.titleMedium?.copyWith(
+                          color: KgweboColors.inkMuted,
+                        ),
+                      ),
+                      const SizedBox(height: KgweboSpacing.lg),
+                      for (final bullet in _bullets) ...[
+                        Padding(
+                          padding: const EdgeInsets.only(
+                            bottom: KgweboSpacing.sm,
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Padding(
+                                padding: EdgeInsets.only(top: 6),
+                                child: Icon(
+                                  Icons.check_circle,
+                                  size: 18,
+                                  color: KgweboColors.ink,
+                                ),
+                              ),
+                              const SizedBox(width: KgweboSpacing.sm),
+                              Expanded(
+                                child: Text(
+                                  bullet,
+                                  style: textTheme.bodyLarge?.copyWith(
+                                    color: KgweboColors.ink,
+                                    height: 1.45,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ],
+                  ),
+                ),
+              ),
+              if (showIllustration)
+                const SliverFillRemaining(
+                  child: Padding(
+                    padding: EdgeInsets.fromLTRB(
+                      KgweboSpacing.md,
+                      KgweboSpacing.xs,
+                      KgweboSpacing.md,
+                      KgweboSpacing.sm,
+                    ),
+                    child: KgweboIllustration(
+                      asset: KgweboIllustrationAssets.welcomeHero,
+                      maxHeight: 240,
+                      alignment: Alignment.bottomCenter,
                     ),
                   ),
-                ],
-              ),
-            ),
-          ],
-        ],
+                ),
+            ],
+          );
+        },
       ),
       footer: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,

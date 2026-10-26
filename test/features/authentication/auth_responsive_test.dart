@@ -71,7 +71,7 @@ void main() {
       expect(overflows, isEmpty, reason: overflows.join('\n'));
       expect(find.byType(SignInScreen), findsOneWidget);
       expect(find.text('Sign in'), findsWidgets);
-      expect(find.byType(SingleChildScrollView), findsWidgets);
+      expect(find.byType(CustomScrollView), findsWidgets);
     });
   }
 
@@ -105,7 +105,7 @@ void main() {
     expect(tester.takeException(), isNull);
     expect(overflows, isEmpty, reason: overflows.join('\n'));
     expect(find.byType(OnboardingScreen), findsOneWidget);
-    expect(find.byType(SingleChildScrollView), findsWidgets);
+    expect(find.byType(CustomScrollView), findsWidgets);
     await tester.ensureVisible(find.text('Continue'));
     expect(find.text('Continue'), findsOneWidget);
   });
