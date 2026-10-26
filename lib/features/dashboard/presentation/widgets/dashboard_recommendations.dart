@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 
+import '../../../../app/routes.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
+import '../../../../shared/widgets/kgwebo_button.dart';
 import '../../../../shared/widgets/kgwebo_section_heading.dart';
 import '../../../../shared/widgets/kgwebo_status_banner.dart';
 import '../../../recommendations/application/recommendations_controller.dart';
@@ -42,9 +45,14 @@ class DashboardRecommendations extends ConsumerWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const KgweboSectionHeading(
+        KgweboSectionHeading(
           title: 'What to do next',
           subtitle: 'One next step from your records.',
+          trailing: KgweboButton(
+            label: 'See all',
+            variant: KgweboButtonVariant.text,
+            onPressed: () => context.goNamed(AppRoutes.recommendationsName),
+          ),
         ),
         const SizedBox(height: KgweboSpacing.sm),
         if (state.isStale)

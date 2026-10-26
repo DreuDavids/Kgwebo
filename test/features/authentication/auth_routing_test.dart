@@ -72,6 +72,6 @@ void main() {
     );
 
     expect(find.byType(DashboardScreen), findsOneWidget);
-    expect(find.textContaining('Demo mode is on'), findsOneWidget);
+    expect(find.textContaining('This is a demo'), findsOneWidget);
   });
 }

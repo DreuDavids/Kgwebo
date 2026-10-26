@@ -1,11 +1,21 @@
 import 'business_calendar.dart';
 import 'ledger_entry.dart';
 
-/// Daily totals used by sparklines. Empty when there is nothing real to plot.
+/// One Gaborone day's recorded total. Empty series means there is nothing
+/// real to plot — never a fake flat line.
+class DailyBucket {
+  const DailyBucket({required this.startUtc, required this.amountMinor});
+
+  final DateTime startUtc;
+  final int amountMinor;
+}
+
+/// Daily totals used by dashboard charts. Empty when there is nothing real
+/// to plot.
 abstract final class SparklineSeries {
   /// One point per Gaborone day from [period.startInclusive] through [asOf].
   /// Returns an empty list when every bucket is zero so charts stay honest.
-  static List<double> dailyTotals({
+  static List<DailyBucket> dailyBuckets({
     required Iterable<LedgerEntry> entries,
     required ReportingPeriod period,
     required DateTime asOf,
@@ -27,7 +37,7 @@ abstract final class SparklineSeries {
       return const [];
     }
 
-    final buckets = List<double>.filled(dayCount, 0);
+    final amounts = List<int>.filled(dayCount, 0);
     var hasValue = false;
     for (final entry in entries) {
       if (!types.contains(entry.type) || !period.contains(entry.occurredAt)) {
@@ -37,11 +47,39 @@ abstract final class SparklineSeries {
       if (index < 0 || index >= dayCount) {
         continue;
       }
-      buckets[index] += entry.amountMinor.toDouble();
+      amounts[index] += entry.amountMinor;
       if (entry.amountMinor != 0) {
         hasValue = true;
       }
     }
-    return hasValue ? buckets : const [];
+    if (!hasValue) {
+      return const [];
+    }
+    return [
+      for (var i = 0; i < dayCount; i++)
+        DailyBucket(
+          startUtc: start.add(Duration(days: i)),
+          amountMinor: amounts[i],
+        ),
+    ];
+  }
+
+  /// One point per Gaborone day from [period.startInclusive] through [asOf].
+  /// Returns an empty list when every bucket is zero so charts stay honest.
+  static List<double> dailyTotals({
+    required Iterable<LedgerEntry> entries,
+    required ReportingPeriod period,
+    required DateTime asOf,
+    required Set<MoneyMovementType> types,
+  }) {
+    return [
+      for (final bucket in dailyBuckets(
+        entries: entries,
+        period: period,
+        asOf: asOf,
+        types: types,
+      ))
+        bucket.amountMinor.toDouble(),
+    ];
   }
 }

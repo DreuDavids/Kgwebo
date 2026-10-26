@@ -8,6 +8,8 @@ const _protected = {
   AppRoutes.cashFlow,
   AppRoutes.reports,
   AppRoutes.settings,
+  AppRoutes.privacy,
+  AppRoutes.ask,
   AppRoutes.businessProfile,
   AppRoutes.businessProfileEdit,
   AppRoutes.more,

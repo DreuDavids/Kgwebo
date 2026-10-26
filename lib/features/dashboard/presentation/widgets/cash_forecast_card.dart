@@ -33,18 +33,20 @@ class CashForecastCard extends StatelessWidget {
       forecast.currentCashMinor,
       currencyCode: currency,
     );
-    final known = MoneyFormatter.formatMinor(
-      forecast.overdueMinor + forecast.upcomingWithinHorizonMinor,
-      currencyCode: currency,
-    );
-    final incoming = MoneyFormatter.formatMinor(
-      forecast.expectedIncomingMinor,
-      currencyCode: currency,
-    );
+    final knownOut =
+        forecast.overdueMinor + forecast.upcomingWithinHorizonMinor;
+    final known = MoneyFormatter.formatMinor(knownOut, currencyCode: currency);
     final insufficient =
         forecast.firstInsufficientOn == null
             ? null
             : DateFormat.yMMMd().format(forecast.firstInsufficientOn!);
+    final billsLine =
+        knownOut == 0
+            ? 'No bills due in ${forecast.horizon.label}.'
+            : 'Subtracts $known due in ${forecast.horizon.label}.';
+    final extraLimitations = forecast.limitations.where(
+      (item) => item.code != CashForecastEngine.incomingNotForecast,
+    );
 
     return KgweboSoftCard(
       padding: const EdgeInsets.all(KgweboSpacing.lg),
@@ -52,7 +54,7 @@ class CashForecastCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Estimated cash after known commitments',
+            'Cash after known bills',
             style: textTheme.labelLarge?.copyWith(color: KgweboColors.inkMuted),
           ),
           const SizedBox(height: KgweboSpacing.xs),
@@ -65,16 +67,16 @@ class CashForecastCard extends StatelessWidget {
           ),
           const SizedBox(height: KgweboSpacing.sm),
           Text(
-            'Recorded cash $cash is unchanged. This ${forecast.horizon.label} estimate subtracts overdue bills and unpaid commitments due in the window ($known). Incoming cash is not forecast ($incoming). This is not guaranteed future cash.',
+            '$cash recorded. $billsLine Incoming cash is not forecast.',
             style: textTheme.bodyMedium?.copyWith(
               color: KgweboColors.inkMuted,
-              height: 1.5,
+              height: 1.45,
             ),
           ),
           if (insufficient != null) ...[
             const SizedBox(height: KgweboSpacing.sm),
             Text(
-              'Projected cash after known bills first goes below zero on $insufficient. That date is an estimate from saved commitments only.',
+              'Projected to run out on $insufficient.',
               style: textTheme.bodyMedium?.copyWith(
                 color: KgweboColors.ink,
                 height: 1.45,
@@ -88,35 +90,16 @@ class CashForecastCard extends StatelessWidget {
               compact: compact,
             ),
           ],
-          const SizedBox(height: KgweboSpacing.md),
-          if (!compact) ...[
+          for (final limitation in extraLimitations) ...[
+            const SizedBox(height: KgweboSpacing.sm),
             Text(
-              forecast.assumptions.first,
+              limitation.message,
               style: textTheme.bodySmall?.copyWith(
                 color: KgweboColors.inkMuted,
-                height: 1.45,
+                height: 1.4,
               ),
             ),
-            const SizedBox(height: KgweboSpacing.xs),
           ],
-          Text(
-            'Incoming cash is not forecast. Unpaid recorded sales have no payment due date.',
-            style: textTheme.bodySmall?.copyWith(
-              color: KgweboColors.inkMuted,
-              height: 1.45,
-            ),
-          ),
-          for (final limitation in forecast.limitations)
-            if (limitation.code != CashForecastEngine.incomingNotForecast) ...[
-              const SizedBox(height: KgweboSpacing.xs),
-              Text(
-                limitation.message,
-                style: textTheme.bodySmall?.copyWith(
-                  color: KgweboColors.inkMuted,
-                  height: 1.45,
-                ),
-              ),
-            ],
         ],
       ),
     );

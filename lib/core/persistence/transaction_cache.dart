@@ -46,6 +46,10 @@ class TransactionCache {
             tbl.type.equals(BusinessTransaction.typeToStorage(query.type!)),
       );
     }
+    final category = query.category?.trim();
+    if (category != null && category.isNotEmpty) {
+      statement.where((tbl) => tbl.category.equals(category));
+    }
     final period = query.period;
     if (period != null) {
       statement.where(

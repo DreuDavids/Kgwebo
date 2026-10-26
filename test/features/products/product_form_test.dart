@@ -76,6 +76,44 @@ void main() {
     return products;
   }
 
+  Future<void> pumpStock(
+    WidgetTester tester,
+    FakeProductRepository products,
+  ) async {
+    await setSurface(tester, const Size(360, 800));
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          appConfigProvider.overrideWithValue(
+            testConfig(anonKey: 'sb_publishable_test'),
+          ),
+          appSessionProvider.overrideWith(
+            (ref) => AppSessionReady(user: user, business: business),
+          ),
+          currentOwnerIdProvider.overrideWithValue(user.id),
+          authRepositoryProvider.overrideWith(
+            (ref) => FakeAuthRepository(user: user),
+          ),
+          onboardingRepositoryProvider.overrideWith(
+            (ref) => FakeOnboardingRepository(business: business),
+          ),
+          transactionRepositoryProvider.overrideWith(
+            (ref) => FakeTransactionRepository(),
+          ),
+          obligationRepositoryProvider.overrideWith(
+            (ref) => FakeObligationRepository(),
+          ),
+          productRepositoryProvider.overrideWith((ref) => products),
+        ],
+        child: MaterialApp(
+          theme: KgweboTheme.light(),
+          home: const ProductsScreen(),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+  }
+
   testWidgets('form validates empty name and price', (tester) async {
     await pumpForm(tester);
     await tester.ensureVisible(find.text('Save stock'));
@@ -150,6 +188,34 @@ void main() {
     );
     expect(find.text('Tomatoes'), findsOneWidget);
     expect(tester.takeException(), isNull);
+    expect(
+      find.text('Stock changes need an internet connection.'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('stock page hides the internet notice when stock is live', (
+    tester,
+  ) async {
+    await pumpStock(tester, FakeProductRepository(products: [sampleProduct()]));
+    expect(
+      find.text('Stock changes need an internet connection.'),
+      findsNothing,
+    );
+  });
+
+  testWidgets('stock page shows the internet notice when stock is stale', (
+    tester,
+  ) async {
+    await pumpStock(
+      tester,
+      FakeProductRepository(products: [sampleProduct()])
+        ..staleError = 'Check your connection and try again.',
+    );
+    expect(
+      find.text('Stock changes need an internet connection.'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('stock form requires a quantity and confirms write-offs', (

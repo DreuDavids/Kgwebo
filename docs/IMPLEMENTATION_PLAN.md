@@ -268,25 +268,88 @@ Verification executed 21 Oct 2026:
 
 **Exit:** Advertised offline behaviour has automated tests, emulator QA for the executed items, and live RLS/oversell evidence. Report PDF, on-device timeout-after-commit, and a physical handset pass remain outstanding. Recommendation: **ready for a stakeholder demo of offline writes; not ready for a wider beta.**
 
-## Phase 9 — Quality and demo polish
+## Phase 9 — Quality and demo polish — first pass 25 Oct 2026; close-out 26 Oct 2026
 
-- Format, analyze, unit, widget, and feasible integration tests.
-- Release APK only after a successful build whose output path is verified.
-- Demo seed and demonstration script.
-- Document remaining limitations.
+Audit of the live tree against the spec, not a new feature phase.
+
+- Previously documented SyncCoordinator races (owner-switch permanent, dropped `_runAgain`, unscoped manual retry) are **fixed in current code** with unit tests. Timeout-after-commit remains **unit-only**.
+- High-priority hardening in this pass: recovery OTP keeps the new-password screen even if `signedIn` fires; unknown PostgREST text is not shown; Reports copy was still the placeholder at that date; product amounts no longer hydrate as BWP; Home/Bills link to the full recommendations list.
+- PDF export was **not** implemented in Phase 9. Reports and PDF shipped in Phase 11.
+- Added `docs/SECURITY.md`, `docs/DATABASE_SCHEMA.md`, `docs/KNOWN_LIMITATIONS.md`, `docs/DEMO_GUIDE.md`, `docs/RESPONSIVE_TEST_MATRIX.md`. README no longer claims Phase 5-only scope.
+- Integration tests, physical-device QA, and a non-debug signing config remain outstanding.
+
+Verification executed 25 Oct 2026:
+
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (386)
+- `flutter build apk --debug --dart-define-from-file=.env` — `E:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (122,813,658 bytes, 25 Oct 2026 13:50)
+
+**Exit (this pass):** stakeholder demo of core flows is appropriate. Controlled beta only with documented limits. Not ready for wider release.
+
+## Phase 11 — Reports, PDF export, and remaining release readiness — 26 Oct 2026
+
+Production Reports, not a mock.
+
+- In-app summary and PDF use `ReportBuilder` → `FinancialEngine.summarize`. Widgets and PDF do not recalculate money.
+- Periods: This month, Last month, Last 3 months, This year, custom range. Boundaries are Africa/Gaborone `[startInclusive, endExclusive)`.
+- Preview and PDF share `ReportCopy`. Currency is the business record (including ZAR). Pending outbox rows are excluded. Period opening/closing cash is omitted when the 5,000-row history cap is hit.
+- PDF: `pdf` 3.11.3 with Plus Jakarta Sans, forest/ink layout, page numbers, cash-basis disclaimer. Share via `share_plus` 12.0.2 and the Android SEND pdf query. Temp files are deleted after share.
+- History: type, period, category, and search combine server-side. Changing filters resets pagination; `loadMore` appends.
+- Settings → Privacy documents session, cache, and unsupported notification/deletion/export actions. No fake toggles.
+- `SyncCoordinator` queues overlapping `process()` calls in a `LinkedHashMap` and applies a 45s dispatch timeout. Timeouts stay retryable; they are not permanent failures.
+- Release assemble fails closed without `android/key.properties` or `KGWEBO_*` env vars. Debug signing is unchanged. No keystore is in git.
+
+**Not executed in this session:** physical-device QA, live email OTP recovery, timeout-after-commit on a device, live two-user JWT replay, enabling HaveIBeenPwned leaked-password protection (still a Pro/dashboard toggle), Phase 8 test-account deletion.
+
+Verification executed 26 Oct 2026:
+
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (**467**)
+- `flutter build apk --debug --dart-define-from-file=.env` — `E:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (212,094,470 bytes, 26 Oct 2026 17:24)
+
+Android toolchain needed for that APK: Kotlin Gradle plugin **2.2.20**, `compileSdk` **36**, `minSdk` **24** (`share_plus` 12 and `flutter_tts` 4.2.5).
+
+**Exit (this pass):** stakeholder demo of Reports/PDF is appropriate. Controlled beta only with documented limits. Not ready for wider release.
+
+## Phase 9 close-out audit — 26 Oct 2026 evening
+
+Re-audited the live tree against the spec. Phase 11 Reports/PDF, Ask, history filters, Privacy, and fail-closed release signing are already in the tree. This pass did not add PDF, AI, or schema changes.
+
+High-priority hardening:
+
+- Product picker on the sale form formats catalogue prices with the business currency, not hardcoded BWP.
+- Opening cash uses the integer minor-unit parser (`allowZero: true`). Scientific notation and extra fraction digits are rejected.
+- Amount validation copy is currency-neutral.
+
+Sync: previously documented coordinator races remain **fixed**. `TEST_PLAN.md` 8e no longer claims a single `_queued` slot. Timeout-after-commit is still **unit-only**.
+
+Verification executed 26 Oct 2026 evening:
+
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (**470**)
+- `flutter build apk --debug --dart-define-from-file=.env` — `E:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (212,094,470 bytes, 26 Oct 2026 18:32)
+- Live advisors on `hhwxajxjmyjntxykptvs`: intended inventory RPC warnings; leaked-password protection still WARN
+- Live catalog SQL: FORCE RLS on all eight public tables
+- Two-user JWT isolation: **not** replayed this session
+
+**Exit (this pass):** stakeholder demo of core flows, including Reports/PDF, is appropriate. Controlled beta only with documented limits. Not ready for wider release.
 
 ## Current blockers
 
-| Item                        | Status                                                                                                                               |
-| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Kgwebo Supabase project     | **Resolved.** Use `hhwxajxjmyjntxykptvs`. Phase 2 schema (`profiles`, `businesses`) is applied with RLS.                             |
-| Auth email templates        | Styled OTP HTML is in `supabase/templates/`. Paste confirmation.html and recovery.html into Auth → Email Templates. OTP length is 6. |
-| Leaked-password protection  | Supabase advisor warning. Enable HaveIBeenPwned checks in the Auth dashboard if desired.                                             |
-| Service-role key in the app | Not required. Client uses publishable/anon key only.                                                                                 |
-| Android device attached     | API 37 emulator `emulator-5554` used for Phase 8 QA on 24 Oct 2026 (compact 1080×2340). No physical handset.                         |
-| Phase 8 test accounts       | Throwaway Auth users / businesses Phase 8 Stall A and B remain on `hhwxajxjmyjntxykptvs` and should be deleted when unused.          |
-| Android NDK mismatch        | Debug APK built with a plugin NDK warning. `android/app/build.gradle.kts` now pins `ndkVersion` to `27.0.12077973` for later builds. |
-| Optional AI entry           | Deferred by spec if it threatens core reliability.                                                                                   |
+| Item                        | Status                                                                                                                                                         |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Kgwebo Supabase project     | **Resolved.** Use `hhwxajxjmyjntxykptvs`. Phase 2 schema (`profiles`, `businesses`) is applied with RLS.                                                       |
+| Auth email templates        | Styled OTP HTML is in `supabase/templates/`. Paste confirmation.html and recovery.html into Auth → Email Templates. OTP length is 6.                           |
+| Leaked-password protection  | Still **disabled** (advisor, 26 Oct 2026). Org is **Free**; HaveIBeenPwned requires **Pro**. Dashboard-only after upgrade. See `docs/TEST_PLAN.md` section 8f. |
+| Service-role key in the app | Not required. Client uses publishable/anon key only.                                                                                                           |
+| Android device attached     | API 37 emulator `emulator-5554` used for Phase 8 QA on 24 Oct 2026 (compact 1080×2340). No physical handset.                                                   |
+| Phase 8 test accounts       | Identified, **not deleted**. Cleanup procedure in `docs/TEST_PLAN.md` section 8f. Do not delete DreuTech.                                                      |
+| Release signing             | Configured fail-closed. A real upload keystore must be created locally before any Play upload.                                                                 |
+| Android SDK floor           | `minSdk` is **24** and `compileSdk` is **36** because `flutter_tts` requires them. Devices below Android 7.0 are out of scope.                                 |
+| Optional AI entry           | Ask (Phase 10) is shipped as a grounded copilot. It is not a general accountant and does not convert ZAR into pula.                                            |
 
 ## Verification command after each phase
 

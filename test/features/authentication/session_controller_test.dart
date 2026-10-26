@@ -187,6 +187,28 @@ void main() {
     expect(controller.state, isA<AppSessionPasswordRecovery>());
     expect(auth.verifyRecoveryOtpCalls, 1);
   });
+
+  test(
+    'recovery OTP still requires a new password if signedIn fires',
+    () async {
+      final auth = FakeAuthRepository()..emitSignedInOnRecovery = true;
+      final controller = SessionController(
+        config: testConfig(anonKey: 'sb_publishable_test'),
+        auth: auth,
+        onboarding: FakeOnboardingRepository(business: business),
+      );
+      await pumpEventQueue();
+      await controller.requestPasswordReset('owner@example.com');
+      await controller.verifyRecoveryOtp(
+        email: 'owner@example.com',
+        token: '123456',
+      );
+      await pumpEventQueue();
+
+      expect(controller.state, isA<AppSessionPasswordRecovery>());
+      expect(controller.state, isNot(isA<AppSessionReady>()));
+    },
+  );
 }
 
 Future<void> pumpEventQueue() async {

@@ -27,6 +27,8 @@ import '../features/products/domain/stock_movement_type.dart';
 import '../features/reports/presentation/reports_screen.dart';
 import '../features/business/presentation/business_profile_edit_screen.dart';
 import '../features/business/presentation/business_profile_screen.dart';
+import '../features/copilot/presentation/copilot_page.dart';
+import '../features/settings/presentation/privacy_screen.dart';
 import '../features/settings/presentation/settings_screen.dart';
 import '../features/sync/presentation/sync_lifecycle_host.dart';
 import '../features/sync/presentation/sync_queue_screen.dart';
@@ -314,6 +316,11 @@ GoRouter createAppRouter({
                 builder: (context, state) => const SettingsScreen(),
                 routes: [
                   GoRoute(
+                    path: 'privacy',
+                    name: AppRoutes.privacyName,
+                    builder: (context, state) => const PrivacyScreen(),
+                  ),
+                  GoRoute(
                     path: 'sync',
                     name: AppRoutes.syncQueueName,
                     builder: (context, state) => const SyncQueueScreen(),
@@ -333,6 +340,15 @@ GoRouter createAppRouter({
                     ],
                   ),
                 ],
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: [
+              GoRoute(
+                path: AppRoutes.ask,
+                name: AppRoutes.askName,
+                builder: (context, state) => const CopilotPage(),
               ),
             ],
           ),

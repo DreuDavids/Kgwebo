@@ -5,7 +5,11 @@ import 'money_limits.dart';
 /// Two fraction digits are required by the current onboarding currencies.
 /// Extra fraction digits are rejected rather than truncated. Scientific
 /// notation and binary [double] conversion are not used.
-int? tryParseMinorUnits(String raw, {int decimals = 2}) {
+int? tryParseMinorUnits(
+  String raw, {
+  int decimals = 2,
+  bool allowZero = false,
+}) {
   if (decimals < 0 || decimals > 8) {
     return null;
   }
@@ -51,8 +55,8 @@ int? tryParseMinorUnits(String raw, {int decimals = 2}) {
     return null;
   }
   final minor = whole * scale + fraction;
-  if (minor < MoneyLimits.minPositiveMinorUnits ||
-      minor > MoneyLimits.maxMinorUnits) {
+  final minimum = allowZero ? 0 : MoneyLimits.minPositiveMinorUnits;
+  if (minor < minimum || minor > MoneyLimits.maxMinorUnits) {
     return null;
   }
   return minor;

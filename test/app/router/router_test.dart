@@ -30,6 +30,7 @@ void main() {
     await open(AppRoutes.cashFlow, 'Bills');
     await open(AppRoutes.reports, 'Reports');
     await open(AppRoutes.settings, 'Settings');
+    await open(AppRoutes.ask, 'Ask');
     await open(AppRoutes.more, 'More');
   });
 
@@ -57,7 +58,7 @@ void main() {
     expect(find.byType(ConfigErrorScreen), findsOneWidget);
     expect(find.text('Kgwebo cannot start'), findsOneWidget);
     expect(
-      find.textContaining('Demo data was not substituted'),
+      find.textContaining('This copy of the app is not ready'),
       findsOneWidget,
     );
     expect(find.byType(DashboardScreen), findsNothing);

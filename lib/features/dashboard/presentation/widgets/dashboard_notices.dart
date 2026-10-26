@@ -5,9 +5,6 @@ import '../../../../app/config/app_environment.dart';
 import '../../../../app/config/config_providers.dart';
 import '../../../../app/theme/kgwebo_spacing.dart';
 import '../../../../shared/widgets/kgwebo_status_banner.dart';
-import '../../../authentication/application/session_controller.dart';
-import '../../../authentication/domain/app_session.dart';
-import '../../../products/application/products_controller.dart';
 import '../../../sync/application/sync_queue_controller.dart';
 import '../../../sync/presentation/sync_notice.dart';
 import '../../application/dashboard_finance_controller.dart';
@@ -18,18 +15,14 @@ class DashboardNotices extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final config = ref.watch(appConfigProvider);
-    final session = ref.watch(appSessionProvider);
     final finance = ref.watch(dashboardFinanceControllerProvider);
-    final stockAttention = ref.watch(inventoryAttentionProvider).valueOrNull;
-    final restockCount = stockAttention?.restockProductIds.length ?? 0;
     final queue = ref.watch(syncQueueControllerProvider);
     final banners = <Widget>[
       if (queue.hasOpen) const KgweboSyncNotice(),
       if (finance.isPreview)
         const KgweboStatusBanner(
           tone: KgweboBannerTone.preview,
-          message:
-              'This is a labelled preview. Metric tiles are not your business data.',
+          message: 'These figures are examples, not your business.',
         )
       else if (finance.isStale)
         KgweboStatusBanner(
@@ -49,39 +42,10 @@ class DashboardNotices extends ConsumerWidget {
           message:
               'Totals use the most recent 5,000 confirmed transactions. Older rows are not included in this summary.',
         ),
-      if (finance.summary != null && finance.summary!.skippedMixedCurrency > 0)
-        KgweboStatusBanner(
-          tone: KgweboBannerTone.warning,
-          message:
-              '${finance.summary!.skippedMixedCurrency} confirmed rows in another currency were excluded. These totals are not a mixed-currency conversion.',
-        ),
-      if (config.runtimeMode == AppRuntimeMode.local)
-        KgweboStatusBanner(
-          tone: KgweboBannerTone.warning,
-          message:
-              config.issues.isEmpty
-                  ? 'Running in local preview. Backend credentials are not complete.'
-                  : config.issues.first,
-        ),
       if (config.runtimeMode == AppRuntimeMode.demo)
         const KgweboStatusBanner(
           tone: KgweboBannerTone.info,
-          message:
-              'Demo mode is on. These screens do not write to a live Kgwebo account.',
-        ),
-      if (session is AppSessionReady &&
-          finance.summary != null &&
-          finance.summary!.countedEntries == 0)
-        const KgweboStatusBanner(
-          tone: KgweboBannerTone.info,
-          message:
-              'No sales or expenses are recorded yet. Cash shown is your opening / starting cash, which is not revenue.',
-        ),
-      if (session is AppSessionReady && restockCount > 0)
-        KgweboStatusBanner(
-          tone: KgweboBannerTone.warning,
-          message:
-              '$restockCount product${restockCount == 1 ? '' : 's'} need restocking. Open Stock to review. Inventory value is not cash.',
+          message: 'This is a demo. Figures here are examples.',
         ),
     ];
 

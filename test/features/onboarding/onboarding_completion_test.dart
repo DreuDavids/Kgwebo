@@ -71,4 +71,17 @@ void main() {
     expect(parseOpeningBalanceMinor('  '), 0);
     expect(parseOpeningBalanceMinor('10.50'), 1050);
   });
+
+  test('opening cash uses integer minor units, not binary doubles', () {
+    expect(parseOpeningBalanceMinor('0'), 0);
+    expect(parseOpeningBalanceMinor('0.00'), 0);
+    expect(parseOpeningBalanceMinor('0.10'), 10);
+    expect(parseOpeningBalanceMinor('0.20'), 20);
+    expect(
+      parseOpeningBalanceMinor('0.10') + parseOpeningBalanceMinor('0.20'),
+      30,
+    );
+    expect(tryParseOpeningBalanceMinor('1e2'), isNull);
+    expect(tryParseOpeningBalanceMinor('12.505'), isNull);
+  });
 }

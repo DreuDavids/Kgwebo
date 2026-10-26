@@ -47,7 +47,7 @@ void main() {
     idempotencyKey: 'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
   );
 
-  SyncCoordinator coordinator() {
+  SyncCoordinator coordinator({Duration? dispatchTimeout}) {
     return SyncCoordinator(
       outbox: outbox,
       remoteTransactions: remoteTransactions,
@@ -57,6 +57,7 @@ void main() {
       currentOwnerId: () => currentOwner,
       currentBusinessId: () => currentBusiness,
       clock: () => now,
+      dispatchTimeout: dispatchTimeout,
     );
   }
 
@@ -542,6 +543,77 @@ void main() {
         ),
         isEmpty,
       );
+    },
+  );
+
+  test('a third overlapping process does not drop a queued owner', () async {
+    remoteTransactions.allowAnyOwner = true;
+    final laterDraft = TransactionDraft(
+      type: MoneyMovementType.expense,
+      amountText: '12.00',
+      occurredOn: DateTime(2026, 10, 21),
+      category: 'rent',
+      paymentMethod: PaymentMethod.cash,
+      paymentStatus: PaymentStatus.paid,
+      idempotencyKey: 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
+    );
+    await enqueueSale(ownerId: 'user-1', operationId: 'op-sale');
+    await outbox.enqueue(
+      ownerId: 'user-2',
+      businessId: 'biz-2',
+      operationType: OutboxOperationTypes.createTransactionV1,
+      payloadJson:
+          CreateTransactionPayload.fromDraft(
+            currencyCode: 'BWP',
+            draft: laterDraft,
+          ).encode(),
+      idempotencyKey: laterDraft.idempotencyKey,
+      operationId: 'op-user-2',
+      createdAt: now,
+    );
+    final gate = remoteTransactions.armCreateGate();
+    final coord = coordinator();
+    final first = coord.process(ownerId: 'user-1', businessId: 'biz-1');
+    await remoteTransactions.enteredCreate;
+    currentOwner = 'user-2';
+    currentBusiness = 'biz-2';
+    final second = coord.process(ownerId: 'user-2', businessId: 'biz-2');
+    expect((await second).alreadyRunning, isTrue);
+    final third = coord.process(ownerId: 'user-1', businessId: 'biz-1');
+    expect((await third).alreadyRunning, isTrue);
+    gate.complete();
+    await first;
+    final user2 = await outbox.listOpen(ownerId: 'user-2', businessId: 'biz-2');
+    expect(user2.where((item) => item.state == OutboxState.pending), isEmpty);
+    expect(
+      remoteTransactions.items.where((item) => item.ownerId == 'user-2'),
+      hasLength(1),
+    );
+  });
+
+  test(
+    'a hung dispatch is marked retryable instead of permanent or stuck syncing',
+    () async {
+      final gate = remoteTransactions.armCreateGate();
+      addTearDown(() {
+        if (!gate.isCompleted) {
+          gate.complete();
+        }
+      });
+      await enqueueSale();
+      final result = await coordinator(
+        dispatchTimeout: const Duration(milliseconds: 20),
+      ).process(ownerId: 'user-1', businessId: 'biz-1');
+      expect(result.permanent, 0);
+      expect(result.retryable, 1);
+      final open = await outbox.listOpen(
+        ownerId: 'user-1',
+        businessId: 'biz-1',
+      );
+      expect(open, hasLength(1));
+      expect(open.single.state, OutboxState.retryableFailure);
+      expect(open.single.state, isNot(OutboxState.syncing));
+      expect(open.single.state, isNot(OutboxState.permanentFailure));
     },
   );
 }

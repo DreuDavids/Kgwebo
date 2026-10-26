@@ -80,7 +80,7 @@ class _SignUpScreenState extends ConsumerState<SignUpScreen> {
       child: AuthLayout(
         title: 'Create your account',
         subtitle:
-            'Email and password are stored by Supabase Auth. Local checks do not guarantee the server will accept the password.',
+            'Use an email you can check. You will confirm it with a 6-digit code. The server may still reject a weak password.',
         footer: KgweboButton(
           label: 'I already have an account',
           variant: KgweboButtonVariant.text,

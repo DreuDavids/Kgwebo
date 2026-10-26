@@ -237,6 +237,7 @@ class SessionController extends StateNotifier<AppSession> {
   StreamSubscription<AuthChange>? _subscription;
   int _generation = 0;
   bool _busy = false;
+  bool _passwordRecoveryPending = false;
 
   bool get isBusy => _busy;
 
@@ -262,17 +263,24 @@ class SessionController extends StateNotifier<AppSession> {
       case AuthChangeKind.signedOut:
       case AuthChangeKind.userDeleted:
         _generation++;
+        _passwordRecoveryPending = false;
         state = const AppSessionGuest();
       case AuthChangeKind.passwordRecovery:
         final user = change.user;
         if (user != null) {
+          _passwordRecoveryPending = true;
           state = AppSessionPasswordRecovery(user);
         }
       case AuthChangeKind.initial:
       case AuthChangeKind.signedIn:
       case AuthChangeKind.tokenRefreshed:
       case AuthChangeKind.userUpdated:
-        await _resolve(change.user);
+        final user = change.user;
+        if (_passwordRecoveryPending && user != null) {
+          state = AppSessionPasswordRecovery(user);
+          return;
+        }
+        await _resolve(user);
     }
   }
 
@@ -344,6 +352,7 @@ class SessionController extends StateNotifier<AppSession> {
   Future<void> updatePassword(String password) {
     return _run(() async {
       await _auth.updatePassword(password);
+      _passwordRecoveryPending = false;
       final user = await _auth.currentUser();
       await _resolve(user);
     });
@@ -365,7 +374,21 @@ class SessionController extends StateNotifier<AppSession> {
     required String email,
     required String token,
   }) {
-    return _run(() => _auth.verifyRecoveryOtp(email: email, token: token));
+    return _run(() async {
+      _passwordRecoveryPending = true;
+      try {
+        await _auth.verifyRecoveryOtp(email: email, token: token);
+        final user = await _auth.currentUser();
+        if (user == null) {
+          _passwordRecoveryPending = false;
+          return;
+        }
+        state = AppSessionPasswordRecovery(user);
+      } catch (_) {
+        _passwordRecoveryPending = false;
+        rethrow;
+      }
+    });
   }
 
   Future<void> completeOnboarding(OnboardingDraft draft) {
@@ -409,6 +432,7 @@ class SessionController extends StateNotifier<AppSession> {
     return _run(() async {
       await _auth.signOut();
       _generation++;
+      _passwordRecoveryPending = false;
       state = const AppSessionGuest();
     });
   }

@@ -39,7 +39,7 @@ void main() {
     openingBalanceMinor: 200000,
   );
 
-  testWidgets('empty queue explains that confirmed records are on the server', (
+  testWidgets('empty queue explains that saved records are in the account', (
     tester,
   ) async {
     final database = KgweboDatabase.memory();
@@ -75,7 +75,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Nothing waiting to sync'), findsOneWidget);
+    expect(find.text('Nothing waiting'), findsOneWidget);
   });
 
   testWidgets('failed operations show text status and a retry action', (
@@ -143,7 +143,7 @@ void main() {
       ),
     );
     await tester.pumpAndSettle();
-    expect(find.text('Action required'), findsWidgets);
+    expect(find.text('Needs review'), findsWidgets);
     expect(find.textContaining('server rejected'), findsOneWidget);
     expect(find.text('Retry this change'), findsOneWidget);
     expect(find.byType(KgweboSyncStatusLabel), findsOneWidget);
@@ -158,7 +158,7 @@ void main() {
         ),
       ),
     );
-    expect(find.text('Waiting to sync'), findsOneWidget);
+    expect(find.text('Waiting to save'), findsOneWidget);
     expect(find.byIcon(Icons.schedule_outlined), findsOneWidget);
   });
 }

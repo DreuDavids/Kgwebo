@@ -81,9 +81,7 @@ void main() {
     await tester.tap(find.text('Save bill'));
     await tester.pumpAndSettle();
     expect(
-      find.text(
-        'Enter a positive amount in pula and thebe, for example 50.00.',
-      ),
+      find.text('Enter a positive amount, for example 50.00.'),
       findsOneWidget,
     );
   });

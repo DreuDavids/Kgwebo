@@ -6,7 +6,7 @@ import 'package:uuid/uuid.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/inventory/quantity_formatter.dart';
 import '../../../core/inventory/unit_of_measure.dart';
-import '../../../core/money/money_formatter.dart';
+import '../../../core/money/minor_units.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
 import '../../../shared/widgets/kgwebo_empty_state.dart';
@@ -135,11 +135,7 @@ class _ProductFormScreenState extends ConsumerState<ProductFormScreen> {
   }
 
   String _moneyText(int minor) {
-    return MoneyFormatter.formatMinor(
-      minor,
-      currencyCode: 'BWP',
-      group: false,
-    ).replaceFirst('P ', '');
+    return MinorUnits.format(minor, group: false);
   }
 
   ProductDraft _draft() {

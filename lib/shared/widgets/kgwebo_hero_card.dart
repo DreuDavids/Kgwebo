@@ -104,13 +104,13 @@ class KgweboHighlightCard extends StatelessWidget {
     required this.label,
     required this.value,
     this.caption,
-    this.sparkline = const [],
+    this.chart,
   });
 
   final String label;
   final String value;
   final String? caption;
-  final List<double> sparkline;
+  final Widget? chart;
 
   @override
   Widget build(BuildContext context) {
@@ -150,9 +150,9 @@ class KgweboHighlightCard extends StatelessWidget {
                   ),
                 ),
               ],
-              if (sparkline.length >= 2) ...[
+              if (chart != null) ...[
                 const SizedBox(height: KgweboSpacing.md),
-                KgweboSparkline(values: sparkline, color: KgweboColors.ink),
+                chart!,
               ],
             ],
           ),

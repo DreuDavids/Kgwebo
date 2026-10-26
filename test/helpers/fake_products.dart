@@ -66,6 +66,7 @@ class FakeProductRepository implements ProductRepository {
   final List<BusinessTransaction> sales = [];
   AuthFailure? nextError;
   AuthFailure? failReads;
+  String? staleError;
   Completer<void>? listAllGate;
   bool allowAnyOwner = false;
   int createCalls = 0;
@@ -108,6 +109,9 @@ class FakeProductRepository implements ProductRepository {
       await gate.future;
     }
     _throwIfNeeded(failReads ?? nextError);
+    if (staleError != null) {
+      return ProductListSnapshot.stale(items: owned, refreshError: staleError!);
+    }
     return ProductListSnapshot.remote(owned);
   }
 

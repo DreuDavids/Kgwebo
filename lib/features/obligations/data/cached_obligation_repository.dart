@@ -135,7 +135,7 @@ class CachedObligationRepository implements ObligationRepository {
       }
       if (draft.status != CommitmentStatus.unpaid) {
         throw const AuthFailure(
-          'Paid or cancelled commitments need a live connection. They are not queued offline.',
+          'Marking a bill paid or cancelled needs an internet connection.',
         );
       }
       return _queueCreate(

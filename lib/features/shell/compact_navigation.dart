@@ -112,6 +112,9 @@ class _NavItem extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     destination.compactLabel,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    textAlign: TextAlign.center,
                     style: Theme.of(
                       context,
                     ).textTheme.labelSmall?.copyWith(color: color),

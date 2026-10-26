@@ -9,7 +9,7 @@ This document is the accounting contract for recorded sales, expenses, owner cas
 - Authoritative amounts are integer **minor units** plus an ISO currency code.
 - For **BWP**, `1.00` pula is `100` thebe. Display uses two decimal places.
 - The business currency is stored on `businesses.currency_code` (default `BWP`). A transaction is stored in that currency and cannot silently change it.
-- Binary `double` is not used for arithmetic or persistence.
+- Binary `double` is not used for arithmetic or persistence. Opening cash is parsed with `tryParseMinorUnits(allowZero: true)`.
 - Display formatting is separate from arithmetic. Totals are never summed from formatted strings.
 - Future currencies may use a different minor-unit scale. Phase 4 formatters assume two decimals, which is correct for BWP, ZAR, NAD and USD as offered in onboarding. Do not treat that as a universal rule.
 
@@ -108,7 +108,7 @@ Do not display these as verified facts:
 - Outstanding customer debt beyond unpaid recorded sales
 - Multi-currency converted totals
 - Expected customer receipts on a particular date
-- Report packs (Phase 8)
+- Tax filings or audited financial statements (Reports export a cash-basis summary of saved records only)
 
 If a mixed-currency row is present in a summary input, it is excluded from the total and counted as `skippedMixedCurrency`. The UI must not present a mixed total as a single BWP figure.
 

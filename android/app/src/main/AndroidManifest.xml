@@ -54,6 +54,9 @@
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
         </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE"/>
+        </intent>
         <!-- Android 11+ package visibility: let url_launcher / auth find a
              browser for HTTPS callbacks. -->
         <intent>
@@ -63,6 +66,10 @@
         </intent>
         <intent>
             <action android:name="android.support.customtabs.action.CustomTabsService"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.SEND"/>
+            <data android:mimeType="application/pdf"/>
         </intent>
     </queries>
 </manifest>

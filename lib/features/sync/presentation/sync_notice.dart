@@ -20,8 +20,8 @@ class KgweboSyncNotice extends ConsumerWidget {
     }
     final message =
         queue.actionRequiredCount > 0
-            ? '${queue.actionRequiredCount} change${queue.actionRequiredCount == 1 ? '' : 's'} need review. They were not saved on the server.'
-            : '${queue.waitingCount} change${queue.waitingCount == 1 ? '' : 's'} waiting to sync. Pending items are not included in cash, sales or forecasts.';
+            ? '${queue.actionRequiredCount} change${queue.actionRequiredCount == 1 ? '' : 's'} need review. They were not saved.'
+            : '${queue.waitingCount} change${queue.waitingCount == 1 ? '' : 's'} waiting to save. Pending items are not included in cash, sales or forecasts.';
     return Padding(
       padding: const EdgeInsets.only(bottom: KgweboSpacing.sm),
       child: Column(

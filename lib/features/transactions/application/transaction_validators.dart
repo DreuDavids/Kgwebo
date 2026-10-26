@@ -24,9 +24,7 @@ TransactionFieldErrors validateTransactionDraft(TransactionDraft draft) {
   final amount = tryParseMinorUnits(draft.amountText);
   return TransactionFieldErrors(
     amount:
-        amount == null
-            ? 'Enter a positive amount in pula and thebe, for example 50.00.'
-            : null,
+        amount == null ? 'Enter a positive amount, for example 50.00.' : null,
     category:
         TransactionCategories.isAllowed(draft.type, draft.category)
             ? null

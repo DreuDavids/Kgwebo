@@ -254,7 +254,7 @@ abstract final class CashForecastEngine {
       const ForecastLimitation(
         code: incomingNotForecast,
         message:
-            'Incoming cash is not forecast. Kgwebo does not assume unpaid sales will be paid by a particular date.',
+            'Incoming cash is not forecast. Unpaid sales have no due date.',
       ),
     ];
     if (unpaidSalesMinor > 0) {
@@ -262,7 +262,7 @@ abstract final class CashForecastEngine {
         ForecastLimitation(
           code: incomingNotForecast,
           message:
-              'Unpaid recorded sales remain in sales, not in cash, and are not projected as receipts.',
+              'Unpaid sales stay in sales, not cash, and are not projected as receipts.',
         ),
       );
     }
@@ -270,8 +270,7 @@ abstract final class CashForecastEngine {
       limitations.add(
         const ForecastLimitation(
           code: unpaidExpensesNotDated,
-          message:
-              'Recorded unpaid operating expenses stay in the period result. They are not dated cash outflows in this outlook, and they are not listed again as commitments.',
+          message: 'Undated unpaid expenses are not treated as bills here.',
         ),
       );
     }
@@ -279,8 +278,7 @@ abstract final class CashForecastEngine {
       limitations.add(
         const ForecastLimitation(
           code: inventoryNotCash,
-          message:
-              'Estimated inventory value is not cash and is not included in this outlook.',
+          message: 'Stock value is not cash.',
         ),
       );
     }
@@ -288,8 +286,7 @@ abstract final class CashForecastEngine {
       limitations.add(
         const ForecastLimitation(
           code: incompleteHistory,
-          message:
-              'Totals use the most recent 5,000 confirmed transactions, so recorded cash may understate the full history.',
+          message: 'Uses the latest 5,000 transactions.',
         ),
       );
     }
@@ -298,7 +295,9 @@ abstract final class CashForecastEngine {
         ForecastLimitation(
           code: mixedCurrency,
           message:
-              '$skippedMixedCurrency confirmed rows in another currency were left out of these $currencyCode figures.',
+              skippedMixedCurrency == 1
+                  ? '1 row in another currency was left out of these $currencyCode figures.'
+                  : '$skippedMixedCurrency rows in another currency were left out of these $currencyCode figures.',
         ),
       );
     }
@@ -306,8 +305,7 @@ abstract final class CashForecastEngine {
       limitations.add(
         const ForecastLimitation(
           code: commitmentsBeyondHorizon,
-          message:
-              'Some unpaid commitments fall after this window and are not subtracted in this estimate.',
+          message: 'Some bills fall after this window.',
         ),
       );
     }

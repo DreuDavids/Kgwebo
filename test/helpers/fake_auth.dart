@@ -24,6 +24,7 @@ class FakeAuthRepository implements AuthRepository {
   int verifySignupOtpCalls = 0;
   int verifyRecoveryOtpCalls = 0;
   String expectedOtp = '123456';
+  bool emitSignedInOnRecovery = false;
   String? lastOtpToken;
   String? lastOtpEmail;
   final _controller = StreamController<AuthChange>.broadcast();
@@ -116,7 +117,15 @@ class FakeAuthRepository implements AuthRepository {
     _throwIfNeeded();
     _requireExpectedOtp(token);
     user = AuthUser(id: 'user-1', email: email.trim(), emailConfirmed: true);
-    emit(AuthChange(kind: AuthChangeKind.passwordRecovery, user: user));
+    emit(
+      AuthChange(
+        kind:
+            emitSignedInOnRecovery
+                ? AuthChangeKind.signedIn
+                : AuthChangeKind.passwordRecovery,
+        user: user,
+      ),
+    );
   }
 
   void _requireExpectedOtp(String token) {

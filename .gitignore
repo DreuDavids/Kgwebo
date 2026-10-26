@@ -52,5 +52,11 @@ app.*.map.json
 .env.*
 !.env.example
 
+# Android release signing (never commit keystores or passwords)
+android/key.properties
+*.jks
+*.keystore
+!android/app/debug.keystore
+
 # Generated Drift files are committed after codegen; keep local coverage output out
 coverage/

@@ -170,7 +170,7 @@ Do not mark Phase 8 completely verified: item 6 was not executed on a device, ac
 - **Manual device tests passed:** items 1–5, 7–10, 12, and retryable copy in 11, on emulator `emulator-5554` only.
 - **Live security tests passed:** two-user JWT isolation for products, sale_items, stock_movements, recommendations; two-client last-unit oversell after `uuid_from_md5`.
 - **Blocked or not executed:** device timeout-after-commit (item 6); device permanent/action-required queue state; physical handset; in-app report PDF.
-- **Known limitations:** product details `findById` failed offline (“Product not found”) even though the list showed a cached product. Residual code risks not closed in this follow-up: an in-flight owner switch can mark a valid op permanent, overlapping `process()` after owner change can drop `_runAgain`, and `requestManualRetry` is not owner-scoped (listing still cannot leak).
+- **Known limitations at the time:** product details `findById` failed offline (“Product not found”) even though the list showed a cached product. Residual coordinator risks listed here were **closed in later code**; see section 8e.
 
 ## 8d. Offline reopen UX polish (24 Oct 2026)
 
@@ -180,7 +180,77 @@ Automated coverage only. No physical-device QA and no timeout-after-commit devic
 - Settings → Pending changes uses a filled, wrapping layout. Widget tests at 320×568 (compact shell) and 1024×768 assert no overflow and that “Review pending changes” stays on-screen.
 - Quality gates (24 Oct 2026): `dart format --set-exit-if-changed .` pass; `flutter analyze` no issues; `flutter test` 384 passed; debug APK `E:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (122,812,093 bytes, 24 Oct 2026 18:27). Report PDF remains out of scope. Physical-device QA and timeout-after-commit device testing were not repeated.
 
+## 8e. Phase 9 release-readiness (25 Oct 2026)
+
+Code audit, not a device re-run of Phase 8.
+
+- Coordinator races documented in 8c are **fixed** in `SyncCoordinator` / `OutboxStore` with unit tests. Overlapping `process()` calls use a `LinkedHashMap` keyed by owner and business. A third overlapping process for a different owner is unit-tested and is not dropped. Same-owner duplicates replace the queued run on purpose.
+- Product `findById` cache fallback after a retryable failure is implemented (`offline_product_repository_test`).
+- Hardening tests added: unknown server text is not shown; recovery OTP still requires a new password if `signedIn` fires.
+
+### Timeout-after-commit device procedure (NOT executed this session)
+
+1. Build the debug APK with `--dart-define-from-file=.env`.
+2. Sign in to an isolated business. Note recorded cash and the current `transactions` count for that `business_id`.
+3. Intercept HTTPS to `*.supabase.co` so the response body can be dropped after the server accepts the insert (proxy, or a server-side delay plus airplane mode immediately after tap).
+4. Record one paid amount-only sale with a known amount while the interceptor is on.
+5. Confirm the UI shows pending or an error, not a second confirmed row.
+6. Force-stop the app (`am force-stop bw.kgwebo.kgwebo`), restore the network, reopen, sign in if needed.
+7. Pass only if the server has **one** row for that idempotency key and history shows **one** confirmed sale for that amount.
+
+Until those counts are inspected on a device, item 6 in section 8b stays **NOT TESTED**.
+
+Quality gates executed 25 Oct 2026:
+
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (**386**)
+- `flutter build apk --debug --dart-define-from-file=.env` — `E:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (122,813,658 bytes, 25 Oct 2026 13:50)
+
+Not executed this session: integration tests (directory absent), emulator re-run, physical device, live two-user JWT replay, timeout-after-commit on a device.
+
 Do not mark a phase complete if these commands were not run or if they failed.
+
+## 8f. Phase 11 Reports / PDF / remaining readiness (26 Oct 2026)
+
+Automated coverage: report builder vs engine, Gaborone periods, empty periods, ZAR currency, pending exclusion, unpaid sales vs cash, contributions/withdrawals, PDF bytes + metadata, preview matching `ReportCopy`, history filter combinations and pagination, overlapping `process()` queue, hung dispatch timeout, release-signing Gradle/gitignore checks, Settings privacy copy, Reports 320×568 layout.
+
+**Not executed this session** (do not tick these as passed until the evidence column is filled):
+
+| #   | Task                                | Exact steps                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        | Evidence required                                                                                |
+| --- | ----------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------ |
+| 1   | Email OTP password recovery         | Sign out. Forgot password with a real mailbox. Enter the 6-digit code from `recovery.html`. Land on the new-password screen and set a password. Sign in with it.                                                                                                                                                                                                                                                                                                                                                                                                                                                   | Screenshot of new-password screen after OTP, then a successful sign-in.                          |
+| 2   | Timeout-after-commit (TEST_PLAN 8e) | Follow section 8e on an emulator or handset against an isolated business.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Server `transactions` count for that idempotency key = **1**. History shows one confirmed sale.  |
+| 3   | Physical device offline             | On a handset: airplane mode, amount-only sale stays pending, force-stop, reopen, restore network, confirm one server row.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | Device model, Android version, and the one-row server check.                                     |
+| 4   | Live two-user JWT isolation         | Two confirmed Auth users. User B must not select/update/delete User A’s businesses, transactions, obligations, products, or reports data.                                                                                                                                                                                                                                                                                                                                                                                                                                                                          | SQL or REST results with both JWTs, dated.                                                       |
+| 5   | PDF preview / export / share        | On Android: More → Reports, This month, confirm preview matches Home, Export PDF, share to Files or Gmail, open the PDF.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           | Screenshot of preview, share sheet, and opened PDF with the same figures.                        |
+| 6   | Offline PDF / stale data            | Open Reports online, enable airplane mode, reopen Reports. Stale banner visible. Export still uses confirmed cache, not pending outbox.                                                                                                                                                                                                                                                                                                                                                                                                                                                                            | Screenshot of the stale banner plus PDF figures matching the confirmed preview.                  |
+| 7   | Release signing                     | Copy `android/key.properties.example` to `android/key.properties`, point at a local `.jks`. `flutter build apk --release --dart-define-from-file=.env` succeeds. Remove credentials and confirm assembleRelease throws the missing-credentials GradleException. Debug APK still builds.                                                                                                                                                                                                                                                                                                                            | Build logs for both the success and fail-closed paths. Do **not** commit the keystore.           |
+| 8   | Leaked-password protection          | Org **Late 2026 Projects** is **Free** (checked 26 Oct 2026). Feature requires **Pro**. After upgrading: Dashboard → Authentication → Attack Protection (or Password security) → enable **Leaked password protection**. Re-run security advisors.                                                                                                                                                                                                                                                                                                                                                                  | Advisor `auth_leaked_password_protection` absent or INFO. Do not claim enabled until that check. |
+| 9   | Phase 8 test-account cleanup        | Identified 26 Oct 2026 on `hhwxajxjmyjntxykptvs`. Keep **DreuTech** (`dreu.davids1@gmail.com`, business `0c07e132-a35c-48b8-9a36-1d71bdcee95d`). Delete only **Phase 8 Stall A** (`kgwebo.phase8.a.20261024090030@kgwebo.test`, business `e94c08b6-b0ec-4a0e-98b6-14089936c646`) and **Phase 8 Stall B** (`kgwebo.phase8.b.20261024090030@kgwebo.test`, business `ae1d6b98-e3bc-44dc-8082-b9a2b63d56a3`). Dashboard: Authentication → Users → delete those two emails only. Confirm the matching `businesses` rows and child transactions/obligations are gone. Never run an unqualified `DELETE FROM auth.users`. | User list screenshot showing those two emails gone and DreuTech still present.                   |
+
+Quality gates for Phase 11 are recorded in `docs/IMPLEMENTATION_PLAN.md` after they are executed.
+
+## 8g. Phase 9 close-out audit (26 Oct 2026 evening)
+
+Code audit of the live tree after Phase 8–11. Not a device re-run.
+
+Fixed in this pass (automated tests only):
+
+- Sale product picker uses the business currency, not hardcoded BWP (`transaction_form_test`).
+- Opening cash parsing uses `tryParseMinorUnits(allowZero: true)` instead of `double.tryParse` (`onboarding_completion_test`, `money_parser_test`).
+- Sale, expense, and bill amount errors no longer say “pula and thebe”.
+
+**Not executed this session:** emulator re-run, physical device, live email OTP recovery, timeout-after-commit on a device (procedure remains in 8e), live two-user JWT replay, leaked-password protection enablement, Phase 8 test-account deletion, PDF share on a device.
+
+Quality gates executed 26 Oct 2026:
+
+- `dart format --set-exit-if-changed .` — pass
+- `flutter analyze` — No issues found
+- `flutter test` — All tests passed (**470**)
+- `flutter build apk --debug --dart-define-from-file=.env` — `E:\Personal Apps\Kgwebo\build\app\outputs\flutter-apk\app-debug.apk` (212,094,470 bytes, 26 Oct 2026 18:32)
+
+Live security this session: FORCE RLS confirmed on all eight public tables. Advisors: three intended inventory `SECURITY DEFINER` RPC warnings and `auth_leaked_password_protection` WARN. Two-user JWT isolation was **not** replayed.
 
 ## 7. Environment notes
 

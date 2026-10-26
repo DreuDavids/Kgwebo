@@ -15,6 +15,7 @@ import 'widgets/dashboard_pinned_sliver.dart';
 import 'widgets/dashboard_recent.dart';
 import 'widgets/dashboard_recommendations.dart';
 import 'widgets/dashboard_record_actions.dart';
+import 'widgets/dashboard_restock_cue.dart';
 
 class DashboardScreen extends ConsumerStatefulWidget {
   const DashboardScreen({super.key});
@@ -108,6 +109,7 @@ class _DashboardTabBody extends StatelessWidget {
           SizedBox(height: KgweboSpacing.lg),
           DashboardMetrics(),
           SizedBox(height: KgweboSpacing.lg),
+          DashboardRestockCue(),
           DashboardRecommendations(),
         ],
       ),

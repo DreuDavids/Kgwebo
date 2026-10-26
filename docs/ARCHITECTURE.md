@@ -16,7 +16,7 @@ The architecture keeps financial rules out of widgets, persists every implemente
 | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
 | Flutter                    | 3.29.2 (Dart 3.7.2)                                                                                                                  |
 | Application id             | `bw.kgwebo.kgwebo`                                                                                                                   |
-| Android                    | `compileSdk` / `minSdk` / `targetSdk` from the installed Flutter toolchain                                                           |
+| Android                    | `compileSdk` 36; `minSdk` at least 24 (`flutter_tts`); `targetSdk` from the Flutter toolchain                                        |
 | Connected devices at audit | Windows desktop, Chrome, Edge. Phase 7 and Phase 8 verification used Android emulator `emulator-5554` (API 37). No physical handset. |
 | Doctor notes               | Some Android licenses not accepted; Flutter is on a user-managed channel at `C:\tools\flutter`                                       |
 
@@ -53,7 +53,7 @@ Each feature separates:
 4. Repository interfaces
 5. Drift / Supabase data sources
 
-Widgets do not compute profit, cash, COGS, or forecasts. They render values produced by `core/finance`.
+Widgets do not compute profit, cash, COGS, or forecasts. They render values produced by `core/finance`. Reports and PDFs consume `ReportBuilder` output from the same engine; they do not reimplement money math.
 
 ## 5. State, routing, and configuration
 
@@ -190,6 +190,7 @@ Pure Dart:
 - `DashboardPeriodSelection` / `BusinessZone`
 - `CashForecastEngine`
 - `RecommendationRules` / `RecommendationLifecycle`
+- `ReportBuilder` / `ReportCopy` / `ReportPdf`
 - validators and formatters
 
 Flutter:

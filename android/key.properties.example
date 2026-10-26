@@ -1,0 +1,8 @@
+# Copy this file to android/key.properties (gitignored).
+# Never commit a keystore, storePassword, or keyPassword.
+#
+# storeFile is relative to the android/ directory, or an absolute path.
+storeFile=upload-keystore.jks
+storePassword=
+keyAlias=upload
+keyPassword=

@@ -56,6 +56,10 @@ void main() {
       redirectFor(const AppSessionGuest(), AppRoutes.businessProfileEdit),
       AppRoutes.welcome,
     );
+    expect(
+      redirectFor(const AppSessionGuest(), AppRoutes.privacy),
+      AppRoutes.welcome,
+    );
   });
 
   test('guests cannot open protected business routes', () {
@@ -73,6 +77,10 @@ void main() {
     );
     expect(
       redirectFor(const AppSessionGuest(), AppRoutes.recordObligation),
+      AppRoutes.welcome,
+    );
+    expect(
+      redirectFor(const AppSessionGuest(), AppRoutes.ask),
       AppRoutes.welcome,
     );
     expect(

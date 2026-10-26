@@ -25,6 +25,8 @@ class KgweboTextField extends StatelessWidget {
     this.autocorrect = true,
     this.enableSuggestions = true,
     this.textCapitalization = TextCapitalization.none,
+    this.minLines,
+    this.maxLines = 1,
   });
 
   final String label;
@@ -46,6 +48,8 @@ class KgweboTextField extends StatelessWidget {
   final bool autocorrect;
   final bool enableSuggestions;
   final TextCapitalization textCapitalization;
+  final int? minLines;
+  final int maxLines;
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +68,8 @@ class KgweboTextField extends StatelessWidget {
       autocorrect: autocorrect,
       enableSuggestions: enableSuggestions,
       textCapitalization: textCapitalization,
+      minLines: minLines,
+      maxLines: maxLines,
       decoration: InputDecoration(
         labelText: label,
         hintText: hint,

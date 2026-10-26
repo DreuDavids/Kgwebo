@@ -130,7 +130,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.textContaining('Check your connection'), findsNothing);
-    expect(find.textContaining('waiting to sync'), findsNothing);
+    expect(find.textContaining('waiting to save'), findsNothing);
 
     transactions.listAllGate!.complete();
     await tester.pumpAndSettle();
@@ -216,14 +216,14 @@ void main() {
       find.textContaining('Showing saved figures from this device'),
       findsOneWidget,
     );
-    expect(find.textContaining('waiting to sync'), findsOneWidget);
+    expect(find.textContaining('waiting to save'), findsOneWidget);
     expect(find.textContaining('Check your connection'), findsNothing);
 
     transactions.listAllGate!.complete();
     await tester.pumpAndSettle();
     expect(find.text('P 2,500.00'), findsWidgets);
     expect(find.text('P 2,577.00'), findsNothing);
-    expect(find.textContaining('waiting to sync'), findsOneWidget);
+    expect(find.textContaining('waiting to save'), findsOneWidget);
     expect(
       find.textContaining('Showing saved figures from this device'),
       findsNothing,

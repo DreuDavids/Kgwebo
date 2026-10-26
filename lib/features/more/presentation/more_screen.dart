@@ -32,7 +32,7 @@ class MoreScreen extends StatelessWidget {
               ),
               const SizedBox(height: KgweboSpacing.xs),
               Text(
-                'Bills, reports, your business, and account settings.',
+                'Bills, reports, Ask, your business, and account settings.',
                 style: textTheme.bodyMedium?.copyWith(
                   color: KgweboColors.inkMuted,
                 ),
@@ -50,9 +50,16 @@ class MoreScreen extends StatelessWidget {
                       onTap: () => context.goNamed(AppRoutes.cashFlowName),
                     ),
                     KgweboPillRow(
+                      icon: Icons.forum_outlined,
+                      title: 'Ask',
+                      subtitle: 'Run the stall by talking or typing',
+                      showChevron: true,
+                      onTap: () => context.goNamed(AppRoutes.askName),
+                    ),
+                    KgweboPillRow(
                       icon: Icons.description_outlined,
                       title: 'Reports',
-                      subtitle: 'A summary of the same figures as Home',
+                      subtitle: 'Period summary and PDF',
                       showChevron: true,
                       onTap: () => context.goNamed(AppRoutes.reportsName),
                     ),

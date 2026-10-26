@@ -72,8 +72,33 @@ class FakeTransactionRepository implements TransactionRepository {
     if (query.type != null) {
       results = results.where((item) => item.type == query.type);
     }
-    final listed =
-        results.toList()..sort((a, b) => b.occurredAt.compareTo(a.occurredAt));
+    final category = query.category?.trim();
+    if (category != null && category.isNotEmpty) {
+      results = results.where((item) => item.category == category);
+    }
+    final period = query.period;
+    if (period != null) {
+      results = results.where((item) => period.contains(item.occurredAt));
+    }
+    var listed =
+        results.toList()..sort((a, b) {
+          final byDate = b.occurredAt.compareTo(a.occurredAt);
+          if (byDate != 0) {
+            return byDate;
+          }
+          return b.id.compareTo(a.id);
+        });
+    if (query.beforeOccurredAt != null && query.beforeId != null) {
+      listed =
+          listed.where((item) {
+            final at = query.beforeOccurredAt!;
+            if (item.occurredAt.isBefore(at)) {
+              return true;
+            }
+            return item.occurredAt.isAtSameMomentAs(at) &&
+                item.id.compareTo(query.beforeId!) < 0;
+          }).toList();
+    }
     final hasMore = listed.length > query.limit;
     return TransactionListSnapshot.remote(
       hasMore ? listed.sublist(0, query.limit) : listed,
@@ -310,6 +335,7 @@ BusinessTransaction sampleSale({
   PaymentStatus status = PaymentStatus.paid,
   DateTime? occurredAt,
   bool pendingSync = false,
+  String currencyCode = 'BWP',
 }) {
   return _sampleTransaction(
     id: id,
@@ -321,6 +347,7 @@ BusinessTransaction sampleSale({
     type: MoneyMovementType.sale,
     category: 'goods',
     pendingSync: pendingSync,
+    currencyCode: currencyCode,
   );
 }
 
@@ -354,6 +381,7 @@ BusinessTransaction _sampleTransaction({
   required String category,
   DateTime? occurredAt,
   bool pendingSync = false,
+  String currencyCode = 'BWP',
 }) {
   final occurred = occurredAt ?? DateTime.now().toUtc();
   return BusinessTransaction(
@@ -364,7 +392,7 @@ BusinessTransaction _sampleTransaction({
     idempotencyKey: 'key-$id',
     type: type,
     amountMinor: amount,
-    currencyCode: 'BWP',
+    currencyCode: currencyCode,
     category: category,
     occurredAt: occurred,
     paymentMethod: PaymentMethod.cash,

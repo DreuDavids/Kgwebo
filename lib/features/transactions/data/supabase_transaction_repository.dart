@@ -43,6 +43,10 @@ class SupabaseTransactionRepository implements TransactionRepository {
           BusinessTransaction.typeToStorage(query.type!),
         );
       }
+      final category = query.category?.trim();
+      if (category != null && category.isNotEmpty) {
+        filter = filter.eq('category', category);
+      }
       final period = query.period;
       if (period != null) {
         filter = filter

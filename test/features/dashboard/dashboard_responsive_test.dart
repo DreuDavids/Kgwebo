@@ -55,6 +55,7 @@ void main() {
         expect(find.byType(CompactNavigation), findsOneWidget);
         expect(find.byType(RailNavigation), findsNothing);
         expect(find.text('Home'), findsOneWidget);
+        expect(find.text('Ask'), findsOneWidget);
         expect(find.text('More'), findsOneWidget);
         expect(
           find.descendant(

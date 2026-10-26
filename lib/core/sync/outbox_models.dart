@@ -35,11 +35,11 @@ extension OutboxStateCodec on OutboxState {
 
   String get userLabel {
     return switch (this) {
-      OutboxState.pending => 'Waiting to sync',
-      OutboxState.syncing => 'Synchronising',
-      OutboxState.succeeded => 'Saved on server',
-      OutboxState.retryableFailure => 'Sync failed and will retry',
-      OutboxState.permanentFailure => 'Action required',
+      OutboxState.pending => 'Waiting to save',
+      OutboxState.syncing => 'Saving',
+      OutboxState.succeeded => 'Saved',
+      OutboxState.retryableFailure => 'Could not save. Will try again',
+      OutboxState.permanentFailure => 'Needs review',
     };
   }
 
@@ -70,6 +70,7 @@ abstract final class OutboxOperationTypes {
 abstract final class SyncPolicy {
   static const maxAutomaticAttempts = 8;
   static const Duration maxBackoff = Duration(minutes: 15);
+  static const Duration dispatchTimeout = Duration(seconds: 45);
 
   static Duration backoffFor(int attemptCount) {
     final exponent = attemptCount.clamp(0, 10);

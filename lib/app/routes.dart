@@ -22,7 +22,9 @@ abstract final class AppRoutes {
   static const recordObligation = '/cash-flow/new';
   static const recommendations = '/cash-flow/recommendations';
   static const reports = '/reports';
+  static const ask = '/ask';
   static const settings = '/settings';
+  static const privacy = '/settings/privacy';
   static const businessProfile = '/settings/business';
   static const businessProfileEdit = '/settings/business/edit';
   static const syncQueue = '/settings/sync';
@@ -56,7 +58,9 @@ abstract final class AppRoutes {
   static const obligationDetailsName = 'obligation-details';
   static const obligationEditName = 'obligation-edit';
   static const reportsName = 'reports';
+  static const askName = 'ask';
   static const settingsName = 'settings';
+  static const privacyName = 'privacy';
   static const businessProfileName = 'business-profile';
   static const businessProfileEditName = 'business-profile-edit';
   static const syncQueueName = 'sync-queue';

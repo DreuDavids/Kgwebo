@@ -45,17 +45,17 @@ class SyncQueueScreen extends ConsumerWidget {
     if (session is AppSessionPreview) {
       return const KgweboEmptyState(
         icon: Icons.cloud_off_outlined,
-        title: 'Preview does not queue writes',
+        title: 'Sign in to review pending changes',
         message:
-            'Sign in to record sales and commitments. Offline writes are not mixed with preview data.',
+            'Pending changes appear here after you sign in and save sales or bills.',
       );
     }
     if (session is! AppSessionReady) {
       return const KgweboEmptyState(
         icon: Icons.lock_outline,
-        title: 'Sign in to review queued changes',
+        title: 'Sign in to review pending changes',
         message:
-            'Pending financial data stays on this device, keyed to the owner who created it.',
+            'Unsaved sales and bills stay on this phone for the person who recorded them.',
       );
     }
     if (state.loading && state.operations.isEmpty) {
@@ -64,7 +64,7 @@ class SyncQueueScreen extends ConsumerWidget {
     if (state.error != null && state.operations.isEmpty) {
       return KgweboEmptyState(
         icon: Icons.cloud_off_outlined,
-        title: 'Could not load the sync queue',
+        title: 'Could not load pending changes',
         message: state.error!,
         actionLabel: 'Retry',
         onAction:
@@ -74,9 +74,9 @@ class SyncQueueScreen extends ConsumerWidget {
     if (state.operations.isEmpty) {
       return const KgweboEmptyState(
         icon: Icons.check_circle_outline,
-        title: 'Nothing waiting to sync',
+        title: 'Nothing waiting',
         message:
-            'Confirmed records are saved on the server. This list only shows changes that have not been accepted yet.',
+            'Saved records are already in your account. This list only shows changes that have not finished saving.',
       );
     }
 
@@ -91,11 +91,11 @@ class SyncQueueScreen extends ConsumerWidget {
         const KgweboStatusBanner(
           tone: KgweboBannerTone.info,
           message:
-              'Waiting items are stored on this device. They are not confirmed cash, sales or expenses until the server accepts them. Product sales and stock changes still need a live connection.',
+              'These items are still on this phone. They are not counted as cash, sales or expenses until they finish saving. Product sales and stock changes need an internet connection.',
         ),
         const SizedBox(height: KgweboSpacing.md),
         KgweboButton(
-          label: state.syncing ? 'Synchronising' : 'Try synchronising now',
+          label: state.syncing ? 'Saving' : 'Try saving now',
           icon: Icons.sync,
           expanded: true,
           isLoading: state.syncing,
@@ -119,7 +119,7 @@ class SyncQueueScreen extends ConsumerWidget {
           const SizedBox(height: KgweboSpacing.sm),
         ],
         Text(
-          'Queued changes belong to the signed-in owner and this business. Signing out hides them from other accounts without submitting them.',
+          'These changes stay with your account. Another person on this phone will not see them after you sign out.',
           style: textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
         ),
       ],

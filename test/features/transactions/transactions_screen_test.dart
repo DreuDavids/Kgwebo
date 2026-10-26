@@ -97,6 +97,61 @@ void main() {
     expect(find.text('No money recorded yet'), findsOneWidget);
   });
 
+  testWidgets('record actions sit in one dropdown', (tester) async {
+    final repository = FakeTransactionRepository()..items.add(sampleSale());
+    await pumpHistory(tester, repository: repository);
+    expect(find.text('Record'), findsOneWidget);
+    expect(find.text('Record sale'), findsNothing);
+    expect(find.text('Record expense'), findsNothing);
+    expect(find.text('More'), findsNothing);
+    expect(find.text('Record refund'), findsNothing);
+    expect(find.text('Money you put in'), findsNothing);
+    expect(find.text('Money you took out'), findsNothing);
+
+    await tester.tap(find.text('Record'));
+    await tester.pumpAndSettle();
+    expect(find.text('Record sale'), findsOneWidget);
+    expect(find.text('Record expense'), findsOneWidget);
+    expect(find.text('Record refund'), findsOneWidget);
+    expect(find.text('Money you put in'), findsOneWidget);
+    expect(find.text('Money you took out'), findsOneWidget);
+  });
+
+  testWidgets('filters stay collapsed until a dropdown is opened', (
+    tester,
+  ) async {
+    final repository = FakeTransactionRepository()..items.add(sampleSale());
+    await pumpHistory(tester, repository: repository);
+    expect(find.text('All types'), findsOneWidget);
+    expect(find.text('All time'), findsOneWidget);
+    expect(find.text('All categories'), findsOneWidget);
+    expect(find.text('Clear'), findsNothing);
+    expect(find.text('Owner contribution'), findsNothing);
+    expect(find.text('Last 3 months'), findsNothing);
+
+    await tester.tap(find.text('All types'));
+    await tester.pumpAndSettle();
+    expect(find.text('Owner contribution'), findsOneWidget);
+
+    await tester.tap(find.text('Sale').last);
+    await tester.pumpAndSettle();
+    expect(find.text('All types'), findsNothing);
+    expect(find.text('Clear'), findsOneWidget);
+    expect(find.text('Owner contribution'), findsNothing);
+
+    await tester.tap(find.text('All time'));
+    await tester.pumpAndSettle();
+    expect(find.text('Last 3 months'), findsOneWidget);
+    await tester.tap(find.text('Last 3 months'));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('Clear'));
+    await tester.pumpAndSettle();
+    expect(find.text('All types'), findsOneWidget);
+    expect(find.text('All time'), findsOneWidget);
+    expect(find.text('Clear'), findsNothing);
+  });
+
   testWidgets('delete confirmation is required', (tester) async {
     final repository = FakeTransactionRepository()..items.add(sampleSale());
     final session = AppSessionReady(user: user, business: business);

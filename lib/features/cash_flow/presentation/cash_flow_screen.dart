@@ -106,6 +106,16 @@ class CashFlowScreen extends ConsumerWidget {
                           : () =>
                               context.pushNamed(AppRoutes.recordObligationName),
                 ),
+                if (!obligations.isPreview) ...[
+                  const SizedBox(height: KgweboSpacing.sm),
+                  KgweboButton(
+                    label: 'See what to do next',
+                    variant: KgweboButtonVariant.secondary,
+                    expanded: true,
+                    onPressed:
+                        () => context.goNamed(AppRoutes.recommendationsName),
+                  ),
+                ],
                 const SizedBox(height: KgweboSpacing.lg),
                 if (obligations.loading && obligations.items.isEmpty)
                   const KgweboLoadingState(message: 'Loading bills')

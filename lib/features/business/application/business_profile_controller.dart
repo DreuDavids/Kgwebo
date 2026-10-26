@@ -216,7 +216,7 @@ class BusinessProfileController
         return;
       }
       state = const BusinessProfileViewState(
-        error: 'Your session ended. Sign in again.',
+        error: 'You were signed out. Sign in again.',
       );
       return;
     }

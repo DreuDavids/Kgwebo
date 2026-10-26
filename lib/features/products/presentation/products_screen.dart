@@ -162,11 +162,11 @@ class _ProductsScreenState extends ConsumerState<ProductsScreen> {
                 message: state.error!,
               ),
             ),
-          const KgweboStatusBanner(
-            tone: KgweboBannerTone.info,
-            message:
-                'Stock writes need a connection. They are not queued offline.',
-          ),
+          if (state.isStale)
+            const KgweboStatusBanner(
+              tone: KgweboBannerTone.info,
+              message: 'Stock changes need an internet connection.',
+            ),
           const SizedBox(height: KgweboSpacing.sm),
           InventoryOverview(
             insights: state.insights,

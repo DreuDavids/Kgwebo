@@ -206,6 +206,9 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
     if (_catalog.isEmpty || _saving || _isEdit) {
       return;
     }
+    final session = ref.read(appSessionProvider);
+    final currencyCode =
+        session is AppSessionReady ? session.business.currencyCode : 'BWP';
     final selected = await showModalBottomSheet<CatalogProduct>(
       context: context,
       showDragHandle: true,
@@ -222,7 +225,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
               ListTile(
                 title: Text(product.name),
                 subtitle: Text(
-                  '${MoneyFormatter.formatMinor(product.sellingPriceMinor, currencyCode: 'BWP')} · ${QuantityFormatter.format(product.stockQuantityMilli)} available',
+                  '${MoneyFormatter.formatMinor(product.sellingPriceMinor, currencyCode: currencyCode)} · ${QuantityFormatter.format(product.stockQuantityMilli)} available',
                 ),
                 onTap: () => Navigator.of(context).pop(product),
               ),
@@ -383,7 +386,7 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text(
-              'Saved on this device. Waiting to sync. It is not a confirmed server record.',
+              'Saved on this phone. It is not counted as cash until it finishes saving.',
             ),
           ),
         );
@@ -702,16 +705,16 @@ class _TransactionFormScreenState extends ConsumerState<TransactionFormScreen> {
 
   String _formHelp() {
     if (_isProductSale) {
-      return 'Product sales need a live connection.';
+      return 'Product sales need an internet connection.';
     }
     if (_isEdit) {
-      return 'Edits need a live connection.';
+      return 'Edits need an internet connection.';
     }
     return switch (widget.type) {
       MoneyMovementType.sale =>
-        'If you are offline, this sale can wait on this device until it syncs.',
+        'If you are offline, this sale can wait on this phone until it finishes saving.',
       MoneyMovementType.expense =>
-        'If you are offline, this expense can wait on this device until it syncs.',
+        'If you are offline, this expense can wait on this phone until it finishes saving.',
       MoneyMovementType.refund =>
         'A refund reduces sales. Paid refunds also reduce cash.',
       MoneyMovementType.ownerContribution =>

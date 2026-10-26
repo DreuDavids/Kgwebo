@@ -1,10 +1,7 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../app/config/app_environment.dart';
-import '../../../app/config/config_providers.dart';
 import '../../../app/routes.dart';
 import '../../../app/theme/kgwebo_colors.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
@@ -15,6 +12,7 @@ import '../../authentication/application/session_controller.dart';
 import '../../authentication/domain/app_session.dart';
 import '../../authentication/domain/auth_failure.dart';
 import '../../sync/application/sync_queue_controller.dart';
+import '../application/privacy_copy.dart';
 
 class SettingsScreen extends StatelessWidget {
   const SettingsScreen({super.key});
@@ -33,7 +31,6 @@ class _SettingsBody extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final config = ref.watch(appConfigProvider);
     final textTheme = Theme.of(context).textTheme;
 
     return ListView(
@@ -58,58 +55,11 @@ class _SettingsBody extends ConsumerWidget {
         const SizedBox(height: KgweboSpacing.md),
         const _AccountCard(),
         const SizedBox(height: KgweboSpacing.md),
+        const _PrivacyCard(),
+        const SizedBox(height: KgweboSpacing.md),
         const _BusinessProfileCard(),
-        if (kDebugMode) ...[
-          const SizedBox(height: KgweboSpacing.md),
-          _InfoCard(
-            title: 'Runtime',
-            rows: [
-              ('Environment', config.environment.name),
-              ('Mode', _modeLabel(config.runtimeMode)),
-              (
-                'Backend session',
-                config.connectsToBackend
-                    ? 'Supabase client initialised'
-                    : 'Not opened',
-              ),
-            ],
-          ),
-          const SizedBox(height: KgweboSpacing.md),
-          _InfoCard(
-            title: 'Configuration',
-            rows: [
-              (
-                'Supabase URL',
-                config.supabaseUrl == null ? 'Missing' : 'Present',
-              ),
-              (
-                'Publishable key',
-                config.hasSupabaseAnonKey ? 'Present' : 'Missing',
-              ),
-              (
-                'Ready for live backend',
-                config.isBackendConfigured ? 'Yes' : 'No',
-              ),
-            ],
-          ),
-          if (config.issues.isNotEmpty) ...[
-            const SizedBox(height: KgweboSpacing.md),
-            _InfoCard(
-              title: 'What to fix',
-              rows: [for (final issue in config.issues) ('Issue', issue)],
-            ),
-          ],
-        ],
       ],
     );
-  }
-
-  String _modeLabel(AppRuntimeMode mode) {
-    return switch (mode) {
-      AppRuntimeMode.live => 'Live credentials loaded',
-      AppRuntimeMode.local => 'Local preview',
-      AppRuntimeMode.demo => 'Explicit demo',
-    };
   }
 }
 
@@ -119,22 +69,13 @@ class _AccountCard extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final session = ref.watch(appSessionProvider);
-    final textTheme = Theme.of(context).textTheme;
     final rows = switch (session) {
-      AppSessionPreview(:final mode) => [
-        (
-          'Status',
-          mode == AppRuntimeMode.demo ? 'Explicit demo' : 'Local preview',
-        ),
-        ('Account', 'No real user session'),
-      ],
+      AppSessionPreview() => [('Status', 'Not signed in')],
       AppSessionReady(:final user, :final business) => [
-        ('Status', 'Signed in'),
         ('Email', user.email ?? 'Unknown'),
         ('Business', business.name),
       ],
       AppSessionNeedsOnboarding(:final user) => [
-        ('Status', 'Signed in, setup incomplete'),
         ('Email', user.email ?? 'Unknown'),
       ],
       AppSessionGuest() => [('Status', 'Signed out')],
@@ -167,12 +108,6 @@ class _AccountCard extends ConsumerWidget {
             },
           ),
         ],
-        const SizedBox(height: KgweboSpacing.xs),
-        Text(
-          'Sign-out clears the Supabase session on this device. It does not '
-          'delete your business records.',
-          style: textTheme.bodySmall?.copyWith(color: KgweboColors.inkMuted),
-        ),
       ],
     );
   }
@@ -188,50 +123,60 @@ class _PendingChangesCard extends ConsumerWidget {
       return const SizedBox.shrink();
     }
     final queue = ref.watch(syncQueueControllerProvider);
-    final waiting = queue.waitingCount;
-    final blocked = queue.actionRequiredCount;
-    final status =
-        blocked > 0
-            ? '$blocked need review'
-            : waiting > 0
-            ? '$waiting waiting to sync'
-            : 'Nothing waiting';
-    final textTheme = Theme.of(context).textTheme;
-    return KgweboSoftCard(
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          Text(
-            'Pending changes',
-            style: textTheme.titleMedium?.copyWith(color: KgweboColors.ink),
-          ),
+    final hasPending = queue.waitingCount > 0 || queue.actionRequiredCount > 0;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        _InfoCard(
+          title: 'Pending changes',
+          rows: [('Status', hasPending ? 'Pending' : 'Nothing waiting')],
+        ),
+        if (hasPending) ...[
           const SizedBox(height: KgweboSpacing.sm),
-          Wrap(
-            spacing: KgweboSpacing.sm,
-            runSpacing: KgweboSpacing.xs,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                'Status',
-                style: textTheme.labelMedium?.copyWith(
-                  color: KgweboColors.inkMuted,
-                ),
-              ),
-              Text(status, style: textTheme.bodyLarge),
-            ],
-          ),
-          const SizedBox(height: KgweboSpacing.sm),
-          Text(
-            'Queued sales and commitments stay on this device until the server accepts them. They are not confirmed cash.',
-            style: textTheme.bodyMedium?.copyWith(color: KgweboColors.inkMuted),
-          ),
-          const SizedBox(height: KgweboSpacing.md),
           KgweboButton(
             label: 'Review pending changes',
             expanded: true,
             variant: KgweboButtonVariant.secondary,
             onPressed: () => context.pushNamed(AppRoutes.syncQueueName),
           ),
+        ],
+      ],
+    );
+  }
+}
+
+class _PrivacyCard extends StatelessWidget {
+  const _PrivacyCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return KgweboSoftCard(
+      onTap: () => context.pushNamed(AppRoutes.privacyName),
+      semanticLabel: '${PrivacyCopy.cardTitle}. ${PrivacyCopy.cardSubtitle}',
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  PrivacyCopy.cardTitle,
+                  style: textTheme.titleMedium?.copyWith(
+                    color: KgweboColors.ink,
+                  ),
+                ),
+                const SizedBox(height: KgweboSpacing.xxs),
+                Text(
+                  PrivacyCopy.cardSubtitle,
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: KgweboColors.inkMuted,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const Icon(Icons.chevron_right, color: KgweboColors.inkMuted),
         ],
       ),
     );
@@ -271,7 +216,7 @@ class _BusinessProfileCard extends ConsumerWidget {
       ),
       AppSessionPreview() => _InfoCard(
         title: 'Business profile',
-        rows: const [('Status', 'Preview mode does not load a live business')],
+        rows: const [('Status', 'Sign in to see your business')],
       ),
       AppSessionLoading() ||
       AppSessionResolving() ||

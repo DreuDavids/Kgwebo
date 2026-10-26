@@ -1,3 +1,6 @@
+import 'dart:async';
+import 'dart:collection';
+
 import '../../features/authentication/domain/auth_failure.dart';
 import '../../features/obligations/application/obligation_repository.dart';
 import '../../features/transactions/application/transaction_repository.dart';
@@ -54,6 +57,7 @@ class SyncCoordinator {
     required String? Function() currentBusinessId,
     DateTime Function()? clock,
     void Function()? onChange,
+    Duration? dispatchTimeout,
   }) : _outbox = outbox,
        _remoteTransactions = remoteTransactions,
        _remoteObligations = remoteObligations,
@@ -62,7 +66,8 @@ class SyncCoordinator {
        _currentOwnerId = currentOwnerId,
        _currentBusinessId = currentBusinessId,
        _clock = clock ?? DateTime.now,
-       _onChange = onChange;
+       _onChange = onChange,
+       _dispatchTimeout = dispatchTimeout ?? SyncPolicy.dispatchTimeout;
 
   final OutboxStore _outbox;
   final TransactionRepository _remoteTransactions;
@@ -73,9 +78,12 @@ class SyncCoordinator {
   final String? Function() _currentBusinessId;
   final DateTime Function() _clock;
   final void Function()? _onChange;
+  final Duration _dispatchTimeout;
 
   bool _running = false;
-  _QueuedRun? _queued;
+  final LinkedHashMap<String, _QueuedRun> _queued = LinkedHashMap();
+
+  String _runKey(_QueuedRun run) => '${run.ownerId}\u0000${run.businessId}';
 
   DateTime _now() => _clock().toUtc();
 
@@ -102,23 +110,22 @@ class SyncCoordinator {
   }) async {
     final requested = _QueuedRun(ownerId: ownerId, businessId: businessId);
     if (_running) {
-      _queued = requested;
+      _queued[_runKey(requested)] = requested;
       return const SyncRunResult(alreadyRunning: true);
     }
     _running = true;
     late final SyncRunResult primary;
     try {
       primary = await _processSnapshot(requested);
-      while (_queued != null) {
-        final again = _queued!;
-        _queued = null;
+      while (_queued.isNotEmpty) {
+        final again = _queued.remove(_queued.keys.first)!;
         await _processSnapshot(again);
       }
     } finally {
       _running = false;
     }
-    final leftover = _queued;
-    if (leftover != null) {
+    if (_queued.isNotEmpty) {
+      final leftover = _queued.remove(_queued.keys.first)!;
       await process(ownerId: leftover.ownerId, businessId: leftover.businessId);
     }
     return primary;
@@ -247,9 +254,9 @@ class SyncCoordinator {
     try {
       switch (operation.operationType) {
         case OutboxOperationTypes.createTransactionV1:
-          await _pushTransaction(operation);
+          await _pushTransaction(operation).timeout(_dispatchTimeout);
         case OutboxOperationTypes.createObligationV1:
-          await _pushObligation(operation);
+          await _pushObligation(operation).timeout(_dispatchTimeout);
         default:
           throw const AuthFailure(
             'This queued change is not supported and was not sent.',
@@ -262,6 +269,24 @@ class SyncCoordinator {
         now: _now(),
       );
       return _DispatchOutcome.succeeded;
+    } on TimeoutException {
+      if (!_isLive(snapshot)) {
+        await _outbox.markInterrupted(
+          operationId: operation.operationId,
+          ownerId: snapshot.ownerId,
+          businessId: snapshot.businessId,
+        );
+        return _DispatchOutcome.aborted;
+      }
+      await _outbox.markRetryable(
+        operationId: operation.operationId,
+        ownerId: snapshot.ownerId,
+        businessId: snapshot.businessId,
+        error: const AuthFailure.network(),
+        now: _now(),
+        attemptCount: attempts,
+      );
+      return _DispatchOutcome.retryable;
     } catch (error) {
       if (!_isLive(snapshot)) {
         await _outbox.markInterrupted(

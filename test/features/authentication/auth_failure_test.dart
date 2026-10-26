@@ -42,4 +42,19 @@ void main() {
     expect(failure.message, isNot(contains('secret')));
     expect(failure.message, isNot(contains('abc.def')));
   });
+
+  test('unknown server text is not shown to the user', () {
+    final fromMessage = AuthFailure.fromMessage(
+      'duplicate key value violates unique constraint "transactions_idempotency_key"',
+    );
+    expect(fromMessage.message, 'Something went wrong. Please try again.');
+    expect(fromMessage.message, isNot(contains('constraint')));
+
+    final fromCode = AuthFailure.fromCode(
+      'PGRST116',
+      fallback: 'JSON object requested, multiple (or no) rows returned',
+    );
+    expect(fromCode.message, 'Something went wrong. Please try again.');
+    expect(fromCode.message, isNot(contains('JSON object')));
+  });
 }

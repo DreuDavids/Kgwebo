@@ -19,6 +19,13 @@ void main() {
     expect(tryParseMinorUnits(''), isNull);
   });
 
+  test('allowZero accepts a zero amount without binary doubles', () {
+    expect(tryParseMinorUnits('0', allowZero: true), 0);
+    expect(tryParseMinorUnits('0.00', allowZero: true), 0);
+    expect(tryParseMinorUnits('1e2', allowZero: true), isNull);
+    expect(tryParseMinorUnits('-1.00', allowZero: true), isNull);
+  });
+
   test('formats BWP with a pula symbol', () {
     expect(
       MoneyFormatter.formatMinor(200000, currencyCode: 'BWP'),

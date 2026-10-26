@@ -35,7 +35,7 @@ class DashboardFinanceState {
     this.recent = const [],
     this.upcoming = const [],
     this.overdue = const [],
-    this.salesSparkline = const [],
+    this.salesByDay = const [],
     this.isStale = false,
     this.isPreview = false,
     this.periodKind = DashboardPeriodKind.thisMonth,
@@ -53,7 +53,7 @@ class DashboardFinanceState {
   final List<BusinessTransaction> recent;
   final List<BusinessObligation> upcoming;
   final List<BusinessObligation> overdue;
-  final List<double> salesSparkline;
+  final List<DailyBucket> salesByDay;
   final bool isStale;
   final bool isPreview;
   final DashboardPeriodKind periodKind;
@@ -71,7 +71,7 @@ class DashboardFinanceState {
     List<BusinessTransaction>? recent,
     List<BusinessObligation>? upcoming,
     List<BusinessObligation>? overdue,
-    List<double>? salesSparkline,
+    List<DailyBucket>? salesByDay,
     bool? isStale,
     bool? isPreview,
     DashboardPeriodKind? periodKind,
@@ -91,7 +91,7 @@ class DashboardFinanceState {
       recent: recent ?? this.recent,
       upcoming: upcoming ?? this.upcoming,
       overdue: overdue ?? this.overdue,
-      salesSparkline: salesSparkline ?? this.salesSparkline,
+      salesByDay: salesByDay ?? this.salesByDay,
       isStale: isStale ?? this.isStale,
       isPreview: isPreview ?? this.isPreview,
       periodKind: periodKind ?? this.periodKind,
@@ -460,7 +460,7 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
             ObligationDisplayStatus.unpaid)
           item,
     ];
-    final sparkline = SparklineSeries.dailyTotals(
+    final salesByDay = SparklineSeries.dailyBuckets(
       entries: confirmedLedgerEntries(confirmedRecords),
       period: selection.period,
       asOf: now,
@@ -498,7 +498,7 @@ class DashboardFinanceController extends StateNotifier<DashboardFinanceState> {
       recent: recent.take(5).toList(),
       upcoming: upcoming,
       overdue: overdue,
-      salesSparkline: sparkline,
+      salesByDay: salesByDay,
       isStale: isStale,
       periodKind: selection.kind,
       periodLabel: selection.label,

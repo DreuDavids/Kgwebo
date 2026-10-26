@@ -6,6 +6,7 @@ class TransactionQuery {
     this.search,
     this.type,
     this.period,
+    this.category,
     this.limit = 50,
     this.beforeOccurredAt,
     this.beforeId,
@@ -14,6 +15,7 @@ class TransactionQuery {
   final String? search;
   final MoneyMovementType? type;
   final ReportingPeriod? period;
+  final String? category;
   final int limit;
   final DateTime? beforeOccurredAt;
   final String? beforeId;
@@ -22,18 +24,21 @@ class TransactionQuery {
     String? search,
     MoneyMovementType? type,
     ReportingPeriod? period,
+    String? category,
     int? limit,
     DateTime? beforeOccurredAt,
     String? beforeId,
     bool clearSearch = false,
     bool clearType = false,
     bool clearPeriod = false,
+    bool clearCategory = false,
     bool clearCursor = false,
   }) {
     return TransactionQuery(
       search: clearSearch ? null : (search ?? this.search),
       type: clearType ? null : (type ?? this.type),
       period: clearPeriod ? null : (period ?? this.period),
+      category: clearCategory ? null : (category ?? this.category),
       limit: limit ?? this.limit,
       beforeOccurredAt:
           clearCursor ? null : (beforeOccurredAt ?? this.beforeOccurredAt),

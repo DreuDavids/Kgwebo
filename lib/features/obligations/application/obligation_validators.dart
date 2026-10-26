@@ -34,9 +34,7 @@ ObligationFieldErrors validateObligationDraft(ObligationDraft draft) {
             ? 'Enter a short description, up to 120 characters.'
             : null,
     amount:
-        amount == null
-            ? 'Enter a positive amount in pula and thebe, for example 50.00.'
-            : null,
+        amount == null ? 'Enter a positive amount, for example 50.00.' : null,
     category:
         ObligationCategories.isAllowed(draft.category)
             ? null

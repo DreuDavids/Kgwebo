@@ -5,6 +5,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../app/routes.dart';
+import '../../../app/theme/kgwebo_colors.dart';
+import '../../../app/theme/kgwebo_radii.dart';
 import '../../../app/theme/kgwebo_spacing.dart';
 import '../../../core/responsive/responsive_layout.dart';
 import '../../../shared/widgets/kgwebo_button.dart';
@@ -19,6 +21,7 @@ import '../../sync/application/sync_queue_controller.dart';
 import '../../sync/presentation/sync_notice.dart';
 import '../application/transactions_controller.dart';
 import '../domain/business_transaction.dart';
+import 'widgets/transaction_filters.dart';
 import 'widgets/transaction_list_item.dart';
 
 class TransactionsScreen extends ConsumerStatefulWidget {
@@ -59,41 +62,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Money'),
-        actions: [
-          PopupMenuButton<String>(
-            tooltip: 'More money types',
-            onSelected: (value) {
-              switch (value) {
-                case 'refund':
-                  context.pushNamed(AppRoutes.recordRefundName);
-                case 'contribution':
-                  context.pushNamed(AppRoutes.recordContributionName);
-                case 'withdrawal':
-                  context.pushNamed(AppRoutes.recordWithdrawalName);
-                default:
-                  break;
-              }
-            },
-            itemBuilder:
-                (context) => const [
-                  PopupMenuItem(
-                    value: 'refund',
-                    child: Text('Record a refund'),
-                  ),
-                  PopupMenuItem(
-                    value: 'contribution',
-                    child: Text('Money you put in'),
-                  ),
-                  PopupMenuItem(
-                    value: 'withdrawal',
-                    child: Text('Money you took out'),
-                  ),
-                ],
-          ),
-        ],
-      ),
+      appBar: AppBar(title: const Text('Money')),
       body: SafeArea(
         child: KgweboFilledBody(
           child: Column(
@@ -114,36 +83,11 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
                   onChanged: _onSearch,
                 ),
               ),
+              const TransactionFilters(),
               const SizedBox(height: KgweboSpacing.sm),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: KgweboSpacing.md,
-                ),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: KgweboButton(
-                        label: 'Record a sale',
-                        icon: Icons.add_card_outlined,
-                        expanded: true,
-                        onPressed:
-                            () => context.pushNamed(AppRoutes.recordSaleName),
-                      ),
-                    ),
-                    const SizedBox(width: KgweboSpacing.sm),
-                    Expanded(
-                      child: KgweboButton(
-                        label: 'Record an expense',
-                        icon: Icons.outbox_outlined,
-                        variant: KgweboButtonVariant.secondary,
-                        expanded: true,
-                        onPressed:
-                            () =>
-                                context.pushNamed(AppRoutes.recordExpenseName),
-                      ),
-                    ),
-                  ],
-                ),
+              const Padding(
+                padding: EdgeInsets.symmetric(horizontal: KgweboSpacing.md),
+                child: _RecordMoneyActions(),
               ),
               const SizedBox(height: KgweboSpacing.sm),
               Expanded(child: _buildList(session, state, bottomInset)),
@@ -273,5 +217,87 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen> {
       }
     }
     return OutboxState.pending;
+  }
+}
+
+class _RecordMoneyActions extends StatelessWidget {
+  const _RecordMoneyActions();
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    return SizedBox(
+      width: double.infinity,
+      child: PopupMenuButton<String>(
+        tooltip: 'Record money',
+        padding: EdgeInsets.zero,
+        position: PopupMenuPosition.under,
+        onSelected: (value) {
+          switch (value) {
+            case 'sale':
+              context.pushNamed(AppRoutes.recordSaleName);
+            case 'expense':
+              context.pushNamed(AppRoutes.recordExpenseName);
+            case 'refund':
+              context.pushNamed(AppRoutes.recordRefundName);
+            case 'contribution':
+              context.pushNamed(AppRoutes.recordContributionName);
+            case 'withdrawal':
+              context.pushNamed(AppRoutes.recordWithdrawalName);
+          }
+        },
+        itemBuilder:
+            (context) => const [
+              PopupMenuItem(value: 'sale', child: Text('Record sale')),
+              PopupMenuItem(value: 'expense', child: Text('Record expense')),
+              PopupMenuDivider(),
+              PopupMenuItem(value: 'refund', child: Text('Record refund')),
+              PopupMenuItem(
+                value: 'contribution',
+                child: Text('Money you put in'),
+              ),
+              PopupMenuItem(
+                value: 'withdrawal',
+                child: Text('Money you took out'),
+              ),
+            ],
+        child: SizedBox(
+          width: double.infinity,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(minHeight: 52, minWidth: 48),
+            child: Material(
+              color: KgweboColors.lime,
+              elevation: 0,
+              shadowColor: Colors.transparent,
+              borderRadius: KgweboRadii.borderPill,
+              clipBehavior: Clip.antiAlias,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: KgweboSpacing.lg,
+                  vertical: KgweboSpacing.sm,
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Record',
+                      style: textTheme.labelLarge?.copyWith(
+                        color: KgweboColors.onLime,
+                      ),
+                    ),
+                    const SizedBox(width: 4),
+                    const Icon(
+                      Icons.expand_more,
+                      size: 20,
+                      color: KgweboColors.onLime,
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -232,7 +232,7 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text(
-                'Saved on this device. Waiting to sync. This is not a recorded expense.',
+                'Saved on this phone. It is not counted as an expense until it finishes saving.',
               ),
             ),
           );
@@ -333,8 +333,8 @@ class _ObligationFormScreenState extends ConsumerState<ObligationFormScreen> {
             tone: KgweboBannerTone.info,
             message:
                 _isEdit
-                    ? 'Edits need a live connection. Unpaid bills do not reduce cash until you pay them.'
-                    : 'Unpaid bills do not reduce cash until you pay them. If you are offline, this bill can wait on this device.',
+                    ? 'Edits need an internet connection. Unpaid bills do not reduce cash until you pay them.'
+                    : 'Unpaid bills do not reduce cash until you pay them. If you are offline, this bill can wait on this phone.',
           ),
           const SizedBox(height: KgweboSpacing.md),
           if (_error != null) ...[

@@ -47,7 +47,7 @@ class AuthFailure implements Exception {
         isRetryable: true,
       ),
       'weak_password' => const AuthFailure(
-        'Choose a stronger password. The server did not accept this one.',
+        'Choose a stronger password.',
         code: 'weak_password',
       ),
       'same_password' => const AuthFailure(
@@ -55,21 +55,14 @@ class AuthFailure implements Exception {
         code: 'same_password',
       ),
       'session_not_found' || 'session_expired' => const AuthFailure(
-        'Your session ended. Sign in again.',
+        'You were signed out. Sign in again.',
         code: 'session_expired',
       ),
-      _ => AuthFailure(
-        AppLogger.redactSecrets(
-          fallback ?? 'Something went wrong. Please try again.',
-        ),
-        code: normalized.isEmpty ? null : normalized,
-        isRetryable: true,
-      ),
+      _ => AuthFailure._unmapped(normalized, fallback),
     };
   }
 
   factory AuthFailure.fromMessage(String raw) {
-    final redacted = AppLogger.redactSecrets(raw);
     final lower = raw.toLowerCase();
     if (lower.contains('invalid login') ||
         lower.contains('invalid_credentials')) {
@@ -92,8 +85,23 @@ class AuthFailure implements Exception {
         lower.contains('timeout')) {
       return AuthFailure.network();
     }
+    if (lower.contains('enough stock')) {
+      return const AuthFailure('There is not enough stock for this movement.');
+    }
+    return const AuthFailure(
+      'Something went wrong. Please try again.',
+      isRetryable: true,
+    );
+  }
+
+  factory AuthFailure._unmapped(String code, String? fallback) {
+    if (fallback != null && fallback.trim().isNotEmpty) {
+      AppLogger.warning('Unmapped auth failure code=$code');
+    }
     return AuthFailure(
-      redacted.isEmpty ? 'Something went wrong. Please try again.' : redacted,
+      'Something went wrong. Please try again.',
+      code: code.isEmpty ? null : code,
+      isRetryable: true,
     );
   }
 

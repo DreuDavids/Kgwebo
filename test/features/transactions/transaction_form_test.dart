@@ -81,9 +81,7 @@ void main() {
     await tester.tap(find.text('Save sale'));
     await tester.pumpAndSettle();
     expect(
-      find.text(
-        'Enter a positive amount in pula and thebe, for example 50.00.',
-      ),
+      find.text('Enter a positive amount, for example 50.00.'),
       findsOneWidget,
     );
   });
@@ -132,6 +130,31 @@ void main() {
     await pumpForm(tester, type: MoneyMovementType.expense);
     expect(find.text('Record an expense'), findsOneWidget);
     expect(find.textContaining('this expense can wait'), findsOneWidget);
+  });
+
+  testWidgets('product picker uses the business currency, not hardcoded BWP', (
+    tester,
+  ) async {
+    const zarBusiness = BusinessProfile(
+      id: 'biz-1',
+      ownerId: 'user-1',
+      name: 'Kgale Stall',
+      businessType: 'Informal trader',
+      countryCode: 'ZA',
+      currencyCode: 'ZAR',
+      openingBalanceMinor: 200000,
+    );
+    final products = FakeProductRepository(products: [sampleProduct()]);
+    await pumpForm(
+      tester,
+      products: products,
+      session: AppSessionReady(user: user, business: zarBusiness),
+    );
+    await tester.ensureVisible(find.text('What did you sell?'));
+    await tester.tap(find.text('What did you sell?'));
+    await tester.pumpAndSettle();
+    expect(find.textContaining('ZAR 12.50'), findsOneWidget);
+    expect(find.textContaining('P 12.50'), findsNothing);
   });
 
   testWidgets('adding a product records one inventory sale', (tester) async {

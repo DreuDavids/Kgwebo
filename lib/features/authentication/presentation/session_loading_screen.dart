@@ -15,7 +15,7 @@ class SessionLoadingScreen extends StatelessWidget {
             Spacer(),
             Center(child: KgweboBrandMark()),
             SizedBox(height: 24),
-            KgweboLoadingState(message: 'Restoring your session'),
+            KgweboLoadingState(message: 'Loading your account'),
             Spacer(),
           ],
         ),

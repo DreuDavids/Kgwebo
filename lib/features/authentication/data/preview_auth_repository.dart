@@ -13,8 +13,8 @@ class PreviewAuthRepository implements AuthRepository {
 
   String get _blocked {
     return mode == AppRuntimeMode.demo
-        ? 'Demo mode does not use real accounts.'
-        : 'Local preview has no backend session.';
+        ? 'This is a demo. Sign-in is not available here.'
+        : 'Sign-in is not available in this preview.';
   }
 
   @override

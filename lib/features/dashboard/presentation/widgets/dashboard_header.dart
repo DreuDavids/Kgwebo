@@ -60,7 +60,9 @@ class DashboardHeader extends ConsumerWidget {
     }
     return switch (tab) {
       DashboardHomeTab.cash =>
-        finance.summary != null && finance.summary!.countedEntries == 0
+        finance.summary != null &&
+                finance.summary!.countedEntries == 0 &&
+                finance.summary!.skippedMixedCurrency == 0
             ? 'Record your first sale.'
             : tab.job,
       DashboardHomeTab.record || DashboardHomeTab.bills => tab.job,

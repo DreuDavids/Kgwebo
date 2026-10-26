@@ -1,3 +1,6 @@
+import java.io.FileInputStream
+import java.util.Properties
+
 plugins {
     id("com.android.application")
     id("kotlin-android")
@@ -5,9 +8,20 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+val keystorePropertiesFile = rootProject.file("key.properties")
+val keystoreProperties = Properties()
+if (keystorePropertiesFile.exists()) {
+    keystoreProperties.load(FileInputStream(keystorePropertiesFile))
+}
+
+fun signingValue(envName: String, propertyName: String): String? {
+    return System.getenv(envName)?.takeIf { it.isNotBlank() }
+        ?: keystoreProperties.getProperty(propertyName)?.takeIf { it.isNotBlank() }
+}
+
 android {
     namespace = "bw.kgwebo.kgwebo"
-    compileSdk = flutter.compileSdkVersion
+    compileSdk = 36
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -20,25 +34,73 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "bw.kgwebo.kgwebo"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        minSdk = flutter.minSdkVersion
+        minSdk = maxOf(flutter.minSdkVersion, 24)
         targetSdk = flutter.targetSdkVersion
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
 
+    signingConfigs {
+        create("release") {
+            val storeFilePath = signingValue("KGWEBO_STORE_FILE", "storeFile")
+            val storePasswordValue = signingValue("KGWEBO_STORE_PASSWORD", "storePassword")
+            val keyAliasValue = signingValue("KGWEBO_KEY_ALIAS", "keyAlias")
+            val keyPasswordValue = signingValue("KGWEBO_KEY_PASSWORD", "keyPassword")
+            if (
+                storeFilePath != null &&
+                storePasswordValue != null &&
+                keyAliasValue != null &&
+                keyPasswordValue != null
+            ) {
+                storeFile = rootProject.file(storeFilePath)
+                storePassword = storePasswordValue
+                keyAlias = keyAliasValue
+                keyPassword = keyPasswordValue
+            }
+        }
+    }
+
     buildTypes {
         release {
-            // TODO: Add your own signing config for the release build.
-            // Signing with the debug keys for now, so `flutter run --release` works.
-            signingConfig = signingConfigs.getByName("debug")
+            val releaseSigning = signingConfigs.getByName("release")
+            val configured =
+                releaseSigning.storeFile != null &&
+                    !releaseSigning.storePassword.isNullOrBlank() &&
+                    !releaseSigning.keyAlias.isNullOrBlank() &&
+                    !releaseSigning.keyPassword.isNullOrBlank()
+            if (configured) {
+                signingConfig = releaseSigning
+            }
         }
     }
 }
 
 flutter {
     source = "../.."
+}
+
+tasks.matching {
+    it.name.startsWith("assembleRelease") || it.name.startsWith("bundleRelease")
+}.configureEach {
+    doFirst {
+        val releaseSigning = android.signingConfigs.getByName("release")
+        val store = releaseSigning.storeFile
+        val configured =
+            store != null &&
+                !releaseSigning.storePassword.isNullOrBlank() &&
+                !releaseSigning.keyAlias.isNullOrBlank() &&
+                !releaseSigning.keyPassword.isNullOrBlank()
+        if (!configured) {
+            throw GradleException(
+                "Release signing credentials are missing. Copy android/key.properties.example " +
+                    "to android/key.properties (gitignored) or set KGWEBO_STORE_FILE, " +
+                    "KGWEBO_STORE_PASSWORD, KGWEBO_KEY_ALIAS, and KGWEBO_KEY_PASSWORD. " +
+                    "Debug builds still work without this file. Do not sign a release with the debug keystore.",
+            )
+        }
+        if (store?.exists() != true) {
+            throw GradleException("Release keystore was not found: $store")
+        }
+    }
 }

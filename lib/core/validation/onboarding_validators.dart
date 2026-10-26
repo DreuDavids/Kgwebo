@@ -1,4 +1,5 @@
 import '../../features/onboarding/domain/onboarding_draft.dart';
+import '../money/money_parser.dart';
 
 class OnboardingFieldErrors {
   const OnboardingFieldErrors({
@@ -27,8 +28,7 @@ OnboardingFieldErrors validateOnboardingDraft(OnboardingDraft draft) {
   String? openingCashError;
   final parsed = tryParseOpeningBalanceMinor(draft.openingCashText);
   if (parsed == null) {
-    openingCashError =
-        'Enter a valid amount of pula, or leave this blank for zero.';
+    openingCashError = 'Enter a valid amount, or leave this blank for zero.';
   }
 
   return OnboardingFieldErrors(
@@ -56,10 +56,5 @@ int? tryParseOpeningBalanceMinor(String raw) {
   if (text.isEmpty) {
     return 0;
   }
-  final normalized = text.replaceAll(',', '');
-  final value = double.tryParse(normalized);
-  if (value == null || value < 0) {
-    return null;
-  }
-  return (value * 100).round();
+  return tryParseMinorUnits(text, allowZero: true);
 }

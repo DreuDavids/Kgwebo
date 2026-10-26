@@ -27,7 +27,7 @@ class KgweboApp extends ConsumerWidget {
         locale: const Locale('en', 'BW'),
         supportedLocales: const [Locale('en', 'BW'), Locale('en')],
         localizationsDelegates: _delegates,
-        home: ConfigErrorScreen(config: config),
+        home: const ConfigErrorScreen(),
       );
     }
 

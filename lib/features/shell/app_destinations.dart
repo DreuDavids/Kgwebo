@@ -10,6 +10,7 @@ enum AppDestination {
   cashFlow,
   reports,
   settings,
+  ask,
   more,
 }
 
@@ -21,6 +22,7 @@ extension AppDestinationX on AppDestination {
     AppDestination.cashFlow => AppRoutes.cashFlow,
     AppDestination.reports => AppRoutes.reports,
     AppDestination.settings => AppRoutes.settings,
+    AppDestination.ask => AppRoutes.ask,
     AppDestination.more => AppRoutes.more,
   };
 
@@ -31,6 +33,7 @@ extension AppDestinationX on AppDestination {
     AppDestination.cashFlow => AppRoutes.cashFlowName,
     AppDestination.reports => AppRoutes.reportsName,
     AppDestination.settings => AppRoutes.settingsName,
+    AppDestination.ask => AppRoutes.askName,
     AppDestination.more => AppRoutes.moreName,
   };
 
@@ -41,6 +44,7 @@ extension AppDestinationX on AppDestination {
     AppDestination.cashFlow => 'Bills',
     AppDestination.reports => 'Reports',
     AppDestination.settings => 'Settings',
+    AppDestination.ask => 'Ask',
     AppDestination.more => 'More',
   };
 
@@ -54,6 +58,7 @@ extension AppDestinationX on AppDestination {
     AppDestination.cashFlow => Icons.waterfall_chart_outlined,
     AppDestination.reports => Icons.description_outlined,
     AppDestination.settings => Icons.settings_outlined,
+    AppDestination.ask => Icons.forum_outlined,
     AppDestination.more => Icons.more_horiz,
   };
 
@@ -64,6 +69,7 @@ extension AppDestinationX on AppDestination {
     AppDestination.cashFlow => Icons.waterfall_chart,
     AppDestination.reports => Icons.description,
     AppDestination.settings => Icons.settings,
+    AppDestination.ask => Icons.forum,
     AppDestination.more => Icons.more_horiz,
   };
 
@@ -75,6 +81,7 @@ extension AppDestinationX on AppDestination {
     AppDestination.dashboard,
     AppDestination.transactions,
     AppDestination.products,
+    AppDestination.ask,
     AppDestination.more,
   ];
 
@@ -84,6 +91,7 @@ extension AppDestinationX on AppDestination {
     AppDestination.products,
     AppDestination.cashFlow,
     AppDestination.reports,
+    AppDestination.ask,
     AppDestination.settings,
   ];
 
@@ -103,10 +111,11 @@ extension AppDestinationX on AppDestination {
       AppDestination.dashboard => 0,
       AppDestination.transactions => 1,
       AppDestination.products => 2,
+      AppDestination.ask => 3,
       AppDestination.cashFlow ||
       AppDestination.reports ||
       AppDestination.settings ||
-      AppDestination.more => 3,
+      AppDestination.more => 4,
     };
   }
 }

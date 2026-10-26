@@ -11,6 +11,9 @@ import 'package:kgwebo/core/finance/business_calendar.dart';
 import 'package:kgwebo/core/finance/cash_outlook.dart';
 import 'package:kgwebo/features/dashboard/presentation/dashboard_screen.dart';
 import 'package:kgwebo/features/onboarding/domain/business_profile.dart';
+import 'package:kgwebo/shared/widgets/kgwebo_daily_sales_chart.dart';
+import 'package:kgwebo/shared/widgets/kgwebo_sparkline.dart';
+import 'package:kgwebo/shared/widgets/kgwebo_status_banner.dart';
 
 import '../../helpers/fake_auth.dart';
 import '../../helpers/fake_obligations.dart';
@@ -84,7 +87,10 @@ void main() {
 
   testWidgets('preview dashboard does not show live totals', (tester) async {
     await pumpKgweboApp(tester);
-    expect(find.textContaining('labelled preview'), findsOneWidget);
+    expect(
+      find.textContaining('These figures are examples, not your business'),
+      findsOneWidget,
+    );
     expect(find.text('Record a sale'), findsOneWidget);
   });
 
@@ -95,6 +101,12 @@ void main() {
     expect(find.text('P 2,000.00'), findsWidgets);
     expect(find.textContaining('opening / starting cash'), findsOneWidget);
     expect(find.text('P 0.00'), findsWidgets);
+    expect(
+      find.textContaining('No sales or expenses are recorded yet'),
+      findsNothing,
+    );
+    expect(find.byType(KgweboStatusBanner), findsNothing);
+    expect(find.byType(KgweboSparkline), findsNothing);
   });
 
   testWidgets('populated dashboard matches recorded sales', (tester) async {
@@ -175,15 +187,10 @@ void main() {
     expect(find.text('P 2,000.00'), findsWidgets);
     expect(find.text('P 0.00'), findsWidgets);
     await selectDashboardTab(tester, 'Bills');
-    await tester.ensureVisible(
-      find.textContaining('Estimated cash after known commitments'),
-    );
+    await tester.ensureVisible(find.textContaining('Cash after known bills'));
     expect(find.text('P 1,200.00'), findsWidgets);
     expect(find.text('Shop rent'), findsWidgets);
-    expect(
-      find.textContaining('Recorded cash P 2,000.00 is unchanged'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('P 2,000.00 recorded'), findsOneWidget);
   });
 
   testWidgets('marking a commitment paid does not create an expense', (
@@ -249,10 +256,7 @@ void main() {
     expect(find.text('P 2,500.00'), findsWidgets);
     expect(find.textContaining('Check your connection'), findsOneWidget);
     await selectDashboardTab(tester, 'Bills');
-    expect(
-      find.textContaining('Estimated cash after known commitments'),
-      findsNothing,
-    );
+    expect(find.textContaining('Cash after known bills'), findsNothing);
     await tester.ensureVisible(find.textContaining('not a zero-bills result'));
     expect(find.textContaining('not a zero-bills result'), findsOneWidget);
   });
@@ -306,8 +310,75 @@ void main() {
         products: [sampleProduct(stockQuantityMilli: 0)],
       ),
     );
-    expect(find.textContaining('need restocking'), findsOneWidget);
+    expect(find.textContaining('needs restocking'), findsOneWidget);
     expect(find.textContaining('Inventory value is not cash'), findsOneWidget);
+    expect(find.byType(KgweboStatusBanner), findsNothing);
+  });
+
+  testWidgets('mixed-currency rows are a footnote not a warning stack', (
+    tester,
+  ) async {
+    await pumpDashboard(
+      tester,
+      repository:
+          FakeTransactionRepository()
+            ..items.add(sampleSale(id: 'zar-1', currencyCode: 'ZAR'))
+            ..items.add(
+              sampleSale(id: 'zar-2', amount: 10000, currencyCode: 'ZAR'),
+            ),
+    );
+    expect(
+      find.textContaining('entries in another currency are not included'),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('No sales or expenses are recorded yet'),
+      findsNothing,
+    );
+    expect(find.byType(KgweboStatusBanner), findsNothing);
+  });
+
+  testWidgets('sales card labels days instead of an unreadable sparkline', (
+    tester,
+  ) async {
+    await pumpDashboard(
+      tester,
+      repository:
+          FakeTransactionRepository()
+            ..items.add(
+              sampleSale(
+                id: 'sale-10',
+                amount: 50000,
+                occurredAt: BusinessCalendar.utcFromGaborone(
+                  year: 2026,
+                  month: 10,
+                  day: 10,
+                ),
+              ),
+            )
+            ..items.add(
+              sampleSale(
+                id: 'sale-20',
+                amount: 20000,
+                occurredAt: BusinessCalendar.utcFromGaborone(
+                  year: 2026,
+                  month: 10,
+                  day: 20,
+                ),
+              ),
+            ),
+    );
+    expect(find.byType(KgweboSparkline), findsNothing);
+    expect(find.byType(KgweboDailySalesChart), findsOneWidget);
+    expect(find.text('Sales by day'), findsOneWidget);
+    expect(find.textContaining('Highest day'), findsOneWidget);
+    expect(find.textContaining('Oct 10'), findsWidgets);
+    expect(find.textContaining('Oct 20'), findsWidgets);
+    expect(find.textContaining('P 500.00'), findsWidgets);
+    expect(
+      find.textContaining('Each bar is a day with recorded sales'),
+      findsOneWidget,
+    );
   });
 
   testWidgets('home tabs keep cash short and teach record and bills', (
@@ -340,9 +411,6 @@ void main() {
     await selectDashboardTab(tester, 'Bills');
     expect(find.text('See bills you still need to pay.'), findsOneWidget);
     expect(find.text('Bills coming due'), findsOneWidget);
-    expect(
-      find.textContaining('Estimated cash after known commitments'),
-      findsOneWidget,
-    );
+    expect(find.textContaining('Cash after known bills'), findsOneWidget);
   });
 }

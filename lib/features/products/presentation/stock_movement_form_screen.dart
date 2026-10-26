@@ -147,7 +147,7 @@ class _StockMovementFormScreenState
   }
 
   String _onlineCopy() {
-    return 'Stock writes need a connection and are not queued offline.';
+    return 'Stock changes need an internet connection.';
   }
 
   @override

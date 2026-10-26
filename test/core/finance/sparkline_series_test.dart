@@ -70,5 +70,22 @@ void main() {
     expect(points[1], 1500);
     expect(points[9], 2000);
     expect(points.where((value) => value > 0).length, 2);
+
+    final buckets = SparklineSeries.dailyBuckets(
+      entries: [
+        sale(id: 'a', day: 2, amount: 1000),
+        sale(id: 'b', day: 2, amount: 500),
+        sale(id: 'c', day: 10, amount: 2000),
+      ],
+      period: october,
+      asOf: asOf,
+      types: const {MoneyMovementType.sale},
+    );
+    expect(buckets.length, 21);
+    expect(buckets[1].amountMinor, 1500);
+    expect(
+      buckets[1].startUtc,
+      BusinessCalendar.utcFromGaborone(year: 2026, month: 10, day: 2),
+    );
   });
 }

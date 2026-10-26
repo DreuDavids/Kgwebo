@@ -37,7 +37,7 @@ class DashboardMetrics extends ConsumerWidget {
         children: [
           KgweboSectionHeading(
             title: 'What you will track',
-            subtitle: 'Local preview has no saved money.',
+            subtitle: 'There are no saved figures yet.',
           ),
           SizedBox(height: 12),
           KgweboResponsiveGrid(
@@ -45,14 +45,14 @@ class DashboardMetrics extends ConsumerWidget {
               KgweboMetricCard(
                 label: 'Spent',
                 value: '—',
-                caption: 'Preview is not a business ledger.',
+                caption: 'Sign in to record expenses.',
                 icon: Icons.south_west,
                 isPreview: true,
               ),
               KgweboMetricCard(
                 label: 'After costs',
                 value: '—',
-                caption: 'Not profit. Preview has no records.',
+                caption: 'Sign in to see what is left after costs.',
                 icon: Icons.insights_outlined,
                 isPreview: true,
               ),
